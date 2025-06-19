@@ -4,24 +4,34 @@ import { useCreateDevice } from '@/features/devices/api/devices'
 import { DeviceConfiguration } from '@/features/devices/types'
 import { useGetProducts } from '@/features/products/api'
 import { ConfigEnum, useConfigEnums } from '@/hooks/useConfigEnums'
+import { usePostRequest } from '@/hooks/usePostRequest'
+import { configAxios } from '@/lib/axios'
 import { useNotificationStore } from '@/stores/notifications'
 import { zodResolver } from '@hookform/resolvers/zod'
 import DeleteIcon from '@mui/icons-material/Delete'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
   Box,
   Button,
   Checkbox,
+  Collapse,
   FormControl,
   FormControlLabel,
   IconButton,
   InputLabel,
+  List,
+  ListItem,
   MenuItem,
   Modal,
   OutlinedInput,
+  Paper,
   Select,
   TextField,
   Typography,
 } from '@mui/material'
+import { AxiosHeaders } from 'axios'
+import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -84,6 +94,23 @@ const deviceSchema = z.object({
     .nullable(),
 })
 
+const token = Cookies.get('token')
+
+const headers: AxiosHeaders = new AxiosHeaders({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`,
+})
+
+export function useGetCameras() {
+  const mutation = usePostRequest({
+    url: '/Device/retrieveDeviceData',
+    configAxios,
+    headers,
+    notify: false,
+  })
+  return mutation
+}
+
 export interface NewDeviceModalProps {
   onClose: () => void
   device?: any | null
@@ -103,7 +130,14 @@ const DeviceModal = ({
   const { mutate: createDevice } = useCreateDevice()
   const { data: deviceTypes } = useConfigEnums(ConfigEnum.DeviceTypes)
   const { data: deviceStatus } = useConfigEnums(ConfigEnum.DeviceStatus)
+  const [cameras, setCameras] = useState<number[]>([])
   const { addNotification } = useNotificationStore()
+  const { mutateAsync: getCameras } = useGetCameras()
+  const [showCameraList, setShowCameraList] = useState(false)
+
+  const handleToggleCameraList = () => {
+    setShowCameraList((prev) => !prev)
+  }
 
   const deviceConfigurations = deviceConfigurationsData?.value
   const products = productsData?.value
@@ -215,7 +249,20 @@ const DeviceModal = ({
     }
   }
 
-  // Close handler
+  const handleFindCamerasClick = async () => {
+    const cameras = await getCameras({
+      detectionType: device?.deviceType,
+      port: device?.deviceConfiguration?.port,
+      IpAddress: device?.ipaddress || '',
+    })
+    setCameras(cameras || [])
+    setShowCameraList(true)
+  }
+
+  const handleToggleCollapse = () => {
+    setShowCameraList((prev) => !prev)
+  }
+
   const handleClose = () => {
     reset()
     onClose()
@@ -359,6 +406,49 @@ const DeviceModal = ({
                 {...register('ipaddress')}
               />
             </FormControl>
+
+            {device.deviceType === 'FIRCamera' && (
+              <>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                  onClick={handleFindCamerasClick}
+                >
+                  Find Cameras
+                </Button>
+
+                <Collapse in={showCameraList} sx={{ mb: 2 }}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Typography variant="subtitle2">Found Cameras</Typography>
+                      <IconButton size="small" onClick={handleToggleCollapse}>
+                        {showCameraList ? (
+                          <ExpandLessIcon />
+                        ) : (
+                          <ExpandMoreIcon />
+                        )}
+                      </IconButton>
+                    </Box>
+                    <List>
+                      {cameras.map((cameraId) => (
+                        <ListItem key={cameraId}>
+                          <Typography variant="subtitle2">
+                            Name: {cameraId}
+                          </Typography>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                </Collapse>
+              </>
+            )}
 
             <TextField
               fullWidth
