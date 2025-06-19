@@ -92,6 +92,8 @@ const LocationMap = ({
 
     mapRef.eachLayer((layer) => {
       if (layer instanceof FeatureLayer || layer instanceof DynamicMapLayer) {
+        // detach Leaflet's internal error handler so it never fires on a removed layer
+        ;(layer as any).off('error', (layer as any)._overlayError)
         mapRef.removeLayer(layer)
       }
     })
@@ -114,18 +116,20 @@ const LocationMap = ({
             useCors: false,
           })
         }
-        newLayer.addTo(mapRef)
+        if (!newLayer) return
+
+        newLayer?.addTo(mapRef)
 
         if (layer.refreshIntervalSeconds) {
           const refreshId = setInterval(() => {
             if (newLayer instanceof FeatureLayer && newLayer.refresh) {
-              newLayer.refresh()
+              newLayer?.refresh()
             } else if (newLayer instanceof DynamicMapLayer && newLayer.redraw) {
-              newLayer.redraw()
+              newLayer?.redraw()
             } else {
               setTimeout(() => {
-                mapRef.removeLayer(newLayer)
-                newLayer.addTo(mapRef)
+                mapRef?.removeLayer(newLayer)
+                newLayer?.addTo(mapRef)
               }, 50)
             }
           }, layer.refreshIntervalSeconds * 1000)

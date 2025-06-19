@@ -1,4 +1,7 @@
-import { useGetLocationSyncLocationFromKey } from '@/api/config/aTSPMConfigurationApi'
+import {
+  useGetDeviceConfiguration,
+  useGetLocationSyncLocationFromKey,
+} from '@/api/config/aTSPMConfigurationApi'
 import { AddButton } from '@/components/addButton'
 import ApproachesInfo from '@/features/locations/components/ApproachesInfo/approachesInfo'
 import ApproachesReconcilationReport from '@/features/locations/components/ApproachesReconcilationReport/ApproachesReconcilationReport'
@@ -8,10 +11,40 @@ import DetectorsInfo from '@/features/locations/components/DetectorsInfo/detecto
 import EditApproach from '@/features/locations/components/editApproach/EditApproach'
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
 import { useLocationWizardStore } from '@/features/locations/components/LocationSetupWizard/locationSetupWizardStore'
+import { usePostRequest } from '@/hooks/usePostRequest'
+import { configAxios } from '@/lib/axios'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SyncIcon from '@mui/icons-material/Sync'
 import { LoadingButton } from '@mui/lab'
-import { Box, Button, Divider, Paper, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Collapse,
+  Divider,
+  IconButton,
+  Paper,
+  Typography,
+} from '@mui/material'
+import { AxiosHeaders } from 'axios'
+import Cookies from 'js-cookie'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
+const token = Cookies.get('token')
+const headers: AxiosHeaders = new AxiosHeaders({
+  'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`,
+})
+
+export function useGetZones() {
+  const mutation = usePostRequest({
+    url: '/Detector/retrieveDetectionData',
+    configAxios,
+    headers,
+    notify: false,
+  })
+  return mutation
+}
 
 const ApproachOptions = () => {
   const {
@@ -23,6 +56,14 @@ const ApproachOptions = () => {
 
   const { approaches, location, addApproach } = useLocationStore()
   const { mutateAsync, isLoading } = useGetLocationSyncLocationFromKey()
+  const { mutateAsync: getZones } = useGetZones()
+  const [zones, setZones] = useState([])
+  const [showZones, setShowZones] = useState(false)
+  const { data: deviceConfigurationsData } = useGetDeviceConfiguration()
+
+  const handleToggleZones = () => {
+    setShowZones((prev) => !prev)
+  }
 
   const [showSummary, setShowSummary] = useState(false)
   const [categories, setCategories] = useState<LocationDiscrepancyReport>({
@@ -53,6 +94,22 @@ const ApproachOptions = () => {
         .filter((chan) => chan != null),
     [approaches]
   )
+
+  const handleGetZones = async () => {
+    const device = location?.devices?.[0]
+    const deviceConfig = deviceConfigurationsData?.value?.find(
+      (config) => config.id === device?.deviceConfigurationId
+    )
+    const zones = await getZones({
+      IpAddress: device?.ipaddress,
+      port: deviceConfig?.port?.toString(),
+      detectionType: device?.deviceType,
+      deviceId: device?.deviceIdentifier?.toString(),
+    })
+    console.log('Retrieved zones:', zones)
+    setZones(zones)
+    setShowZones(true)
+  }
 
   const handleSyncLocation = useCallback(async () => {
     if (!location?.id) return
@@ -121,6 +178,12 @@ const ApproachOptions = () => {
 
   const combinedLocation = { ...location, approaches }
 
+  const hasFirCameraDevice = useMemo(() => {
+    return combinedLocation?.devices?.some(
+      (device) => device.deviceType === 'FIRCamera'
+    )
+  }, [combinedLocation?.devices])
+
   return (
     <Box>
       <Box
@@ -154,7 +217,47 @@ const ApproachOptions = () => {
         >
           Reconcile Approaches
         </LoadingButton>
+        {hasFirCameraDevice && (
+          <Button variant="outlined" onClick={handleGetZones} sx={{ ml: 1 }}>
+            Get Zones
+          </Button>
+        )}
       </Box>
+      {showZones && (
+        <Paper sx={{ mb: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              p: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              Found Zones:
+            </Typography>
+            <IconButton size="small" onClick={handleToggleZones}>
+              {showZones ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </IconButton>
+          </Box>
+          <Collapse in={showZones}>
+            <Divider sx={{ mx: 1 }} />
+            <Box sx={{ p: 2 }}>
+              {zones.length > 0 ? (
+                zones.map((zone, index) => (
+                  <Typography key={index} variant="body1">
+                    {zone}
+                  </Typography>
+                ))
+              ) : (
+                <Typography variant="body1" color="textSecondary">
+                  No zones found
+                </Typography>
+              )}
+            </Box>
+          </Collapse>
+        </Paper>
+      )}
 
       {approachesSynced && (
         <ApproachesReconcilationReport categories={categories} />

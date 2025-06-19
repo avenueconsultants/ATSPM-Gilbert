@@ -95,7 +95,6 @@ const deviceSchema = z.object({
 })
 
 const token = Cookies.get('token')
-
 const headers: AxiosHeaders = new AxiosHeaders({
   'Content-Type': 'application/json',
   Authorization: `Bearer ${token}`,
