@@ -66,7 +66,7 @@ const DevicesWizardModal = ({
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '90%',
-          maxWidth: 900,
+          maxWidth: 1000,
           maxHeight: '90vh',
           overflowY: 'auto',
           p: 4,
@@ -76,7 +76,7 @@ const DevicesWizardModal = ({
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: '3fr 2fr 1fr 2fr',
+            gridTemplateColumns: '3fr 2fr 1fr 1fr 2fr',
             alignItems: 'center',
             px: 1,
             pb: 2,
@@ -84,8 +84,11 @@ const DevicesWizardModal = ({
         >
           <Typography variant="subtitle2">Device Name</Typography>
           <Typography variant="subtitle2">IP Address</Typography>
-          <Typography variant="subtitle2" sx={{ textAlign: 'right', pr: 1 }}>
-            Rows Downloaded
+          <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
+            Rows in DB
+          </Typography>
+          <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
+            New Rows Added
           </Typography>
           <Typography variant="subtitle2" sx={{ textAlign: 'center' }}>
             Status
@@ -94,12 +97,15 @@ const DevicesWizardModal = ({
 
         {devices?.map((device, i) => {
           const newIp = ipChanges[device.id] ?? device.ipaddress
+          const dbCount = device.beforeWorkflowEventCount ?? 0
+          const downloadedCount = device.changeInEventCount ?? 0
+
           return (
             <Box
               key={i}
               sx={{
                 display: 'grid',
-                gridTemplateColumns: '3fr 2fr 1fr 2fr',
+                gridTemplateColumns: '3fr 2fr 1fr 1fr 2fr',
                 alignItems: 'center',
                 gap: 2,
                 p: 1.5,
@@ -123,10 +129,12 @@ const DevicesWizardModal = ({
                 />
               </Badge>
 
-              <Typography sx={{ textAlign: 'right', pr: 1 }}>
-                {isResyncing
-                  ? ''
-                  : (device.changeInEventCount?.toLocaleString() ?? 'N/A')}
+              <Typography sx={{ textAlign: 'right' }}>
+                {isResyncing ? '' : dbCount.toLocaleString()}
+              </Typography>
+
+              <Typography sx={{ textAlign: 'right' }}>
+                {isResyncing ? '' : downloadedCount.toLocaleString()}
               </Typography>
 
               <Box
@@ -141,19 +149,18 @@ const DevicesWizardModal = ({
                   <Typography variant="body2" sx={{ ml: 1 }}>
                     Loading...
                   </Typography>
-                ) : device?.changeInEventCount &&
-                  device.changeInEventCount > 1 ? (
+                ) : dbCount > 0 ? (
                   <>
                     <CheckIcon color="success" />
                     <Typography variant="body2" sx={{ ml: 1 }}>
-                      Download successful
+                      Data found
                     </Typography>
                   </>
                 ) : (
                   <>
                     <CloseIcon color="error" />
                     <Typography variant="body2" sx={{ ml: 1 }}>
-                      No data downloaded
+                      No data found
                     </Typography>
                   </>
                 )}

@@ -17,27 +17,6 @@ import LanIcon from '@mui/icons-material/Lan'
 import { Avatar, Box, Button, Modal, Typography, useTheme } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-const deviceEventResultsMock = [
-  {
-    deviceId: 3921,
-    ipaddress: '10.201.8.143',
-    deviceType: 1,
-    beforeWorkflowEventCount: 610165,
-    afterWorkflowEventCount: 610365, // +200
-    changeInEventCount: 200,
-    ipModified: false,
-  },
-  {
-    deviceId: 6389,
-    ipaddress: '127.0.0.1',
-    deviceType: 1,
-    beforeWorkflowEventCount: 720111,
-    afterWorkflowEventCount: 720321, // +210
-    changeInEventCount: 210,
-    ipModified: false,
-  },
-]
-
 interface CombinedDevice extends Device {
   changeInEventCount?: number
   ipModified?: boolean
@@ -60,9 +39,6 @@ const EditDevices = () => {
 
   const [ipChanges, setIpChanges] = useState<Record<number, string>>({})
 
-  const [mockEventData, setMockEventData] = useState<
-    typeof deviceEventResultsMock | []
-  >([])
   const [isFetchingEvents, setIsFetchingEvents] = useState(false)
 
   const {
@@ -92,16 +68,8 @@ const EditDevices = () => {
   const handleResync = useCallback(async () => {
     try {
       setIsFetchingEvents(true)
-      setMockEventData([])
 
-      await fetchDeviceEventResults()
-
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          setMockEventData(deviceEventResultsMock)
-          resolve()
-        }, 1500)
-      })
+      fetchDeviceEventResults()
     } catch (err) {
       console.error('Failed to fetch device event data: ', err)
     } finally {
@@ -122,9 +90,7 @@ const EditDevices = () => {
 
   const combinedDevices: CombinedDevice[] = useMemo(() => {
     if (!devices.length) return []
-    const finalEventData = mockEventData.length
-      ? mockEventData
-      : deviceEventResults?.value || []
+    const finalEventData = deviceEventResults || []
     const allConfigs = deviceConfigurationsData?.value || []
 
     return devices.map((dev) => {
@@ -134,12 +100,13 @@ const EditDevices = () => {
       )
       return {
         ...dev,
-        changeInEventCount: matchedEvents?.changeInEventCount,
+        ...matchedEvents,
+        // changeInEventCount: matchedEvents?.changeInEventCount,
         ipModified: matchedEvents?.ipModified,
         deviceConfiguration: matchedConfig,
       }
     })
-  }, [devices, deviceEventResults, mockEventData, deviceConfigurationsData])
+  }, [devices, deviceEventResults, deviceConfigurationsData])
 
   const handleSaveAndClose = async () => {
     const entries = Object.entries(ipChanges)
