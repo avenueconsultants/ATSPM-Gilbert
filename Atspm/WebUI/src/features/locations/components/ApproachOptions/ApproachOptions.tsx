@@ -180,7 +180,7 @@ const ApproachOptions = () => {
 
   const hasFirCameraDevice = useMemo(() => {
     return combinedLocation?.devices?.some(
-      (device) => device.deviceType === 'FIRCamera'
+      (device) => device?.deviceType === 'FIRCamera'
     )
   }, [combinedLocation?.devices])
 

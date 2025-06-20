@@ -406,7 +406,7 @@ const DeviceModal = ({
               />
             </FormControl>
 
-            {device.deviceType === 'FIRCamera' && (
+            {device?.deviceType === 'FIRCamera' && (
               <>
                 <Button
                   size="small"
