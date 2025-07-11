@@ -16,6 +16,10 @@ import {
   Button,
   Checkbox,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -23,7 +27,6 @@ import {
   List,
   ListItem,
   MenuItem,
-  Modal,
   OutlinedInput,
   Paper,
   Select,
@@ -35,23 +38,6 @@ import Cookies from 'js-cookie'
 import { useEffect, useState } from 'react'
 import { Controller, useFieldArray, useForm } from 'react-hook-form'
 import { z } from 'zod'
-
-export const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 800,
-  maxWidth: '95%',
-  bgcolor: 'background.paper',
-  border: 'none',
-  borderRadius: '10px',
-  boxShadow: 24,
-  p: 4,
-  '@media (max-width: 400px)': {
-    width: '100%',
-  },
-}
 
 const knownDeviceKeys = new Set([
   'id',
@@ -76,18 +62,11 @@ const deviceSchema = z.object({
   deviceIdentifier: z.string().optional(),
   loggingEnabled: z.boolean().default(true),
   ipaddress: z.string().optional(),
-  deviceStatus: z.string().nonempty({ message: 'Status is required' }),
-  notes: z
-    .string()
-    .max(512, { message: 'Notes must be 512 characters or less' })
-    .optional(),
-  deviceType: z.string().nonempty({ message: 'Device type is required' }),
-  deviceConfigurationId: z.coerce.number({
-    required_error: 'Configuration is required',
-  }),
-  productId: z.coerce.number({
-    required_error: 'Product is required',
-  }),
+  deviceStatus: z.string().nonempty(),
+  notes: z.string().max(512).optional(),
+  deviceType: z.string().nonempty(),
+  deviceConfigurationId: z.coerce.number(),
+  productId: z.coerce.number(),
   locationId: z.number(),
   deviceProperties: z
     .array(z.object({ key: z.string(), value: z.string() }))
@@ -101,13 +80,12 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export function useGetCameras() {
-  const mutation = usePostRequest({
+  return usePostRequest({
     url: '/Device/retrieveDeviceData',
     configAxios,
     headers,
     notify: false,
   })
-  return mutation
 }
 
 export interface NewDeviceModalProps {
@@ -134,12 +112,8 @@ const DeviceModal = ({
   const { mutateAsync: getCameras } = useGetCameras()
   const [showCameraList, setShowCameraList] = useState(false)
 
-  const handleToggleCameraList = () => {
-    setShowCameraList((prev) => !prev)
-  }
-
-  const deviceConfigurations = deviceConfigurationsData?.value
   const products = productsData?.value
+  const deviceConfigurations = deviceConfigurationsData?.value
 
   const [filteredConfigurations, setFilteredConfigurations] = useState<
     DeviceConfiguration[]
@@ -208,58 +182,48 @@ const DeviceModal = ({
     const flattenedProps =
       data.deviceProperties?.reduce(
         (acc, { key, value }) => {
-          if (key) {
-            acc[key] = value
-          }
+          if (key) acc[key] = value
           return acc
         },
         {} as Record<string, any>
       ) || {}
 
     const { id, productId, deviceProperties, ...rest } = data
-    const newDeviceDTO = { ...rest, ...flattenedProps }
-    const updateDeviceDTO = { id, ...rest, ...flattenedProps }
+    const dto = { ...rest, ...flattenedProps }
 
     if (data.id) {
       updateDevice(
-        { data: updateDeviceDTO, key: data.id },
+        { data: { id, ...dto }, key: data.id },
         {
           onSuccess: () => {
             addNotification({ title: 'Device Updated', type: 'success' })
-
             refetchDevices()
             onClose()
           },
-          onError: (error) => {
-            addNotification({ title: 'Device Update Failed', type: 'error' })
-          },
+          onError: () =>
+            addNotification({ title: 'Device Update Failed', type: 'error' }),
         }
       )
     } else {
-      createDevice(newDeviceDTO, {
+      createDevice(dto, {
         onSuccess: () => {
           refetchDevices()
           onClose()
         },
-        onError: (error) => {
-          addNotification({ title: 'Device Creation Failed', type: 'error' })
-        },
+        onError: () =>
+          addNotification({ title: 'Device Creation Failed', type: 'error' }),
       })
     }
   }
 
   const handleFindCamerasClick = async () => {
-    const cameras = await getCameras({
+    const cams = await getCameras({
       detectionType: device?.deviceType,
       port: device?.deviceConfiguration?.port,
       IpAddress: device?.ipaddress || '',
     })
-    setCameras(cameras || [])
+    setCameras(cams || [])
     setShowCameraList(true)
-  }
-
-  const handleToggleCollapse = () => {
-    setShowCameraList((prev) => !prev)
   }
 
   const handleClose = () => {
@@ -270,12 +234,10 @@ const DeviceModal = ({
   if (!products || !deviceTypes || !deviceConfigurations) return null
 
   return (
-    <Modal open={true} onClose={handleClose}>
-      <Box sx={modalStyle}>
-        <Typography variant="h4" sx={{ mb: 2 }}>
-          {device ? 'Edit Device' : 'Add New Device'}
-        </Typography>
+    <Dialog open onClose={handleClose} fullWidth maxWidth="md">
+      <DialogTitle>{device ? 'Edit Device' : 'Add New Device'}</DialogTitle>
 
+      <DialogContent dividers sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <Box
           sx={{
             display: 'flex',
@@ -283,10 +245,11 @@ const DeviceModal = ({
             gap: 3,
           }}
         >
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
               General
             </Typography>
+
             <Controller
               name="productId"
               control={control}
@@ -304,16 +267,10 @@ const DeviceModal = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  {errors.productId && (
-                    <Typography variant="caption" color="error">
-                      {String(errors.productId.message)}
-                    </Typography>
-                  )}
                 </FormControl>
               )}
             />
 
-            {/* Device Configuration */}
             <Controller
               name="deviceConfigurationId"
               control={control}
@@ -330,11 +287,7 @@ const DeviceModal = ({
                   </InputLabel>
                   <Select
                     {...field}
-                    label={
-                      selectedProductId
-                        ? 'Configurations'
-                        : 'Please select a product'
-                    }
+                    label="Configurations"
                     disabled={!selectedProductId}
                   >
                     {filteredConfigurations.map((config) => (
@@ -343,11 +296,6 @@ const DeviceModal = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  {errors.deviceConfigurationId && (
-                    <Typography variant="caption" color="error">
-                      {String(errors.deviceConfigurationId.message)}
-                    </Typography>
-                  )}
                 </FormControl>
               )}
             />
@@ -369,16 +317,10 @@ const DeviceModal = ({
                       </MenuItem>
                     ))}
                   </Select>
-                  {errors.deviceType && (
-                    <Typography variant="caption" color="error">
-                      {String(errors.deviceType.message)}
-                    </Typography>
-                  )}
                 </FormControl>
               )}
             />
 
-            {/* Status */}
             <Controller
               name="deviceStatus"
               control={control}
@@ -396,7 +338,6 @@ const DeviceModal = ({
               )}
             />
 
-            {/* IP Address */}
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel htmlFor="ip-input">IP Address</InputLabel>
               <OutlinedInput
@@ -427,7 +368,10 @@ const DeviceModal = ({
                       }}
                     >
                       <Typography variant="subtitle2">Found Cameras</Typography>
-                      <IconButton size="small" onClick={handleToggleCollapse}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowCameraList((p) => !p)}
+                      >
                         {showCameraList ? (
                           <ExpandLessIcon />
                         ) : (
@@ -435,11 +379,23 @@ const DeviceModal = ({
                         )}
                       </IconButton>
                     </Box>
-                    <List>
-                      {cameras.map((cameraId) => (
-                        <ListItem key={cameraId}>
-                          <Typography variant="subtitle2">
-                            Name: {cameraId}
+                    <List dense disablePadding>
+                      {Object.entries(cameras).map(([name, id]) => (
+                        <ListItem
+                          key={id}
+                          sx={{ py: 0.5, display: 'flex', gap: 1 }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {name}
+                          </Typography>
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                          >
+                            ID: {id}
                           </Typography>
                         </ListItem>
                       ))}
@@ -455,8 +411,6 @@ const DeviceModal = ({
               label="Device Identifier"
               sx={{ mb: 2 }}
               maxRows={6}
-              error={!!errors.notes}
-              helperText={errors.notes ? 'String(errors.notes.message) ' : ''}
               {...register('deviceIdentifier')}
             />
 
@@ -466,12 +420,9 @@ const DeviceModal = ({
               label="Notes"
               sx={{ mb: 2 }}
               maxRows={6}
-              error={!!errors.notes}
-              helperText={errors.notes ? String(errors.notes.message) : ''}
               {...register('notes')}
             />
 
-            {/* Logging */}
             <Controller
               name="loggingEnabled"
               control={control}
@@ -484,19 +435,15 @@ const DeviceModal = ({
             />
           </Box>
 
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="subtitle1" sx={{ mb: 1 }}>
               Device Properties
             </Typography>
+
             {devicePropertiesFields.map((field, index) => (
               <Box
                 key={field.id}
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1,
-                  mb: 1,
-                }}
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
               >
                 <TextField
                   {...register(`deviceProperties.${index}.key`)}
@@ -520,6 +467,7 @@ const DeviceModal = ({
                 </IconButton>
               </Box>
             ))}
+
             <Button
               variant="outlined"
               size="small"
@@ -529,22 +477,15 @@ const DeviceModal = ({
             </Button>
           </Box>
         </Box>
+      </DialogContent>
 
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-          <Button onClick={handleClose} sx={{ mr: 1 }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleSubmit(onSubmit)}
-            variant="contained"
-            color="primary"
-          >
-            {device ? 'Update Device' : 'Add Device'}
-          </Button>
-        </Box>
-      </Box>
-    </Modal>
+      <DialogActions>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSubmit(onSubmit)}>
+          {device ? 'Update Device' : 'Add Device'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 
