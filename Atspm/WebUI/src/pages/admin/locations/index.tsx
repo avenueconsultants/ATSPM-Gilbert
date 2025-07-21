@@ -11,7 +11,6 @@ import LocationEditor from '@/features/locations/components/editLocation/EditLoc
 import NewLocationModal from '@/features/locations/components/editLocation/NewLocationModal'
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
 import SelectLocation from '@/features/locations/components/selectLocation/SelectLocation'
-import { Button } from '@mui/material'
 import { useCallback, useState } from 'react'
 
 export async function getLocation(locationId: number) {
@@ -44,7 +43,6 @@ const LocationsAdmin = () => {
     async (selectedLocation: Location | null) => {
       if (selectedLocation) {
         resetStore()
-        // setIsWizardOpen(false)
         setLocation(await getLocation(selectedLocation.id))
       } else {
         setLocation(null)
@@ -76,7 +74,6 @@ const LocationsAdmin = () => {
           mapHeight={400}
         />
       </StyledPaper>
-      <Button onClick={handleOpenWizard}>Use Wizard</Button>
       {location && <LocationEditor />}
       {isModalOpen && (
         <NewLocationModal
