@@ -13,6 +13,7 @@ import { useLocationStore } from '@/features/locations/components/editLocation/l
 import { useLocationWizardStore } from '@/features/locations/components/LocationSetupWizard/locationSetupWizardStore'
 import { usePostRequest } from '@/hooks/usePostRequest'
 import { configAxios } from '@/lib/axios'
+import { useNotificationStore } from '@/stores/notifications'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import SyncIcon from '@mui/icons-material/Sync'
@@ -53,6 +54,7 @@ const ApproachOptions = () => {
     setBadApproaches,
     setBadDetectors,
   } = useLocationWizardStore()
+  const { addNotification } = useNotificationStore()
 
   const { approaches, location, addApproach } = useLocationStore()
   const { mutateAsync, isLoading } = useGetLocationSyncLocationFromKey()
@@ -100,15 +102,22 @@ const ApproachOptions = () => {
     const deviceConfig = deviceConfigurationsData?.value?.find(
       (config) => config.id === device?.deviceConfigurationId
     )
-    const zones = await getZones({
-      IpAddress: device?.ipaddress,
-      port: deviceConfig?.port?.toString(),
-      detectionType: device?.deviceType,
-      deviceId: device?.deviceIdentifier?.toString(),
-    })
-    console.log('Retrieved zones:', zones)
-    setZones(zones)
-    setShowZones(true)
+    try {
+      const zones = await getZones({
+        IpAddress: device?.ipaddress,
+        port: deviceConfig?.port?.toString(),
+        detectionType: device?.deviceType,
+        deviceId: device?.deviceIdentifier?.toString(),
+      })
+      setZones(zones)
+      setShowZones(true)
+    } catch (error) {
+      console.error('Failed to get zones:', error)
+      addNotification({
+        title: 'Error fetching zones',
+        type: 'error',
+      })
+    }
   }
 
   const handleSyncLocation = useCallback(async () => {
