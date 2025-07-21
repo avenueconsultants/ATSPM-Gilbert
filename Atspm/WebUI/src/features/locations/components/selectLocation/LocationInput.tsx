@@ -49,10 +49,18 @@ const LocationInput = ({
 
   // sort locations so that templates come first
   const templateLocations = locations.sort((a, b) => {
-    if (a.locationIdentifier.includes('template')) {
+    if (
+      a.locationIdentifier?.toLowerCase().includes('template') ||
+      a.primaryName?.toLowerCase() === 'template' ||
+      a.secondaryName?.toLowerCase() === 'template'
+    ) {
       return -1
     }
-    if (b.locationIdentifier.includes('template')) {
+    if (
+      b.locationIdentifier?.toLowerCase().includes('template') ||
+      b.primaryName?.toLowerCase() === 'template' ||
+      b.secondaryName?.toLowerCase() === 'template'
+    ) {
       return 1
     }
     return 0
