@@ -82,11 +82,16 @@ const EditDevices = () => {
   // ------------------------------------------------
   useEffect(() => {
     if (deviceVerificationStatus !== 'READY_TO_RUN') return
-
+    if (deviceIdsString.length === 0) return
     setShowSyncModal(true)
     handleResync()
     setDeviceVerificationStatus('DONE')
-  }, [deviceVerificationStatus, setDeviceVerificationStatus, handleResync])
+  }, [
+    deviceVerificationStatus,
+    setDeviceVerificationStatus,
+    handleResync,
+    deviceIdsString,
+  ])
 
   const combinedDevices: CombinedDevice[] = useMemo(() => {
     if (!devices.length) return []

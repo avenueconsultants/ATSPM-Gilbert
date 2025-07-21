@@ -85,7 +85,7 @@ const DevicesWizardModal = ({
           <Typography variant="subtitle2">Device Name</Typography>
           <Typography variant="subtitle2">IP Address</Typography>
           <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
-            Rows in DB
+            Rows added in last 24 hours
           </Typography>
           <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
             New Rows Added
