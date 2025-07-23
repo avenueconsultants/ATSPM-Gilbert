@@ -2474,7 +2474,7 @@ namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
                     b.Property<DateTime>("Date")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2025, 6, 16, 15, 25, 30, 361, DateTimeKind.Local).AddTicks(2552));
+                        .HasDefaultValue(new DateTime(2025, 7, 3, 6, 55, 1, 778, DateTimeKind.Local).AddTicks(1158));
 
                     b.Property<DateTime?>("Modified")
                         .HasColumnType("timestamp");
@@ -2497,8 +2497,11 @@ namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Version")
-                        .HasColumnType("integer");
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(64)");
 
                     b.HasKey("Id");
 
