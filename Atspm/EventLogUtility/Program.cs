@@ -15,6 +15,7 @@
 // limitations under the License.
 #endregion
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
@@ -44,7 +45,14 @@ public class Program
             cmdBuilder.UseHost(hostBuilderFactory =>
             {
                 return Host.CreateDefaultBuilder(args)
+                    .UseConsoleLifetime()
                     .ApplyVolumeConfiguration()
+                    .ConfigureAppConfiguration((h, c) =>
+                    {
+                        c.AddUserSecrets<Program>(optional: true); // Load secrets first
+                        c.AddCommandLine(args);                    // Override with command-line args
+
+                    })
                     .ConfigureLogging((context, logging) =>
                     {
                         if (OperatingSystem.IsWindows())
