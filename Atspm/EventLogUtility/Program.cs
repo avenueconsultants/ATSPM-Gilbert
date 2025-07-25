@@ -6,7 +6,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 // 
-// http://www.apache.org/licenses/LICENSE-2.
+// http://www.apache.org/licenses/LICENSE-2.0
 // 
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,67 +24,71 @@ using System.Diagnostics;
 using Utah.Udot.Atspm.EventLogUtility.Commands;
 using Utah.Udot.Atspm.Infrastructure.Extensions;
 
-//trick github
-//"830379441974"
-
-if (OperatingSystem.IsWindows())
+public class Program
 {
-    if (!EventLog.SourceExists("Atspm"))
-        EventLog.CreateEventSource(AppDomain.CurrentDomain.FriendlyName, "Atspm");
-}
-
-var rootCmd = new EventLogCommands();
-var cmdBuilder = new CommandLineBuilder(rootCmd);
-cmdBuilder.UseDefaults();
-cmdBuilder.UseHost(a =>
-{
-    return Host.CreateDefaultBuilder(a)
-    //.UseConsoleLifetime()
-    .ApplyVolumeConfiguration()
-    .ConfigureLogging((h, l) =>
+    public static async Task<int> Main(string[] args)
     {
-        if (OperatingSystem.IsWindows())
+        try
         {
-            l.AddEventLog(c =>
+            if (OperatingSystem.IsWindows())
             {
-                c.SourceName = AppDomain.CurrentDomain.FriendlyName;
-                c.LogName = "Atspm";
+                if (!EventLog.SourceExists("Atspm"))
+                    EventLog.CreateEventSource(AppDomain.CurrentDomain.FriendlyName, "Atspm");
+            }
+
+            var rootCmd = new EventLogCommands();
+            var cmdBuilder = new CommandLineBuilder(rootCmd);
+
+            cmdBuilder.UseDefaults();
+
+            cmdBuilder.UseHost(hostBuilderFactory =>
+            {
+                return Host.CreateDefaultBuilder(args)
+                    .ApplyVolumeConfiguration()
+                    .ConfigureLogging((context, logging) =>
+                    {
+                        if (OperatingSystem.IsWindows())
+                        {
+                            logging.AddEventLog(options =>
+                            {
+                                options.SourceName = AppDomain.CurrentDomain.FriendlyName;
+                                options.LogName = "Atspm";
+                            });
+                        }
+
+                        // Additional logging providers can be configured here
+                    })
+                    .ConfigureServices((context, services) =>
+                    {
+                        services.AddAtspmDbContext(context);
+                        services.AddAtspmEFConfigRepositories();
+                        services.AddAtspmEFEventLogRepositories();
+                        services.AddAtspmEFAggregationRepositories();
+                        services.AddDownloaderClients();
+                        services.AddDeviceDownloaders(context);
+                        services.AddEventLogDecoders();
+                        services.AddEventLogImporters(context);
+                    });
+            },
+            host =>
+            {
+                var cmd = host.GetInvocationContext().ParseResult.CommandResult.Command;
+                host.ConfigureServices((context, services) =>
+                {
+                    if (cmd is ICommandOption opt)
+                    {
+                        opt.BindCommandOptions(context, services);
+                    }
+                });
             });
+
+            var parser = cmdBuilder.Build();
+            return await parser.InvokeAsync(args); //  Success exit code from command execution
         }
-
-        //l.AddGoogle(new LoggingServiceOptions
-        //{
-        //    ServiceName = AppDomain.CurrentDomain.FriendlyName,
-        //    Version = Assembly.GetEntryAssembly().GetName().Version.ToString(),
-        //    Options = LoggingOptions.Create(LogLevel.Information, AppDomain.CurrentDomain.FriendlyName)
-        //});
-    })
-    .ConfigureServices((h, s) =>
-    {
-        //s.AddGoogleDiagnostics(loggingOptions: LoggingOptions.Create(LogLevel.Debug));
-
-        s.AddAtspmDbContext(h);
-        s.AddAtspmEFConfigRepositories();
-        s.AddAtspmEFEventLogRepositories();
-        s.AddAtspmEFAggregationRepositories();
-        s.AddDownloaderClients();
-        s.AddDeviceDownloaders(h);
-        s.AddEventLogDecoders();
-        s.AddEventLogImporters(h);
-    });
-},
-h =>
-{
-    var cmd = h.GetInvocationContext().ParseResult.CommandResult.Command;
-
-    h.ConfigureServices((h, s) =>
-    {
-        if (cmd is ICommandOption opt)
+        catch (Exception ex)
         {
-            opt.BindCommandOptions(h, s);
+            Console.Error.WriteLine($"Fatal error: {ex}");
+            return 1; //  Non-zero exit code for Kubernetes to treat as failure
         }
-    });
-});
-
-var cmdParser = cmdBuilder.Build();
-await cmdParser.InvokeAsync(args);
+    }
+}
