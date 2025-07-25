@@ -17,6 +17,7 @@
 
 using Lextm.SharpSnmpLib.Messaging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
@@ -38,6 +39,8 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.HostedServices
     public class DeviceEventLogHostedService(ILogger<DeviceEventLogHostedService> log, IServiceScopeFactory serviceProvider, IOptions<DeviceEventLoggingConfiguration> options) : HostedServiceBase(log, serviceProvider)
     {
         private readonly IOptions<DeviceEventLoggingConfiguration> _options = options;
+        
+
 
         /// <inheritdoc/>
         public override async Task Process(IServiceScope scope, Stopwatch stopwatch, CancellationToken cancellationToken = default)

@@ -92,6 +92,7 @@ public class Program
 
             var parser = cmdBuilder.Build();
             return await parser.InvokeAsync(args); //  Success exit code from command execution
+
         }
         catch (Exception ex)
         {
