@@ -174,8 +174,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
           ? 0
           : Number(det.latencyCorrection)
 
-      det.dectectorIdentifier =
-        (locationIdentifier || '') + (det.detectorChannel || '')
+      det.dectectorIdentifier = det.dectectorIdentifier
 
       det.detectionTypes.forEach((dType) => {
         dType.id = findDetectionType(dType.abbreviation)?.value
