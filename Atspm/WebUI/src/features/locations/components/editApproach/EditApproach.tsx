@@ -107,13 +107,6 @@ function EditApproach({ approach }: ApproachAdminProps) {
     const pedestrianPhaseNumber =
       rawPed === '' || rawPed == null ? null : Number(rawPed)
 
-    console.log(
-      'parsed phases',
-      protectedPhaseNumber,
-      permissivePhaseNumber,
-      pedestrianPhaseNumber
-    )
-
     // 2) protectedPhaseNumber is always required (even if it’s zero)
     if (protectedPhaseNumber == null) {
       newErrors[approach.id] = {
@@ -174,7 +167,11 @@ function EditApproach({ approach }: ApproachAdminProps) {
           ? 0
           : Number(det.latencyCorrection)
 
-      det.dectectorIdentifier = det.dectectorIdentifier
+      det.dectectorIdentifier =
+        det?.dectectorIdentifier ||
+        locationIdentifier + (det.detectorChannel || '')
+
+      console.log('detectorIdentifier', det.dectectorIdentifier)
 
       det.detectionTypes.forEach((dType) => {
         dType.id = findDetectionType(dType.abbreviation)?.value
