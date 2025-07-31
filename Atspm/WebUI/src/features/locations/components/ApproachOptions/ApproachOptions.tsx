@@ -98,7 +98,18 @@ const ApproachOptions = () => {
   )
 
   const handleGetZones = async () => {
-    const device = location?.devices?.[0]
+    // get device with detection type FIRCamera
+    const device = location?.devices?.find(
+      (device) => device?.deviceType === 'FIRCamera'
+    )
+    if (!device) {
+      addNotification({
+        title: 'No FIRCamera device found',
+        type: 'error',
+      })
+      return
+    }
+
     const deviceConfig = deviceConfigurationsData?.value?.find(
       (config) => config.id === device?.deviceConfigurationId
     )
