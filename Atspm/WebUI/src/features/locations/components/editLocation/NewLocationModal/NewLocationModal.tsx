@@ -5,6 +5,7 @@ import {
 } from '@/features/locations/api'
 import { useLocationConfigHandler } from '@/features/locations/components/editLocation/editLocationConfigHandler'
 import { Location, LocationExpanded } from '@/features/locations/types'
+import { removeAuditFields } from '@/utils/removeAuditFields'
 import { zodResolver } from '@hookform/resolvers/zod'
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
@@ -136,6 +137,8 @@ const NewLocationModal = ({
       }
     })
 
+    const devicesWithoutAuditFields = transformedDevices.map(removeAuditFields)
+
     if (copyLocationFromTemplate && selectedLocation) {
       const templateData = {
         locationIdentifier: data.locationIdentifier,
@@ -143,13 +146,15 @@ const NewLocationModal = ({
         secondaryName: data.secondaryName || '',
         latitude: data.latitude || null,
         longitude: data.longitude || null,
-        devices: transformedDevices,
+        devices: devicesWithoutAuditFields,
       }
+
+      const withoutAuditFields = removeAuditFields(templateData)
 
       await createFromTemplate(
         {
           key: parseInt(selectedLocation.id),
-          data: templateData,
+          data: withoutAuditFields,
         },
         {
           onSuccess: (createdData) => {
