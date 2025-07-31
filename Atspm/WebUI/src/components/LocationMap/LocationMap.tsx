@@ -260,7 +260,7 @@ const LocationMap = ({
   return (
     <MapContainer
       center={center || [mapInfo.initialLat, mapInfo.initialLong]}
-      zoom={zoom || 6}
+      zoom={zoom || 11}
       scrollWheelZoom={true}
       style={{
         height: mapHeight || 'calc(100% - 80px)',
