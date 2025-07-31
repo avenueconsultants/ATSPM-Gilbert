@@ -23,6 +23,7 @@ import {
   Button,
   Collapse,
   Divider,
+  Grid,
   IconButton,
   Paper,
   Typography,
@@ -30,6 +31,8 @@ import {
 import { AxiosHeaders } from 'axios'
 import Cookies from 'js-cookie'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+
+type ZoneResult = { zones: string[]; error?: string }
 
 const token = Cookies.get('token')
 const headers: AxiosHeaders = new AxiosHeaders({
@@ -59,7 +62,7 @@ const ApproachOptions = () => {
   const { approaches, location, addApproach } = useLocationStore()
   const { mutateAsync, isLoading } = useGetLocationSyncLocationFromKey()
   const { mutateAsync: getZones } = useGetZones()
-  const [zones, setZones] = useState([])
+  const [zones, setZones] = useState<Record<string, string[]>>({})
   const [showZones, setShowZones] = useState(false)
   const { data: deviceConfigurationsData } = useGetDeviceConfiguration()
 
@@ -98,37 +101,44 @@ const ApproachOptions = () => {
   )
 
   const handleGetZones = async () => {
-    // get device with detection type FIRCamera
-    const device = location?.devices?.find(
-      (device) => device?.deviceType === 'FIRCamera'
-    )
-    if (!device) {
-      addNotification({
-        title: 'No FIRCamera device found',
-        type: 'error',
-      })
+    const firCameras =
+      location?.devices?.filter((d) => d?.deviceType === 'FIRCamera') ?? []
+
+    if (firCameras.length === 0) {
+      addNotification({ title: 'No FIRCamera devices found', type: 'error' })
       return
     }
 
-    const deviceConfig = deviceConfigurationsData?.value?.find(
-      (config) => config.id === device?.deviceConfigurationId
-    )
-    try {
-      const zones = await getZones({
-        IpAddress: device?.ipaddress,
-        port: deviceConfig?.port?.toString(),
-        detectionType: device?.deviceType,
-        deviceId: device?.deviceIdentifier?.toString(),
-      })
-      setZones(zones)
-      setShowZones(true)
-    } catch (error) {
-      console.error('Failed to get zones:', error)
-      addNotification({
-        title: 'Error fetching zones',
-        type: 'error',
-      })
+    const grouped: Record<string, ZoneResult> = {}
+
+    for (const device of firCameras) {
+      const deviceConfig = deviceConfigurationsData?.value?.find(
+        (cfg) => cfg.id === device.deviceConfigurationId
+      )
+      const label = `${device.deviceType} – ${device.deviceIdentifier}`
+
+      try {
+        const res = await getZones({
+          IpAddress: device.ipaddress,
+          port: deviceConfig?.port?.toString(),
+          detectionType: device.deviceType,
+          deviceId: device.deviceIdentifier?.toString(),
+        })
+        grouped[label] = { zones: res ?? [] }
+      } catch (err: any) {
+        console.log('error', err)
+        grouped[label] = {
+          zones: [],
+          error:
+            err?.response?.data ??
+            err?.message ??
+            'Failed to retrieve data from the external service.',
+        }
+      }
     }
+
+    setZones(grouped)
+    setShowZones(true)
   }
 
   const handleSyncLocation = useCallback(async () => {
@@ -263,12 +273,52 @@ const ApproachOptions = () => {
           <Collapse in={showZones}>
             <Divider sx={{ mx: 1 }} />
             <Box sx={{ p: 2 }}>
-              {zones.length > 0 ? (
-                zones.map((zone, index) => (
-                  <Typography key={index} variant="body1">
-                    {zone}
-                  </Typography>
-                ))
+              {Object.keys(zones).length > 0 ? (
+                <Grid container spacing={2}>
+                  {Object.entries(zones).map(([label, { zones: z, error }]) => (
+                    <Grid item xs={12} sm={6} md={4} key={label}>
+                      <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 'bold', mb: 1 }}
+                        >
+                          {label}
+                        </Typography>
+                        <Divider sx={{ mb: 1 }} />
+
+                        {/* zones list */}
+                        {z.length > 0 && (
+                          <Box
+                            sx={{
+                              columnCount: 1,
+                              '& p': { breakInside: 'avoid' },
+                            }}
+                          >
+                            {z.map((zone, i) => (
+                              <Typography key={i} variant="body2">
+                                {zone}
+                              </Typography>
+                            ))}
+                          </Box>
+                        )}
+
+                        {/* no-zones message */}
+                        {z.length === 0 && !error && (
+                          <Typography variant="body2" color="textSecondary">
+                            No zones
+                          </Typography>
+                        )}
+
+                        {/* error message */}
+                        {error && (
+                          <Typography variant="body2" color="error">
+                            {error}
+                          </Typography>
+                        )}
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
               ) : (
                 <Typography variant="body1" color="textSecondary">
                   No zones found
