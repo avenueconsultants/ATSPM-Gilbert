@@ -96,7 +96,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> RetrieveDetectionIdentifierBasedOnDetectionType(ODataActionParameters ourParams)
+        public async Task<IActionResult> RetrieveDetectionIdentifierBasedOnDetectionType(int key, ODataActionParameters ourParams)
         {
             if (!ModelState.IsValid)
             {
