@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Utah.Udot.Atspm.Data;
 
 #nullable disable
 
-namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
+namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations.Config
 {
     [DbContext(typeof(ConfigContext))]
-    partial class ConfigContextModelSnapshot : ModelSnapshot
+    [Migration("20250819180703_Update_Map_Layers")]
+    partial class Update_Map_Layers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -125,21 +125,27 @@ const MapLayers = () => {
       showByDefault: obj.showByDefault,
       serviceType: obj.serviceType,
       refreshIntervalSeconds: obj.refreshIntervalSeconds,
+      resourceId: obj.resourceId,
+      style: obj.style,
     }
   })
 
   const headers = [
     'Name',
     'Url',
-    'Show by Default?',
     'Service Type',
+    'Resource ID',
+    'Style',
+    'Show by Default?',
     'Refresh Rate (Seconds)',
   ]
   const headerKeys = [
     'name',
     'mapLayerUrl',
-    'showByDefault',
     'serviceType',
+    'resourceId',
+    'style',
+    'showByDefault',
     'refreshIntervalSeconds',
   ]
 

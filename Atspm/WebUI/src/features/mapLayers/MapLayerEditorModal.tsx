@@ -20,53 +20,89 @@ import { z } from 'zod'
 const ServiceType = {
   FeatureServer: 'FeatureServer',
   MapServer: 'MapServer',
+  WMS: 'WMS',
+  WFS: 'WFS',
 } as const
+type ServiceType = (typeof ServiceType)[keyof typeof ServiceType]
 
-const formatLabel = (value: string) => {
-  return value.replace(/([a-z])([A-Z])/g, '$1 $2') // Insert space before uppercase letters
-}
+const formatLabel = (value: string) => value.replace(/([a-z])([A-Z])/g, '$1 $2')
 
-const mapLayerSchema = z
-  .object({
-    id: z.number().optional(),
-    name: z.string().min(1, 'Name is required'),
-    mapLayerUrl: z.string(),
-    showByDefault: z.boolean(),
-    refreshIntervalSeconds: z.number().nullable(),
-    serviceType: z
-      .string()
-      .refine(
-        (val) => Object.values(ServiceType).includes(val as ServiceType),
-        {
-          message: 'Invalid service type',
-        }
-      ),
-  })
-  .superRefine((data, ctx) => {
-    const { serviceType, mapLayerUrl } = data
+/** ---------- Schema ---------- */
+const baseSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().min(1, 'Name is required'),
+  mapLayerUrl: z.string().min(1, 'URL is required'),
+  showByDefault: z.boolean(),
+  refreshIntervalSeconds: z.number().nullable(),
+  serviceType: z
+    .string()
+    .refine((val) => Object.values(ServiceType).includes(val as ServiceType), {
+      message: 'Invalid service type',
+    }),
+  // Extra fields; only used/required for some types:
+  resourceId: z.string().optional(), // WMS: layer name, WFS: typeName
+  style: z.string().optional(), // WMS only (named style)
+})
 
-    if (
-      serviceType === ServiceType.FeatureServer &&
-      !/\/FeatureServer\/\d+$/.test(mapLayerUrl)
-    ) {
+const mapLayerSchema = baseSchema.superRefine((data, ctx) => {
+  const { serviceType, mapLayerUrl, resourceId } = data
+
+  if (serviceType === ServiceType.FeatureServer) {
+    if (!/\/FeatureServer\/\d+$/.test(mapLayerUrl)) {
       ctx.addIssue({
         path: ['mapLayerUrl'],
         code: z.ZodIssueCode.custom,
         message: 'FeatureServer URL must end with "/FeatureServer/{layerId}".',
       })
     }
+  }
 
-    if (
-      serviceType === ServiceType.MapServer &&
-      !/\/MapServer$/.test(mapLayerUrl)
-    ) {
+  if (serviceType === ServiceType.MapServer) {
+    if (!/\/MapServer$/.test(mapLayerUrl)) {
       ctx.addIssue({
         path: ['mapLayerUrl'],
         code: z.ZodIssueCode.custom,
         message: 'MapServer URL must end with "/MapServer".',
       })
     }
-  })
+  }
+
+  if (serviceType === ServiceType.WMS) {
+    // Allow /ows or /wms endpoints
+    if (!/(\/ows$|\/wms$)/i.test(mapLayerUrl)) {
+      ctx.addIssue({
+        path: ['mapLayerUrl'],
+        code: z.ZodIssueCode.custom,
+        message: 'WMS base should end with "/ows" or "/wms".',
+      })
+    }
+    if (!resourceId || resourceId.trim() === '') {
+      ctx.addIssue({
+        path: ['resourceId'],
+        code: z.ZodIssueCode.custom,
+        message: 'WMS Layer Name is required (e.g., "workspace:layer").',
+      })
+    }
+  }
+
+  if (serviceType === ServiceType.WFS) {
+    // Allow /ows or /wfs endpoints
+    if (!/(\/ows$|\/wfs$)/i.test(mapLayerUrl)) {
+      ctx.addIssue({
+        path: ['mapLayerUrl'],
+        code: z.ZodIssueCode.custom,
+        message: 'WFS base should end with "/ows" or "/wfs".',
+      })
+    }
+    if (!resourceId || resourceId.trim() === '') {
+      ctx.addIssue({
+        path: ['resourceId'],
+        code: z.ZodIssueCode.custom,
+        message: 'WFS Type Name is required (e.g., "workspace:layer").',
+      })
+    }
+  }
+})
 
 type FormData = z.infer<typeof mapLayerSchema>
 
@@ -97,37 +133,72 @@ export const MapLayerCreateEditModal = ({
       id: mapLayer?.id,
       name: mapLayer?.name || '',
       mapLayerUrl: mapLayer?.mapLayerUrl || '',
-      showByDefault: mapLayer?.showByDefault || false,
+      showByDefault: mapLayer?.showByDefault ?? false,
       refreshIntervalSeconds: mapLayer?.refreshIntervalSeconds ?? null,
-      serviceType: mapLayer?.serviceType || ServiceType.FeatureServer,
+      serviceType:
+        (mapLayer?.serviceType as ServiceType) || ServiceType.FeatureServer,
+      resourceId: (mapLayer as any)?.resourceId || '',
+      style: (mapLayer as any)?.style || '',
     },
   })
 
   const serviceType = useWatch({ control, name: 'serviceType' })
-
   const [urlPlaceholder, setUrlPlaceholder] = useState('')
 
   useEffect(() => {
+    // Clear URL when switching type so validation is obvious
     if (
       previousServiceType.current &&
       previousServiceType.current !== serviceType
     ) {
       setValue('mapLayerUrl', '')
+      // Clear type-specific fields too
+      setValue('resourceId', '')
+      setValue('style', '')
     }
 
-    if (serviceType === 'FeatureServer') {
-      setUrlPlaceholder('e.g., https://maps.example.com/.../FeatureServer/2')
+    if (serviceType === ServiceType.FeatureServer) {
+      setUrlPlaceholder('e.g., https://host/.../FeatureServer/0')
+    } else if (serviceType === ServiceType.MapServer) {
+      setUrlPlaceholder('e.g., https://host/.../MapServer')
+    } else if (serviceType === ServiceType.WMS) {
+      setUrlPlaceholder('e.g., https://host/geoserver/ows  (or /wms)')
     } else {
-      setUrlPlaceholder('e.g., https://maps.example.com/.../MapServer')
+      setUrlPlaceholder('e.g., https://host/geoserver/ows  (or /wfs)')
     }
     previousServiceType.current = serviceType
   }, [serviceType, setValue])
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    const updateMapLayer = { ...mapLayer, ...data } as MapLayer
+    // Only pass fields relevant to the selected type
+    const payload: any = {
+      id: data.id,
+      name: data.name,
+      mapLayerUrl: data.mapLayerUrl,
+      showByDefault: data.showByDefault,
+      refreshIntervalSeconds: data.refreshIntervalSeconds,
+      serviceType: data.serviceType,
+    }
+    if (
+      data.serviceType === ServiceType.WMS ||
+      data.serviceType === ServiceType.WFS
+    ) {
+      payload.resourceId = data.resourceId?.trim()
+    }
+    if (data.serviceType === ServiceType.WMS && data.style) {
+      payload.style = data.style.trim()
+    }
+
+    const updateMapLayer = { ...mapLayer, ...payload } as MapLayer
     onSave(updateMapLayer)
     onClose()
   }
+
+  /* Helpers for type-conditional UI */
+  const isWms = serviceType === ServiceType.WMS
+  const isWfs = serviceType === ServiceType.WFS
+  const isArcGisMap = serviceType === ServiceType.MapServer
+  const isArcGisFeature = serviceType === ServiceType.FeatureServer
 
   return (
     <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
@@ -184,18 +255,76 @@ export const MapLayerCreateEditModal = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Map Layer URL"
+                label={
+                  isArcGisFeature
+                    ? 'FeatureServer URL'
+                    : isArcGisMap
+                      ? 'MapServer URL'
+                      : isWms
+                        ? 'WMS Base URL'
+                        : 'WFS Base URL'
+                }
                 placeholder={urlPlaceholder}
                 fullWidth
                 margin="normal"
                 error={!!errors.mapLayerUrl}
                 helperText={
                   errors.mapLayerUrl?.message ||
-                  'URL must match the selected service type.'
+                  (isArcGisFeature
+                    ? 'Must end with /FeatureServer/{layerId}'
+                    : isArcGisMap
+                      ? 'Must end with /MapServer'
+                      : isWms
+                        ? 'Use /ows or /wms (no query string)'
+                        : 'Use /ows or /wfs (no query string)')
                 }
               />
             )}
           />
+
+          {/* WMS/WFS specific fields */}
+          {(isWms || isWfs) && (
+            <>
+              <Controller
+                name="resourceId"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label={
+                      isWms
+                        ? 'Layer Name (workspace:layer)'
+                        : 'Type Name (workspace:layer)'
+                    }
+                    placeholder="e.g., avenue:tog-point"
+                    fullWidth
+                    margin="normal"
+                    error={!!errors.resourceId}
+                    helperText={errors.resourceId?.message}
+                  />
+                )}
+              />
+
+              {isWms && (
+                <Controller
+                  name="style"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      label="Named Style (optional)"
+                      placeholder="e.g., simple_roads"
+                      fullWidth
+                      margin="normal"
+                      error={!!errors.style}
+                      helperText={errors.style?.message}
+                    />
+                  )}
+                />
+              )}
+            </>
+          )}
+
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
             <Controller
               name="refreshIntervalSeconds"
@@ -207,12 +336,10 @@ export const MapLayerCreateEditModal = ({
                     const value = e.target.value
                     field.onChange(value === '' ? null : Number(value))
                   }}
-                  label="Refresh Interval (seconds)"
+                  label="Refresh Interval (sec)"
                   type="number"
                   sx={{ mr: 2 }}
-                  InputProps={{
-                    inputProps: { min: 0 },
-                  }}
+                  InputProps={{ inputProps: { min: 0 } }}
                 />
               )}
             />
