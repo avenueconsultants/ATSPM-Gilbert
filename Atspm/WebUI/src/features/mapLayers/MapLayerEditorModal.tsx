@@ -296,7 +296,7 @@ export const MapLayerCreateEditModal = ({
                         ? 'Layer Name (workspace:layer)'
                         : 'Type Name (workspace:layer)'
                     }
-                    placeholder="e.g., avenue:tog-point"
+                    placeholder="e.g., workspace:layer"
                     fullWidth
                     margin="normal"
                     error={!!errors.resourceId}

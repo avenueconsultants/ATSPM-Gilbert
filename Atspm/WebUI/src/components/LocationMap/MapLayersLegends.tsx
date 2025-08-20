@@ -29,7 +29,6 @@ function wmsLegendUrl(
 function guessWorkspaceWmsEndpoint(base: string, resourceId?: string) {
   if (!resourceId || !resourceId.includes(':')) return base
   const [workspace] = resourceId.split(':')
-  // e.g. https://host/geoserver/avenue/wms
   try {
     const url = new URL(base)
     const parts = url.pathname.replace(/\/+$/, '').split('/')
