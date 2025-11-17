@@ -4,7 +4,7 @@ import {
   DirectionTypes,
   LaneTypes,
   MovementTypes,
-} from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
 import { Color } from '@/features/charts/utils'
 import { useEditApproach } from '@/features/locations/api/approach'
 import ApproachEditorRowHeader from '@/features/locations/components/editApproach/ApproachEditorRow'
@@ -49,11 +49,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
   const copyApproachInStore = useLocationStore((s) => s.copyApproach)
   const deleteApproachInStore = useLocationStore((s) => s.deleteApproach)
   const addDetectorInStore = useLocationStore((s) => s.addDetector)
-  const scrollToApproach = useLocationStore((s) => s.scrollToApproach)
-  const scrollToDetector = useLocationStore((s) => s.scrollToDetector)
-  const setScrollToApproach = useLocationStore((s) => s.setScrollToApproach)
-  const setScrollToDetector = useLocationStore((s) => s.setScrollToDetector)
-  const updateSavedApproaches = useLocationStore((s) => s.updateSavedApproaches)
+  const updateSavedApproaches = useLocationStore((s) => s.updateSavedApproach)
 
   const [open, setOpen] = useState(false)
   const [openModal, setOpenModal] = useState(false)
@@ -216,11 +212,10 @@ function EditApproach({ approach }: ApproachAdminProps) {
 
           if (approach.isNew) {
             deleteApproachInStore(approach)
-            updateApproachInStore(normalizedSaved)
-          } else {
-            updateApproachInStore(normalizedSaved)
           }
 
+          updateApproachInStore(normalizedSaved)
+          updateSavedApproaches(normalizedSaved)
           addNotification({
             title: 'Approach saved successfully',
             type: 'success',
@@ -260,6 +255,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
     findLaneType,
     findDetectionHardware,
     findDetectionType,
+    updateSavedApproaches,
     updateApproachInStore,
     deleteApproachInStore,
     addNotification,
@@ -353,7 +349,6 @@ function EditApproach({ approach }: ApproachAdminProps) {
         variant="outlined"
         sx={{
           mb: '6px',
-          border: '2px solid lightgrey',
           borderLeft: `7px solid ${leftBorderColor}`,
         }}
       >

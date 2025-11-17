@@ -122,13 +122,14 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
         /// Copies <see cref="Location"/> and associated <see cref="Approach"/> to new version
         /// </summary>
         /// <param name="key">Location version to copy</param>
+        /// <param name="newVersionLabel">Label of new version</param>
         /// <returns>New version of copied <see cref="Location"/></returns>
         /// 
         [Authorize(Policy = "CanEditLocationConfigurations")]
         [HttpPost]
         [ProducesResponseType(typeof(Location), Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CopyLocationToNewVersion(int key)
+        public async Task<IActionResult> CopyLocationToNewVersion(int key, string newVersionLabel)
         {
             try
             {
@@ -139,7 +140,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
                 var newLocation = await _repository.CopyLocationToNewVersion(key);
                 _deviceRepository.UpdateDevicesForNewVersion(deviceIds, newLocation.Id);
 
-                return Ok();
+                return Ok(copiedVersion);
             }
             catch (ArgumentException e)
             {

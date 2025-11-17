@@ -74,10 +74,11 @@ const LocationMap = ({
   const createdLayers = useRef<{ [key: number]: LeafletLayer | null }>({})
 
   const [mapInfo, setMapInfo] = useState<{
-    tile_layer: string
-    attribution: string
+    tile_layer: string | undefined
+    attribution: string | undefined
     initialLat: number
     initialLong: number
+    zoomLevel: number
   } | null>(null)
 
   /* Activate default layers from payload */
@@ -191,8 +192,9 @@ const LocationMap = ({
       setMapInfo({
         tile_layer: env.MAP_TILE_LAYER,
         attribution: env.MAP_TILE_ATTRIBUTION,
-        initialLat: parseFloat(env.MAP_DEFAULT_LATITUDE),
-        initialLong: parseFloat(env.MAP_DEFAULT_LONGITUDE),
+        initialLat: parseFloat(env.MAP_DEFAULT_LATITUDE ?? '0'),
+        initialLong: parseFloat(env.MAP_DEFAULT_LONGITUDE ?? '0'),
+        zoomLevel: parseInt(env.MAP_DEFAULT_ZOOM ?? '0'),
       })
     }
     fetchEnv()
@@ -280,8 +282,8 @@ const LocationMap = ({
   return (
     <MapContainer
       center={center || [mapInfo.initialLat, mapInfo.initialLong]}
-      zoom={zoom || 11}
-      scrollWheelZoom
+      zoom={zoom ?? mapInfo.zoomLevel ?? 6}
+      scrollWheelZoom={true}
       style={{
         height: mapHeight || 'calc(100% - 80px)',
         minHeight: mapHeight || '400px',

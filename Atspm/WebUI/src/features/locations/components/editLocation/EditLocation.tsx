@@ -17,13 +17,8 @@ function EditLocation() {
   const location = useLocationStore((state) => state.location)
   const hasUnsavedChanges = useLocationStore((state) => state.hasUnsavedChanges)
   const resetStore = useLocationStore((state) => state.resetStore)
-  const updateSavedApproachesFromCurrent = useLocationStore(
-    (state) => state.updateSavedApproachesFromCurrent
-  )
+  const resetApproaches = useLocationStore((state) => state.resetApproaches)
   const [currentTab, setCurrentTab] = useState('1')
-  const [pendingTab, setPendingTab] = useState<string | null>(null)
-  const [pendingRoute, setPendingRoute] = useState<string | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
 
   useEffect(() => {
     if (!useWizard) return // Don't run if not using wizard
@@ -77,12 +72,6 @@ function EditLocation() {
       }
     }
 
-    router.events.on('routeChangeStart', handleRouteChangeStart)
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart)
-    }
-  }, [router, hasUnsavedChanges])
-
   useEffect(() => () => resetStore(), [resetStore])
 
   if (!location) return null
@@ -112,44 +101,7 @@ function EditLocation() {
         </TabPanel>
       </TabContext>
 
-      <Modal
-        open={dialogOpen}
-        onClose={() => handleDialogClose(false)}
-        aria-labelledby="leave-confirmation"
-        aria-describedby="confirm-leave-location"
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            borderRadius: '10px',
-            boxShadow: 24,
-            p: 4,
-          }}
-        >
-          <Typography id="leave-confirmation" sx={{ fontWeight: 'bold' }}>
-            Unsaved Changes
-          </Typography>
-          <Typography>
-            There are unsaved changes. Are you sure you want to{' '}
-            {pendingTab ? 'switch tabs' : 'navigate away'}?
-          </Typography>
-          <Box
-            sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
-          >
-            <Button onClick={() => handleDialogClose(false)} color="inherit">
-              Cancel
-            </Button>
-            <Button variant="contained" onClick={() => handleDialogClose(true)}>
-              Proceed
-            </Button>
-          </Box>
-        </Box>
-      </Modal>
+      <Prompt />
     </>
   )
 }

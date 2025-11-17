@@ -95,8 +95,6 @@ namespace Utah.Udot.Atspm.ConfigApi.Configuration
 
                         var i = model.Action("SyncLocation").ReturnsFromEntitySet<TemplateLocationModifiedDto>("templateLocationModifiedDto");
 
-                        var j = model.Action("DeleteAllVersions");
-
                         var detectionTypeGroup = builder.EntitySet<DetectionTypeGroup>("DetectionTypeGroups").EntityType;
                         detectionTypeGroup.Property(d => d.Id).IsRequired();
                         detectionTypeGroup.Property(d => d.Count).IsRequired();
