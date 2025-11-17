@@ -59,16 +59,24 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
         /// <returns></returns>
         public virtual Uri GenerateLocalFilePath(Device device, Uri resource)
         {
-            var fileExtension = Path.HasExtension(resource.Segments.LastOrDefault()) ? Path.GetExtension(resource.Segments.LastOrDefault()) : ".txt";
-            var fileName = $"{device.DeviceIdentifier}-{DateTime.Now.Ticks}{fileExtension}";
+            var fileName = Path.GetFileName(resource.LocalPath);
+            if (!Path.HasExtension(fileName))
+            {
+                fileName += ".txt";
+            }
 
-            var path = Path.Combine
-                (_options.BasePath,
-                $"{device.Location?.LocationIdentifier}",
+            var deviceIdentifier = string.IsNullOrEmpty(device.DeviceIdentifier)
+                ? "999999"
+                : device.DeviceIdentifier;
+
+            var path = Path.Combine(
+                _options.BasePath,
+                device.Location?.LocationIdentifier ?? string.Empty,
                 device.DeviceType.ToString(),
-                 $"{device.DeviceIdentifier}-{device.Ipaddress}");
+                $"{deviceIdentifier}-{device.Ipaddress}"
+            );
 
-            var result = new UriBuilder()
+            var result = new UriBuilder
             {
                 Scheme = Uri.UriSchemeFile,
                 Path = Path.Combine(path, fileName)
@@ -112,7 +120,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
                     throw new InvalidDeviceIpAddressException(parameter);
                 }
 
-                var deviceIdentifier = parameter?.DeviceIdentifier;
+                var deviceIdentifier = parameter?.DeviceIdentifier ?? "999999";
                 var user = parameter?.DeviceConfiguration?.UserName;
                 var password = parameter?.DeviceConfiguration?.Password;
                 var path = new ObjectPropertyParser(parameter, parameter?.DeviceConfiguration?.Path).ToString();
@@ -294,9 +302,24 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 
             foreach (var i in _value.Split('[', ']').ToArray())
             {
-                if (i.StartsWith("DateTime"))
+                if (i.StartsWith("EndDateTime"))
                 {
-                    builder.AppendFormat("{0" + i.Replace("DateTime", "") + "}", DateTime.Now);
+                    if (_obj is Device d && d.DeviceConfiguration != null)
+                    {
+                        DateTime nowToMinute = DateTime.Now
+                            .AddSeconds(-DateTime.Now.Second)
+                            .AddMilliseconds(-DateTime.Now.Millisecond);
+                        builder.AppendFormat("{0" + i.Replace("EndDateTime", "") + "}", nowToMinute.AddMinutes(-d.DeviceConfiguration.LoggingOffset));
+                    }
+                }
+
+                else if (i.StartsWith("DateTime"))
+                {
+                    DateTime nowToMinute = DateTime.Now
+                    .AddSeconds(-DateTime.Now.Second)
+                    .AddMilliseconds(-DateTime.Now.Millisecond);
+
+                    builder.AppendFormat("{0" + i.Replace("DateTime", "") + "}", nowToMinute.AddMinutes(-30));
                 }
 
                 else if (i.StartsWith("LogStartTime"))
