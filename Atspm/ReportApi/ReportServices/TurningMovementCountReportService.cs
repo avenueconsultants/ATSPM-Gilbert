@@ -150,8 +150,8 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
             }
 
             var peakStart = result.PeakHour.Value.Key;
-            const int AGG = 15;  
-            const int QUARTS = 4; 
+            const int AGG = 15;
+            const int QUARTS = 4;
 
             foreach (var lane in result.Table)
             {
@@ -323,7 +323,7 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
             }
             try
             {
-                var result = turningMovementCountsService.GetChartData(
+                var result = await turningMovementCountsService.GetChartData(
                                 detectors,
                                 laneType,
                                 movementType,
@@ -334,7 +334,7 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
                                 locationIdentifier,
                                 LocationDescription);
 
-                return await result;
+                return result;
             }
             catch
             {
