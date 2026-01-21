@@ -150,6 +150,10 @@ const DeviceCard = ({ device, onEdit, onDelete }: DeviceCardProps) => {
 
         <Box mt={2} display={'flex'} flexDirection={'column'}>
           <Box display={'flex'} justifyContent={'flex-start'}>
+            <StyledLabel>Device Identifier</StyledLabel>
+            <Typography variant="body1">{device?.deviceIdentifier}</Typography>
+          </Box>
+          <Box display={'flex'} justifyContent={'flex-start'}>
             <StyledLabel>Manufacturer</StyledLabel>
             <Typography variant="body1">
               {device.deviceConfiguration?.product?.manufacturer}
