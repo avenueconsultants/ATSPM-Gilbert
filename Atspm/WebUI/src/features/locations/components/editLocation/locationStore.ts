@@ -241,8 +241,14 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
     },
 
     deleteApproach: (approach) => {
-      const { approaches } = get()
+      const { approaches, channelMap } = get()
       const filtered = approaches.filter((a) => a.id !== approach.id)
+
+      const nextMap = new Map(channelMap)
+      for (const d of approach.detectors ?? []) {
+        nextMap.delete(d.id)
+      }
+
       if (!approach.isNew) {
         try {
           deleteApproachFromKey(approach.id)
@@ -250,7 +256,8 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
           console.error(err)
         }
       }
-      set({ approaches: filtered })
+
+      set({ approaches: filtered, channelMap: nextMap })
     },
 
     resetStore: () => {
@@ -326,22 +333,25 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
     },
 
     deleteDetector: (detectorId) => {
-      const { approaches } = get()
+      const { approaches, channelMap } = get()
       let shouldCallApi = false
 
       const updatedApproaches = approaches.map((approach) => {
         const index = approach.detectors.findIndex((d) => d.id === detectorId)
-        if (index === -1) {
-          return approach
-        }
+        if (index === -1) return approach
+
         const filtered = approach.detectors.filter((d) => {
-          if (d.id === detectorId && !d.isNew) {
-            shouldCallApi = true
-          }
+          if (d.id === detectorId && !d.isNew) shouldCallApi = true
           return d.id !== detectorId
         })
+
         return { ...approach, detectors: filtered }
       })
+
+      if (channelMap.has(detectorId)) {
+        channelMap.delete(detectorId)
+        set({ channelMap: new Map(channelMap) })
+      }
 
       if (shouldCallApi) {
         try {

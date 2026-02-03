@@ -1,4 +1,3 @@
-// useDiscrepancyStatuses.ts
 import { useEffect, useState } from 'react'
 
 export type ItemStatus = 'pending' | 'ignored' | 'added' | 'deleted' | 'unsaved'
