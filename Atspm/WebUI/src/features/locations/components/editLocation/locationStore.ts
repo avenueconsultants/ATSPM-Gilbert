@@ -107,34 +107,16 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
 
     hasUnsavedChanges: () => {
       const { approaches, savedApproaches } = get()
-
       if (approaches.length !== savedApproaches.length) return true
 
-      const prepareForComparison = (approach: ConfigApproach) => {
-        const { open, index, isNew, ...rest } = approach
-        return {
-          ...rest,
-          detectors: approach.detectors.map((detector) => {
-            const { isNew: detectorIsNew, ...detectorRest } = detector
-            return detectorRest
-          }),
-        }
-      }
+      const stable = (obj: any) => JSON.stringify(normalize(obj))
 
-      for (let i = 0; i < approaches.length; i++) {
-        const current = approaches[i]
-        const saved = savedApproaches.find((sa) => sa.id === current.id)
-
+      for (const a of approaches) {
+        const saved = savedApproaches.find((s) => s.id === a.id)
         if (!saved) return true
 
-        const preparedCurrent = prepareForComparison(current)
-        const preparedSaved = prepareForComparison(saved)
-
-        if (JSON.stringify(preparedCurrent) !== JSON.stringify(preparedSaved)) {
-          return true
-        }
+        if (stable(stripUIFlags(a)) !== stable(stripUIFlags(saved))) return true
       }
-
       return false
     },
 
@@ -371,3 +353,20 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
     },
   }))
 )
+
+const normalize = (v: any): any => {
+  if (Array.isArray(v)) return v.map(normalize)
+  if (v !== null && typeof v === 'object')
+    return Object.fromEntries(
+      Object.entries(v).map(([k, val]) => [k, normalize(val)])
+    )
+  return typeof v === 'number' ? String(v) : v
+}
+
+const stripUIFlags = (approach: ConfigApproach) => {
+  const { open, index, isNew, ...clean } = approach
+  return {
+    ...clean,
+    detectors: approach.detectors.map(({ isNew: _dNew, ...d }) => d),
+  }
+}
