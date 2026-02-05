@@ -1,7 +1,7 @@
 import DiscrepancySectionCard from '@/features/locations/components/ApproachesReconcilationReport/DiscrepancySectionCard'
 import { useNotificationStore } from '@/stores/notifications'
 import { Box, Button, Paper, Typography, useTheme } from '@mui/material'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import DiscrepancyRow, { DiscrepancyItem } from './DiscrepancyRow'
 import type { ItemStatus } from './useDiscrepancyStatuses'
 
@@ -23,23 +23,41 @@ export default function FoundPhasesSection({
   const theme = useTheme()
   const { addNotification } = useNotificationStore()
 
+  const [availableItems, setAvailableItems] = useState<DiscrepancyItem[]>(items)
+
+  useEffect(() => {
+    setAvailableItems(items)
+  }, [items])
+
   const toggle = (key: string) => setSelected((p) => ({ ...p, [key]: !p[key] }))
   const clear = () => setSelected({})
 
   const selectedItems = useMemo(
-    () => items.filter((it) => !!selected[it.id.toString()]),
-    [items, selected]
+    () => availableItems.filter((it) => !!selected[it.id.toString()]),
+    [availableItems, selected]
   )
 
   const addSelected = () => {
     if (!selectedItems.length) return
+
     try {
+      const phasesAdded: number[] = []
+
       for (const it of selectedItems) {
         const phase = Number(it.label)
         if (!Number.isFinite(phase)) continue
+
         addApproach(phase)
-        updateStatus(it.id.toString(), 'unsaved')
+        phasesAdded.push(phase)
+        updateStatus(it.id.toString(), 'added')
       }
+
+      if (phasesAdded.length) {
+        setAvailableItems((prev) =>
+          prev.filter((it) => !phasesAdded.includes(Number(it.label)))
+        )
+      }
+
       addNotification({
         title: `Added ${selectedItems.length} approach(es)`,
         type: 'success',
@@ -91,7 +109,7 @@ export default function FoundPhasesSection({
         }
       >
         <DiscrepancyRow
-          items={items}
+          items={availableItems}
           itemStatuses={itemStatuses}
           isSelected={(it) => !!selected[it.id.toString()]}
           onToggleSelected={(it) => toggle(it.id.toString())}
