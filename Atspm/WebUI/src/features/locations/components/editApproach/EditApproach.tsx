@@ -171,8 +171,6 @@ function EditApproach({ approach }: ApproachAdminProps) {
         det?.dectectorIdentifier ||
         locationIdentifier + (det.detectorChannel || '')
 
-      console.log('detectorIdentifier', det.dectectorIdentifier)
-
       det.detectionTypes.forEach((dType) => {
         dType.id = findDetectionType(dType.abbreviation)?.value
       })

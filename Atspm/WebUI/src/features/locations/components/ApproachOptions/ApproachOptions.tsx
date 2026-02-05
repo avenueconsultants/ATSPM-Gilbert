@@ -78,28 +78,6 @@ const ApproachOptions = () => {
     notFoundDetectorChannels: [],
   })
 
-  const currentPhaseNumbersUsed = useMemo(
-    () =>
-      approaches
-        .flatMap((approach) => [
-          approach.protectedPhaseNumber,
-          approach.permissivePhaseNumber,
-          approach.pedestrianPhaseNumber,
-        ])
-        .filter((phase) => phase != null),
-    [approaches]
-  )
-
-  const currentDetectorChannelsUsed = useMemo(
-    () =>
-      approaches
-        .flatMap((approach) =>
-          approach.detectors.map((det) => det.detectorChannel)
-        )
-        .filter((chan) => chan != null),
-    [approaches]
-  )
-
   const handleGetZones = async () => {
     const firCameras =
       location?.devices?.filter((d) => d?.deviceType === 'FIRCamera') ?? []
@@ -160,16 +138,12 @@ const ApproachOptions = () => {
         setBadDetectors(response.removedDetectors)
       }
 
-      const foundPhaseNumbers: number[] = []
-
-      if (response?.loggedButUnusedProtectedOrPermissivePhases) {
-        foundPhaseNumbers.push(
-          ...response.loggedButUnusedProtectedOrPermissivePhases
-        )
-      }
-      if (response?.loggedButUnusedOverlapPhases) {
-        foundPhaseNumbers.push(...response.loggedButUnusedOverlapPhases)
-      }
+      const foundPhaseNumbers = Array.from(
+        new Set<number>([
+          ...(response?.loggedButUnusedProtectedOrPermissivePhases ?? []),
+          ...(response?.loggedButUnusedOverlapPhases ?? []),
+        ])
+      )
 
       setCategories({
         foundPhaseNumbers,

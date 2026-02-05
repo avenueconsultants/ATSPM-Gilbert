@@ -1,7 +1,7 @@
+// DiscrepancyRow.tsx
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import { Box, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Tooltip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import React from 'react'
 import DiscrepancyButton from './DiscrepancyButton'
 
 export interface DiscrepancyItem {
@@ -13,57 +13,79 @@ export interface DiscrepancyItem {
 export type ItemStatus = 'pending' | 'ignored' | 'added' | 'deleted' | 'unsaved'
 
 export interface DiscrepancyRowProps {
-  title: string
   items: DiscrepancyItem[]
   itemStatuses: Record<string, ItemStatus>
-  onButtonClick: (
-    item: DiscrepancyItem,
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => void
+  isSelected: (item: DiscrepancyItem) => boolean
+  onToggleSelected: (item: DiscrepancyItem) => void
+  showEmptyIndicator?: boolean
+  getSortKey?: (item: DiscrepancyItem) => number | string
+  buttonWidth?: number
+}
+
+const defaultSortKey = (item: DiscrepancyItem) => {
+  const s = item.label.toString().trim()
+  const n = Number(s)
+  return Number.isFinite(n) ? n : s
 }
 
 const DiscrepancyRow = ({
-  title,
   items,
   itemStatuses,
-  onButtonClick,
+  isSelected,
+  onToggleSelected,
+  showEmptyIndicator = true,
+  getSortKey = defaultSortKey,
+  buttonWidth,
 }: DiscrepancyRowProps) => {
   const theme = useTheme()
-  const displayItems = items.filter((item) => {
-    const status = itemStatuses[item.id.toString()] || 'pending'
-    return status === 'pending' || status === 'unsaved'
-  })
+
+  const displayItems = items
+    .filter((item) => {
+      const status = itemStatuses[item.id.toString()] || 'pending'
+      return status === 'pending' || status === 'unsaved'
+    })
+    .slice()
+    .sort((a, b) => {
+      const ak = getSortKey(a)
+      const bk = getSortKey(b)
+      if (typeof ak === 'number' && typeof bk === 'number') return ak - bk
+      return ak
+        .toString()
+        .localeCompare(bk.toString(), undefined, { numeric: true })
+    })
 
   if (!displayItems.length) {
+    if (!showEmptyIndicator) return null
     return (
-      <Box display="flex" alignItems="center">
-        <Typography variant="subtitle1">{title}</Typography>
-        <Tooltip title="No discrepancies found" arrow placement="top">
+      <Tooltip title="No discrepancies found" arrow placement="top">
+        <Box display="inline-flex" alignItems="center">
           <CheckCircleIcon
             fontSize="small"
-            sx={{ ml: 1, color: theme.palette.success.main }}
+            sx={{ color: theme.palette.success.main }}
           />
-        </Tooltip>
-      </Box>
+        </Box>
+      </Tooltip>
     )
   }
 
   return (
-    <>
-      <Typography variant="subtitle1" sx={{ margin: 'auto' }}>
-        {title}
-      </Typography>
-      <Stack direction="row" spacing={1} mt={1} flexWrap="wrap" rowGap={1}>
-        {displayItems.map((item) => (
-          <DiscrepancyButton
-            key={item.id}
-            item={item}
-            status={itemStatuses[item.id.toString()] || 'pending'}
-            onClick={(e) => onButtonClick(item, e)}
-          />
-        ))}
-      </Stack>
-    </>
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'flex-start',
+      }}
+    >
+      {displayItems.map((item) => (
+        <DiscrepancyButton
+          key={item.id.toString()}
+          item={item}
+          selected={isSelected(item)}
+          onToggle={() => onToggleSelected(item)}
+          width={buttonWidth}
+        />
+      ))}
+    </Box>
   )
 }
 
