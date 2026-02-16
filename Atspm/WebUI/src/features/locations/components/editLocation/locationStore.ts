@@ -214,22 +214,16 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
           ...rest,
           id: Math.round(Math.random() * 10000),
           isNew: true,
+          detectorChannel: null,
+          dectectorIdentifier: '',
         })),
       }
-      set({
-        approaches: [newApproach, ...approaches],
-        scrollToApproach: newApproach.id,
-      })
+      set({ approaches: [...approaches, newApproach] })
     },
 
     deleteApproach: (approach) => {
-      const { approaches, channelMap } = get()
+      const { approaches } = get()
       const filtered = approaches.filter((a) => a.id !== approach.id)
-
-      const nextMap = new Map(channelMap)
-      for (const d of approach.detectors ?? []) {
-        nextMap.delete(d.id)
-      }
 
       if (!approach.isNew) {
         try {
@@ -239,7 +233,14 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         }
       }
 
-      set({ approaches: filtered, channelMap: nextMap })
+      const approachDetectors = approach.detectors.map((d) => d.id)
+      const { channelMap } = get()
+      approachDetectors.forEach((id) => channelMap.delete(id))
+      set({
+        approaches: filtered,
+        savedApproaches: toBaseline(filtered),
+        channelMap: new Map(channelMap),
+      })
     },
 
     resetStore: () => {
@@ -320,30 +321,32 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
 
       const updatedApproaches = approaches.map((approach) => {
         const index = approach.detectors.findIndex((d) => d.id === detectorId)
-        if (index === -1) return approach
-
+        if (index === -1) {
+          return approach
+        }
         const filtered = approach.detectors.filter((d) => {
-          if (d.id === detectorId && !d.isNew) shouldCallApi = true
+          if (d.id === detectorId && !d.isNew) {
+            shouldCallApi = true
+          }
           return d.id !== detectorId
         })
-
         return { ...approach, detectors: filtered }
       })
-
-      if (channelMap.has(detectorId)) {
-        channelMap.delete(detectorId)
-        set({ channelMap: new Map(channelMap) })
-      }
 
       if (shouldCallApi) {
         try {
           deleteDetectorFromKey(detectorId)
+          channelMap.delete(detectorId)
         } catch (err) {
           console.error(err)
         }
       }
 
-      set({ approaches: updatedApproaches })
+      set({
+        approaches: updatedApproaches,
+        savedApproaches: toBaseline(updatedApproaches),
+        channelMap: new Map(channelMap),
+      })
     },
 
     setScrollToApproach: (approachId) => set({ scrollToApproach: approachId }),
@@ -362,6 +365,11 @@ const normalize = (v: any): any => {
     )
   return typeof v === 'number' ? String(v) : v
 }
+
+const deepClone = <T>(v: T): T => JSON.parse(JSON.stringify(v))
+
+const toBaseline = (approaches: ConfigApproach[]) =>
+  deepClone(approaches.map(stripUIFlags))
 
 const stripUIFlags = (approach: ConfigApproach) => {
   const { open, index, isNew, ...clean } = approach
