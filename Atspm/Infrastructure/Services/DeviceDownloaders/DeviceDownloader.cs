@@ -308,8 +308,11 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
                     {
                         DateTime nowToMinute = DateTime.Now
                             .AddSeconds(-DateTime.Now.Second)
-                            .AddMilliseconds(-DateTime.Now.Millisecond);
-                        builder.AppendFormat("{0" + i.Replace("EndDateTime", "") + "}", nowToMinute.AddMinutes(-d.DeviceConfiguration.LoggingOffset));
+                            .AddMilliseconds(-DateTime.Now.Millisecond)
+                            .AddMinutes(-d.DeviceConfiguration.LoggingOffset);
+
+                        DateTimeOffset dto = new DateTimeOffset(nowToMinute);
+                        builder.AppendFormat("{0" + i.Replace("EndDateTime", "") + "}", dto.ToString("yyyy-MM-dd'T'HH:mm:sszzz"));
                     }
                 }
 
@@ -317,9 +320,11 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
                 {
                     DateTime nowToMinute = DateTime.Now
                     .AddSeconds(-DateTime.Now.Second)
-                    .AddMilliseconds(-DateTime.Now.Millisecond);
+                    .AddMilliseconds(-DateTime.Now.Millisecond)
+                    .AddMinutes(-30);
 
-                    builder.AppendFormat("{0" + i.Replace("DateTime", "") + "}", nowToMinute.AddMinutes(-30));
+                    DateTimeOffset dto = new DateTimeOffset(nowToMinute);
+                    builder.AppendFormat("{0" + i.Replace("DateTime", "") + "}", dto.ToString("yyyy-MM-dd'T'HH:mm:sszzz"));
                 }
 
                 else if (i.StartsWith("LogStartTime"))
