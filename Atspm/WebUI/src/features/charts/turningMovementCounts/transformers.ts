@@ -52,7 +52,11 @@ export default function transformTurningMovementCountsData(
   response: RawTurningMovementCountsResponse
 ): TransformedChartResponse {
   const charts = response.data.charts.map((data) => ({
-    chart: transformData(data),
+    chart: transformData(
+      data,
+      response.data.peakHour,
+      response.data.peakHourFactor
+    ),
   }))
 
   charts.sort((a, b) => {
