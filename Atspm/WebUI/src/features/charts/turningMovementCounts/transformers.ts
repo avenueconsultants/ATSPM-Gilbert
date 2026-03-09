@@ -34,6 +34,7 @@ import { ChartType } from '@/features/charts/common/types'
 import {
   ColumnGroup,
   Labels,
+  TableRow,
   TransformedChartResponse,
 } from '@/features/charts/types'
 import {
@@ -51,7 +52,10 @@ import {
 export default function transformTurningMovementCountsData(
   response: RawTurningMovementCountsResponse
 ): TransformedChartResponse {
-  const charts = response.data.charts.map((data) => ({
+  const chartsData = response?.data?.charts ?? []
+  const tableData = response?.data?.table ?? []
+
+  const charts = chartsData.map((data) => ({
     chart: transformData(
       data,
       response.data.peakHour,
@@ -82,15 +86,11 @@ export default function transformTurningMovementCountsData(
   const directions = ['Eastbound', 'Westbound', 'Northbound', 'Southbound']
   const preferred = ['Left', 'Thru', 'Thru-Right', 'Right']
 
-  const movementTypes = buildMovementTypeMap(
-    response.data.table,
-    preferred,
-    directions
-  )
+  const movementTypes = buildMovementTypeMap(tableData, preferred, directions)
   const labels = buildLabels(directions, movementTypes)
 
   const peakRow = buildPeakHourRow(
-    response.data.table,
+    tableData,
     response.data.peakHour,
     directions,
     movementTypes
@@ -100,12 +100,12 @@ export default function transformTurningMovementCountsData(
     type: ChartType.TurningMovementCounts,
     data: {
       labels,
-      table: response.data.table,
+      table: tableData,
       charts,
       peakHour: response.data.peakHour
         ? {
             peakHourFactor: response.data.peakHourFactor,
-            peakHourData: [peakRow],
+            peakHourData: peakRow ? [peakRow] : [],
           }
         : null,
     },
@@ -117,7 +117,13 @@ function transformData(
   peakHour: { key: string; value: number } | null,
   peakHourFactor: number | null
 ): EChartsOption {
-  const { lanes, plans, totalHourlyVolumes } = data
+  const lanes = data?.lanes ?? []
+  const plans = data?.plans ?? []
+  const totalHourlyVolumes =
+    (data as RawTurningMovementCountsData & { totalHourlyVolumes?: unknown[] })
+      ?.totalHourlyVolumes ??
+    data?.TotalHourlyVolumes ??
+    []
 
   const info = createInfoString(
     ['Total Volume: ', `${data.totalVolume.toLocaleString()}`],
@@ -129,7 +135,7 @@ function transformData(
     ],
     ['Peak Hour Volume: ', peakHour ? peakHour.value.toLocaleString() : 'N/A'],
     ['Peak Hour Factor: ', peakHourFactor?.toFixed(2) || 'N/A'],
-    ['fLU: ', data.laneUtilizationFactor.toFixed(2)]
+    ['fLU: ', Number(data.laneUtilizationFactor ?? 0).toFixed(2)]
   )
 
   const titleHeader = `Turning Movement Counts\n${data.locationDescription} - ${data.direction} ${data.movementType} - ${data.laneType}`
@@ -208,7 +214,7 @@ function transformData(
     series.push(
       ...createSeries({
         name: `Lane ${lane.laneNumber}`,
-        data: transformSeriesData(lane.volume),
+        data: transformSeriesData(lane.volume ?? []),
         type: 'line',
         color: colorValues[i % colorValues.length],
         tooltip: {
@@ -252,7 +258,9 @@ function buildMovementTypeMap(
   const map: Record<string, string[]> = {}
   directions.forEach((dir) => {
     const set = new Set(
-      table.filter((d) => d.direction === dir).map((d) => d.movementType)
+      (table ?? [])
+        .filter((d) => d.direction === dir)
+        .map((d) => d.movementType)
     )
     const arr = Array.from(set).sort((a, b) => {
       const ia = preferredOrder.indexOf(a)
@@ -274,7 +282,7 @@ function buildLabels(
   directions.forEach((dir) => {
     columnGroups.push({
       title: dir,
-      columns: [...movementTypes[dir], 'Total'],
+      columns: [...(movementTypes[dir] ?? []), 'Total'],
     })
   })
 
@@ -291,7 +299,7 @@ function buildPeakHourRow(
   movementTypes: Record<string, string[]>
 ): TableRow | null {
   if (!peakHour?.key) return null
-
+  console.log('Building peak hour row for', rawTable)
   const valueAtPH = (dir: string, mt: string) =>
     rawTable.find((r) => r.direction === dir && r.movementType === mt)
       ?.peakHourVolume?.value ?? 0
@@ -304,7 +312,7 @@ function buildPeakHourRow(
 
   directions.forEach((dir) => {
     let dirSum = 0
-    movementTypes[dir].forEach((mt) => {
+    ;(movementTypes[dir] ?? []).forEach((mt) => {
       const v = valueAtPH(dir, mt)
       row.push(v)
       dirSum += v
