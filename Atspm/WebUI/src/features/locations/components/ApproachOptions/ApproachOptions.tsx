@@ -115,7 +115,7 @@ const ApproachOptions = () => {
       const deviceConfig = deviceConfigurationsData?.value?.find(
         (cfg) => cfg.id === device.deviceConfigurationId
       )
-      const label = `${device.deviceType} – ${device.deviceIdentifier}`
+      const label = `${device.deviceType} � ${device.deviceIdentifier}`
 
       try {
         const res = await getZones({

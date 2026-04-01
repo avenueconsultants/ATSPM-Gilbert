@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for DatabaseInstaller - DatabaseInstaller.Services/TransferDailyToHourlyEventLogsService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -265,7 +265,7 @@ namespace DatabaseInstaller.Services
                 hourlyCompressedEvents.Add(new CompressedEventLogs<T>
                 {
                     LocationIdentifier = location.LocationIdentifier,
-                    ArchiveDate = DateOnly.FromDateTime(date),
+                    //ArchiveDate = DateOnly.FromDateTime(date),
                     DeviceId = deviceId.Value,
                     Start = start,
                     End = end,

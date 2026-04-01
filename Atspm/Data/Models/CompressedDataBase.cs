@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Models/CompressedDataBase.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -37,11 +37,6 @@ namespace Utah.Udot.Atspm.Data.Models
         /// Model type that is used in the compressed <see cref="Data"/>
         /// </summary>
         public Type DataType { get; set; }
-
-        /// <summary>
-        /// Day the data is compressed into
-        /// </summary>
-        public DateOnly ArchiveDate { get; set; }
 
         /// <summary>
         /// Compressed data, ovverride or use <c>new</c> in derrived class for specific type
@@ -87,7 +82,7 @@ namespace Utah.Udot.Atspm.Data.Models
 
         public override string ToString()
         {
-            return $"***{this.LocationIdentifier} - {this.Start} - {this.End} - {this.DeviceId} - {this.DataType.Name} - {this.Data?.Count()} - {this.DataType.Name} | min: {this.Data?.Min(m => m.Timestamp)} max: {this.Data?.Max(m => m.Timestamp)}";
+            return $"{this.LocationIdentifier} - {this.Start} - {this.End} - {this.DeviceId} - {this.DataType.Name} - {this.Data?.Count()} - {this.DataType.Name} | min: {this.Data?.Min(m => m.Timestamp)} max: {this.Data?.Max(m => m.Timestamp)}";
         }
     }
 
@@ -116,6 +111,11 @@ namespace Utah.Udot.Atspm.Data.Models
             get => base.Data.Cast<AggregationModelBase>().ToList();
             set => base.Data = value;
         }
+
+        public override string ToString()
+        {
+            return $"{this.LocationIdentifier} - {this.Start} - {this.End} - {this.DataType.Name} - {this.Data?.Count()} - {this.DataType.Name}";
+        }
     }
 
     /// <summary>
@@ -129,6 +129,11 @@ namespace Utah.Udot.Atspm.Data.Models
         {
             get => base.Data.Cast<T>().ToHashSet().ToList();
             set => base.Data = value.Cast<T>().ToHashSet().ToList();
+        }
+
+        public override string ToString()
+        {
+            return $"{this.LocationIdentifier} - {this.Start} - {this.End} - {this.DataType.Name} - {this.Data?.Count()} - {this.DataType.Name}";
         }
     }
 }

@@ -1,19 +1,16 @@
 import {
+  Device,
+  DeviceConfiguration,
   useDeleteDeviceConfigurationFromKey,
   useGetDevice,
   useGetDeviceConfiguration,
   useGetProduct,
   usePostDeviceConfiguration,
   usePutDeviceConfigurationFromKey,
-} from '@/api/config/aTSPMConfigurationApi'
-import {
-  Device,
-  DeviceConfiguration,
-} from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
-import { DeviceConfigCustomCellRender } from '@/features/devices/components/DeviceConfigCustomRenderCell'
 import DeviceConfigModal from '@/features/devices/components/DeviceConfigModal'
 import {
   PageNames,
@@ -21,6 +18,7 @@ import {
   useViewPage,
 } from '@/features/identity/pagesCheck'
 import { useNotificationStore } from '@/stores/notifications'
+import { toUTCDateStamp } from '@/utils/dateTime'
 import { removeAuditFields } from '@/utils/removeAuditFields'
 import { Backdrop, CircularProgress } from '@mui/material'
 
@@ -155,51 +153,35 @@ const DevicesAdmin = () => {
       ...obj,
       name: obj.product?.manufacturer + ' ' + obj.product?.model || '',
       productName: productName,
+      created: obj.created ? toUTCDateStamp(obj.created) : '',
+      modified: obj.modified ? toUTCDateStamp(obj.modified) : '',
     }
   })
 
-  const headers = [
-    'Product Name',
-    'Description',
-    'Protocol',
-    'Port',
-    'Path',
-    'Query',
-    'Connection Properties',
-    'Connection Timeout',
-    'Operation Timeout',
-    'Logging Offset',
-    'Decoders',
-    'Username',
-    'Password',
-  ]
-
-  const headerKeys = [
-    'productName',
-    'description',
-    'protocol',
-    'port',
-    'path',
-    'query',
-    'connectionProperties',
-    'connectionTimeout',
-    'operationTimeout',
-    'loggingOffset',
-    'decoders',
-    'userName',
-    'password',
+  const cells = [
+    { key: 'productName', label: 'Product Name' },
+    { key: 'description', label: 'Description' },
+    { key: 'protocol', label: 'Protocol' },
+    { key: 'port', label: 'Port', align: 'right' },
+    { key: 'path', label: 'Path' },
+    { key: 'query', label: 'Query' },
+    { key: 'connectionProperties', label: 'Connection Properties' },
+    { key: 'connectionTimeout', label: 'Connection Timeout' },
+    { key: 'operationTimeout', label: 'Operation Timeout' },
+    { key: 'loggingOffset', label: 'Logging Offset' },
+    { key: 'decoders', label: 'Decoders' },
+    { key: 'userName', label: 'Username' },
+    { key: 'password', label: 'Password' },
   ]
 
   return (
     <ResponsivePageLayout title="Device Configurations" noBottomMargin>
       <AdminTable
         pageName="Device Configuration"
-        headers={headers}
-        headerKeys={headerKeys}
+        cells={cells}
         data={filteredData}
         hasEditPrivileges={hasLocationsEditClaim}
         hasDeletePrivileges={hasLocationsDeleteClaim}
-        customCellRender={DeviceConfigCustomCellRender}
         editModal={
           <DeviceConfigModal
             isOpen={true}

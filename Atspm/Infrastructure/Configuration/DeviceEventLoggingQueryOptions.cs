@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Configuration/DeviceEventLoggingQueryOptions.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Configuration
         /// <summary>
         /// List of <see cref="Device.DeviceIdentifier"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedDevices { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedDevices { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="DeviceConfiguration"/> id's to include
@@ -53,32 +53,32 @@ namespace Utah.Udot.Atspm.Infrastructure.Configuration
         /// <summary>
         /// List of <see cref="Location.LocationIdentifier"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedLocations { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedLocations { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="Location.LocationIdentifier"/> to exclude
         /// </summary>
-        public IEnumerable<string> ExcludedLocations { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> ExcludedLocations { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="LocationType.Name"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedLocationTypes { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedLocationTypes { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="Area.Name"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedAreas { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedAreas { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="Jurisdiction.Name"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedJurisdictions { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedJurisdictions { get; set; } = [];
 
         /// <summary>
         /// List of <see cref="Region.Description"/> to include
         /// </summary>
-        public IEnumerable<string> IncludedRegions { get; set; } = Enumerable.Empty<string>();
+        public IEnumerable<string> IncludedRegions { get; set; } = [];
 
         /// <inheritdoc/>
         public override string ToString()

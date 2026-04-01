@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Models/Approach.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -103,6 +103,6 @@ namespace Utah.Udot.Atspm.Data.Models
         #endregion
 
         /// <inheritdoc/>
-        public override string ToString() => $"{Id} - {Description} - {DirectionTypeId}";
+        public override string ToString() => $"{Id} - {Description} - {ProtectedPhaseNumber} - {DirectionTypeId}";
     }
 }

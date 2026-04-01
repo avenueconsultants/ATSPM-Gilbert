@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Business.SplitMonitor/SplitMonitorService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -145,7 +145,7 @@ namespace Utah.Udot.Atspm.Business.SplitMonitor
             var phasePlans = new List<PlanSplitMonitorData>();
             foreach (var plan in phaseCollection.Plans)
             {
-                var cycles = phase.Cycles.Cycles.Where(x => x.StartTime >= plan.Start && x.StartTime < plan.End).ToList();
+                var cycles = phase.Cycles.Cycles.Where(x => x.StartTime >= plan.Start && x.EndTime <= plan.End).ToList();
                 if (cycles.Any())
                 {
                     //var planCycleCount = Convert.ToDouble(cycles.Count());

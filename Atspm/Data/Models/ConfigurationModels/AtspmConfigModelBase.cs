@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Models.ConfigurationModels/AtspmConfigModelBase.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,12 +24,14 @@ namespace Utah.Udot.Atspm.Data.Models.ConfigurationModels
     /// Base class for configuration context models.
     /// This base includes interfaces for working with user interfaces.
     /// </summary>
-    public class AtspmConfigModelBase<T> : ObjectModelBase, IAuditProperties
+    public class AtspmConfigModelBase<T> : ObservableObjectBase, IAuditProperties, ICloneable
     {
         /// <summary>
         /// Primary key
         /// </summary>
         public T Id { get; set; } = default!;
+
+        #region IAuditProperties
 
         /// <inheritdoc/>
         public DateTime? Created { get; set; }
@@ -42,5 +44,17 @@ namespace Utah.Udot.Atspm.Data.Models.ConfigurationModels
 
         /// <inheritdoc/>
         public string? ModifiedBy { get; set; }
+
+        #endregion
+
+        #region IClonable
+
+        ///<inheritdoc/>
+        public virtual object Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        #endregion
     }
 }

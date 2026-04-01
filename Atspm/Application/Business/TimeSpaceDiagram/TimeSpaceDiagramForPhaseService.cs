@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Business.TimeSpaceDiagram/TimeSpaceDiagramForPhaseService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,6 +19,7 @@ using Utah.Udot.Atspm.Business.Common;
 using Utah.Udot.Atspm.Business.TimingAndActuation;
 using Utah.Udot.Atspm.Data.Enums;
 using Utah.Udot.Atspm.Data.Models.EventLogModels;
+using GreenToGreenCycle = Utah.Udot.Atspm.Business.Common.GreenToGreenCycle;
 
 namespace Utah.Udot.Atspm.Business.TimeSpaceDiagram
 {

@@ -1,4 +1,5 @@
-import { usePutDeviceFromKey } from '@/api/config/aTSPMConfigurationApi'
+import { usePutDeviceFromKey } from '@/api/config'
+import ATSPMDialog from '@/components/ATSPMDialog'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useCreateDevice } from '@/features/devices/api/devices'
 import { DeviceConfiguration } from '@/features/devices/types'
@@ -234,118 +235,134 @@ const DeviceModal = ({
   if (!products || !deviceTypes || !deviceConfigurations) return null
 
   return (
-    <Dialog open onClose={handleClose} fullWidth maxWidth="md">
-      <DialogTitle>{device ? 'Edit Device' : 'Add New Device'}</DialogTitle>
+    <ATSPMDialog
+      isOpen={true}
+      onClose={handleClose}
+      auditInfo={device}
+      title={device ? 'Edit Device' : 'Add New Device'}
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: 3,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            General
+          </Typography>
+          <Controller
+            name="productId"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.productId}>
+                <InputLabel>Product</InputLabel>
+                <Select {...field} label="Product">
+                  {products.map((product) => (
+                    <MenuItem key={product.id} value={product.id}>
+                      {product.manufacturer} - {product.model}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.productId && (
+                  <Typography variant="caption" color="error">
+                    {String(errors.productId.message)}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+          />
 
-      <DialogContent dividers sx={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: 3,
-          }}
-        >
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              General
-            </Typography>
-
-            <Controller
-              name="productId"
-              control={control}
-              render={({ field }) => (
-                <FormControl
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  error={!!errors.productId}
-                >
-                  <InputLabel>Product</InputLabel>
-                  <Select {...field} label="Product">
-                    {products.map((product) => (
-                      <MenuItem key={product.id} value={product.id}>
-                        {product.manufacturer} - {product.model}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-
-            <Controller
-              name="deviceConfigurationId"
-              control={control}
-              render={({ field }) => (
-                <FormControl
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  error={!!errors.deviceConfigurationId}
-                >
-                  <InputLabel>
-                    {selectedProductId
+          {/* Device Configuration */}
+          <Controller
+            name="deviceConfigurationId"
+            control={control}
+            render={({ field }) => (
+              <FormControl
+                fullWidth
+                sx={{ mb: 2 }}
+                error={!!errors.deviceConfigurationId}
+              >
+                <InputLabel>
+                  {selectedProductId
+                    ? 'Configurations'
+                    : 'Please select a product'}
+                </InputLabel>
+                <Select
+                  {...field}
+                  label={
+                    selectedProductId
                       ? 'Configurations'
-                      : 'Please select a product'}
-                  </InputLabel>
-                  <Select
-                    {...field}
-                    label="Configurations"
-                    disabled={!selectedProductId}
-                  >
-                    {filteredConfigurations.map((config) => (
-                      <MenuItem key={config.id} value={config.id}>
-                        {config.description}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
-
-            <Controller
-              name="deviceType"
-              control={control}
-              render={({ field }) => (
-                <FormControl
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  error={!!errors.deviceType}
+                      : 'Please select a product'
+                  }
+                  disabled={!selectedProductId}
                 >
-                  <InputLabel>Device Type</InputLabel>
-                  <Select {...field} label="Device Type">
-                    {deviceTypes.map((type) => (
-                      <MenuItem key={type.name} value={type.name}>
-                        {type.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
+                  {filteredConfigurations.map((config) => (
+                    <MenuItem key={config.id} value={config.id}>
+                      {config.description}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.deviceConfigurationId && (
+                  <Typography variant="caption" color="error">
+                    {String(errors.deviceConfigurationId.message)}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+          />
 
-            <Controller
-              name="deviceStatus"
-              control={control}
-              render={({ field }) => (
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>Status</InputLabel>
-                  <Select {...field} label="Status">
-                    {deviceStatus?.map((status) => (
-                      <MenuItem key={status.name} value={status.name}>
-                        {status.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              )}
-            />
+          <Controller
+            name="deviceType"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.deviceType}>
+                <InputLabel>Device Type</InputLabel>
+                <Select {...field} label="Device Type">
+                  {deviceTypes.map((type) => (
+                    <MenuItem key={type.name} value={type.name}>
+                      {type.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.deviceType && (
+                  <Typography variant="caption" color="error">
+                    {String(errors.deviceType.message)}
+                  </Typography>
+                )}
+              </FormControl>
+            )}
+          />
 
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel htmlFor="ip-input">IP Address</InputLabel>
-              <OutlinedInput
-                id="ip-input"
-                label="IP Address"
-                {...register('ipaddress')}
-              />
-            </FormControl>
+          {/* Status */}
+          <Controller
+            name="deviceStatus"
+            control={control}
+            render={({ field }) => (
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Status</InputLabel>
+                <Select {...field} label="Status">
+                  {deviceStatus?.map((status) => (
+                    <MenuItem key={status.name} value={status.name}>
+                      {status.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          />
+
+          {/* IP Address */}
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel htmlFor="ip-input">IP Address</InputLabel>
+            <OutlinedInput
+              id="ip-input"
+              label="IP Address"
+              {...register('ipaddress')}
+            />
+          </FormControl>
 
             {device?.deviceType === 'FIRCamera' && (
               <>
@@ -411,81 +428,80 @@ const DeviceModal = ({
               label="Device Identifier"
               sx={{ mb: 2 }}
               maxRows={6}
+              helperText={errors.notes ? 'String(errors.notes.message) ' : ''}
               {...register('deviceIdentifier')}
             />
 
-            <TextField
-              fullWidth
-              multiline
-              label="Notes"
-              sx={{ mb: 2 }}
-              maxRows={6}
-              {...register('notes')}
-            />
+          <TextField
+            fullWidth
+            multiline
+            label="Notes"
+            sx={{ mb: 2 }}
+            maxRows={6}
+            error={!!errors.notes}
+            helperText={errors.notes ? String(errors.notes.message) : ''}
+            {...register('notes')}
+          />
 
-            <Controller
-              name="loggingEnabled"
-              control={control}
-              render={({ field }) => (
-                <FormControlLabel
-                  control={<Checkbox {...field} checked={field.value} />}
-                  label="Enable Logging"
-                />
-              )}
-            />
-          </Box>
-
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle1" sx={{ mb: 1 }}>
-              Device Properties
-            </Typography>
-
-            {devicePropertiesFields.map((field, index) => (
-              <Box
-                key={field.id}
-                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-              >
-                <TextField
-                  {...register(`deviceProperties.${index}.key`)}
-                  margin="dense"
-                  label={`Key ${index + 1}`}
-                  fullWidth
-                />
-                <TextField
-                  {...register(`deviceProperties.${index}.value`)}
-                  margin="dense"
-                  label={`Value ${index + 1}`}
-                  fullWidth
-                />
-                <IconButton
-                  size="small"
-                  color="error"
-                  onClick={() => removeDeviceProperty(index)}
-                  sx={{ mt: 1 }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            ))}
-
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => appendDeviceProperty({ key: '', value: '' })}
-            >
-              + Device Property
-            </Button>
-          </Box>
+          {/* Logging */}
+          <Controller
+            name="loggingEnabled"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                control={<Checkbox {...field} checked={field.value} />}
+                label="Enable Logging"
+              />
+            )}
+          />
         </Box>
-      </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit(onSubmit)}>
-          {device ? 'Update Device' : 'Add Device'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Device Properties
+          </Typography>
+          {devicePropertiesFields.map((field, index) => (
+            <Box
+              key={field.id}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mb: 1,
+              }}
+            >
+              <TextField
+                {...register(`deviceProperties.${index}.key`)}
+                margin="dense"
+                label={`Key ${index + 1}`}
+                fullWidth
+              />
+              <TextField
+                {...register(`deviceProperties.${index}.value`)}
+                margin="dense"
+                label={`Value ${index + 1}`}
+                fullWidth
+              />
+              <IconButton
+                size="small"
+                color="error"
+                onClick={() => removeDeviceProperty(index)}
+                sx={{ mt: 1 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
+          ))}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => appendDeviceProperty({ key: '', value: '' })}
+          >
+            + Device Property
+          </Button>
+        </Box>
+      </Box>
+    </ATSPMDialog>
   )
 }
 

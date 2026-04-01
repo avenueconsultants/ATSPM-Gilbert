@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Repositories.ConfigurationRepositories/DeviceEFRepository.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,6 +70,12 @@ namespace Utah.Udot.Atspm.Infrastructure.Repositories.ConfigurationRepositories
                 .ToList();
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public async Task<bool> DeviceExists(int deviceId)
+        {
+            return await GetList().AnyAsync(a => a.Id == deviceId);
         }
 
         #endregion

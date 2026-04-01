@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data/EventLogContext.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -84,13 +84,6 @@ namespace Utah.Udot.Atspm.Data
                 builder.Property(e => e.LocationIdentifier)
                     .IsRequired()
                     .HasMaxLength(10);
-
-                builder.Property(e => e.ArchiveDate)
-                //.IsRequired()
-                .HasColumnType("Date")
-                .HasConversion<DateTime>(
-                    v => v.ToDateTime(TimeOnly.MinValue),
-                    v => DateOnly.FromDateTime(v));
 
                 builder.Property(p => p.DataType)
                 .HasMaxLength(32)

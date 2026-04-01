@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for ConfigApi - Utah.Udot.Atspm.ConfigApi.Configuration/LocationOdataConfiguration.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -83,8 +83,6 @@ namespace Utah.Udot.Atspm.ConfigApi.Configuration
                         g.ReturnsCollectionFromEntitySet<DetectionTypeGroup>("DetectionTypeGroups");
 
                         var h = model.Action("SaveTemplatedLocation").ReturnsFromEntitySet<Location>("Location"); ;
-                        //var h = model.Collection.Function("SaveTemplatedLocation");
-                        //h.Parameter<TemplateLocationDto>("templateLocationDto");
                         h.Parameter<string>("locationIdentifier");
                         h.Parameter<double>("latitude");
                         h.Parameter<double>("longitude");
@@ -94,8 +92,6 @@ namespace Utah.Udot.Atspm.ConfigApi.Configuration
                         h.CollectionParameter<Device>("devices");
 
                         var i = model.Action("SyncLocation").ReturnsFromEntitySet<TemplateLocationModifiedDto>("templateLocationModifiedDto");
-
-                        var j = model.Action("DeleteAllVersions");
 
                         var detectionTypeGroup = builder.EntitySet<DetectionTypeGroup>("DetectionTypeGroups").EntityType;
                         detectionTypeGroup.Property(d => d.Id).IsRequired();

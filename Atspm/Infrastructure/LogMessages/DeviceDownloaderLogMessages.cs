@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.LogMessages/DeviceDownloaderLogMessages.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -197,7 +197,7 @@ namespace Utah.Udot.Atspm.Infrastructure.LogMessages
         /// <param name="resource"></param>
         /// <param name="deviceIdentifier"></param>
         /// <param name="ip"></param>
-        [LoggerMessage(EventId = 1031, EventName = "Deleted Resource", Level = LogLevel.Information, Message = "Deleted resource {resource} from {deviceIdentifier} at {ip}")]
+        [LoggerMessage(EventId = 1031, EventName = "Deleted Resource", Level = LogLevel.Debug, Message = "Deleted resource {resource} from {deviceIdentifier} at {ip}")]
         public partial void DeletedResourceMessage(Uri resource, string deviceIdentifier, IPAddress ip);
 
         /// <summary>

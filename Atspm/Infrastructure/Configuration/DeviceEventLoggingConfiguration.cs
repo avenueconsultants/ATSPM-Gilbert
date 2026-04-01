@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Configuration/DeviceEventLoggingConfiguration.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,6 +40,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Configuration
         public int ParallelProcesses { get; set; }
 
         /// <inheritdoc cref="DeviceEventLoggingQueryOptions"/>
-        public DeviceEventLoggingQueryOptions DeviceEventLoggingQueryOptions { get; set; } = new DeviceEventLoggingQueryOptions();
+        public DeviceEventLoggingQueryOptions DeviceEventLoggingQueryOptions { get; set; } = new();
     }
 }

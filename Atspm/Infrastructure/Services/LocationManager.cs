@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Services/LocationManager.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services
 {
     public interface ILocationManager
     {
-        Task CopyLocationToNewVersion(int key);
+        Task<Location> CopyLocationToNewVersion(int key, string newVersionLabel);
         Task SetLocationToDeleted(int key);
         Task DeleteAllVersions(string locationIdentifier);
     }
@@ -38,14 +38,15 @@ namespace Utah.Udot.Atspm.Infrastructure.Services
             _devices = devices ?? throw new ArgumentNullException(nameof(devices));
         }
 
-        public async Task CopyLocationToNewVersion(int key)
+        public async Task<Location> CopyLocationToNewVersion(int key, string newVersionLabel)
         {
             var deviceIds = _devices.GetList()
                 .Where(w => w.LocationId == key)
                 .Select(s => s.Id)
                     .ToList();
-            var newLocation = await _locations.CopyLocationToNewVersion(key);
+            var newLocation = await _locations.CopyLocationToNewVersion(key, newVersionLabel);
             _devices.UpdateDevicesForNewVersion(deviceIds, newLocation.Id);
+            return newLocation;
         }
 
         public async Task DeleteAllVersions(string locationIdentifier)
@@ -54,7 +55,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services
                  .Include(i => i.Jurisdiction)
                  .Include(i => i.Region)
                  .Include(i => i.Devices)
-                 .FromSpecification(new LocationIdSpecification(locationIdentifier))
+                 .FromSpecification(new LocationIdentifierSpecification(locationIdentifier))
                  .FromSpecification(new ActiveLocationSpecification())
                  .ToList();
 

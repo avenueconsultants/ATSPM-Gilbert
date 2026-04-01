@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Business.TurningMovementCounts/TurningMovementCountsService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -111,7 +111,7 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 allLanesMovementVolumes.Items.Select(i => new DataPointForInt(i.StartTime, i.HourlyVolume)).ToList(),
                 allLanesMovementVolumes.Items.Select(i => new DataPointForInt(i.StartTime, i.DetectorCount)).ToList(),
                 totalDetectorCounts,
-                $"{peakHour.Key.ToShortTimeString()} - {peakHourEnd.ToShortTimeString()}",
+                $"{peakHour.Key:HH:mm} - {peakHourEnd:HH:mm}",
                 peakHour.Value / binMultiplier,
                 peakHourFactor,
                 flu

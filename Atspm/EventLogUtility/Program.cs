@@ -1,5 +1,5 @@
 #region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for EventLogUtility - %Namespace%/Program.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +16,7 @@
 #endregion
 
 using Microsoft.Extensions.Configuration;
+using Google.Cloud.Diagnostics.Common;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
@@ -24,6 +25,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Utah.Udot.Atspm.EventLogUtility.Commands;
 using Utah.Udot.Atspm.Infrastructure.Extensions;
+
 
 public class Program
 {
@@ -37,35 +39,35 @@ public class Program
                     EventLog.CreateEventSource(AppDomain.CurrentDomain.FriendlyName, "Atspm");
             }
 
-            var rootCmd = new EventLogCommands();
-            var cmdBuilder = new CommandLineBuilder(rootCmd);
+var rootCmd = new EventLogCommands();
+var cmdBuilder = new CommandLineBuilder(rootCmd);
+cmdBuilder.UseDefaults();
 
-            cmdBuilder.UseDefaults();
+cmdBuilder.UseHost(hostBuilderFactory =>
+{
+    return Host.CreateDefaultBuilder(args)
+        .UseConsoleLifetime()
+        .ApplyVolumeConfiguration()
+        .ConfigureAppConfiguration((h, c) =>
+        {
+            c.AddUserSecrets<Program>(optional: true); // Load secrets first
+            c.AddCommandLine(args);                    // Override with command-line args
 
-            cmdBuilder.UseHost(hostBuilderFactory =>
+        })
+        .ConfigureLogging((context, logging) =>
+        {
+            if (OperatingSystem.IsWindows())
             {
-                return Host.CreateDefaultBuilder(args)
-                    .UseConsoleLifetime()
-                    .ApplyVolumeConfiguration()
-                    .ConfigureAppConfiguration((h, c) =>
-                    {
-                        c.AddUserSecrets<Program>(optional: true); // Load secrets first
-                        c.AddCommandLine(args);                    // Override with command-line args
+                logging.AddEventLog(options =>
+                {
+                    options.SourceName = AppDomain.CurrentDomain.FriendlyName;
+                    options.LogName = "Atspm";
+                });
+            }
 
-                    })
-                    .ConfigureLogging((context, logging) =>
-                    {
-                        if (OperatingSystem.IsWindows())
-                        {
-                            logging.AddEventLog(options =>
-                            {
-                                options.SourceName = AppDomain.CurrentDomain.FriendlyName;
-                                options.LogName = "Atspm";
-                            });
-                        }
-
-                        // Additional logging providers can be configured here
-                    })
+            // Additional logging providers can be configured here
+            logging.AddGoogle(h);
+    })
                     .ConfigureServices((context, services) =>
                     {
                         services.AddAtspmDbContext(context);

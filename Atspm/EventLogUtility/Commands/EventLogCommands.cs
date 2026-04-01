@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for EventLogUtility - Utah.Udot.Atspm.EventLogUtility.Commands/EventLogCommands.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,11 +28,13 @@ namespace Utah.Udot.Atspm.EventLogUtility.Commands
             AddCommand(LogCommand);
             AddCommand(TransferCommand);
             AddCommand(ExtractCommand);
+            AddCommand(DecodeEventsCommand);
         }
 
         public AggregationCommand AggregationCommand { get; set; } = new AggregationCommand();
         public LogConsoleCommand LogCommand { get; set; } = new LogConsoleCommand();
         public TransferLogsConsoleCommand TransferCommand { get; set; } = new TransferLogsConsoleCommand();
         public ExtractConsoleCommand ExtractCommand { get; set; } = new ExtractConsoleCommand();
+        public DecodeEventsCommand DecodeEventsCommand { get; set; } = new DecodeEventsCommand();
     }
 }

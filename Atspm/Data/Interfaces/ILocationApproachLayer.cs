@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Interfaces/ILocationApproachLayer.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ namespace Utah.Udot.Atspm.Data.Interfaces
     public interface ILocationApproachLayer : ILocationLayer
     {
         /// <summary>
-        /// Id of approach assigned to <see cref="ILocationLayer.LocationIdentifier"/>
+        /// Id of approach assigned to the location
         /// </summary>
         int ApproachId { get; set; }
     }

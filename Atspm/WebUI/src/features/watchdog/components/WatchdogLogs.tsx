@@ -75,7 +75,9 @@ const watchdogLogsSchema = z.object({
 // Schema for ignoring events
 const ignoreEventSchema = z.object({
   start: z.date().nullable(),
-  end: z.date().nullable(),
+  end: z.date().nullable().refine((value) => value !== null, {
+    message: 'End date is required',
+  }),
 })
 
 const WatchDogLogs = () => {
@@ -87,6 +89,7 @@ const WatchDogLogs = () => {
     isLoading: isWatchdogLogsLoading,
     error: watchdogLogsError,
     mutateAsync: fetchWatchdogLogs,
+    isSuccess: isWatchdogLogsSuccess,
   } = useGetWatchdogLogs()
   const { mutateAsync: addWatchdogIgnoreEvents } =
     useCreateWatchdogIgnoreEvents()
@@ -107,6 +110,7 @@ const WatchDogLogs = () => {
     handleSubmit: handleIgnoreSubmit,
     setValue: setIgnoreValue,
     watch: watchIgnore,
+    formState: { errors: ignoreErrors },
   } = useForm<z.infer<typeof ignoreEventSchema>>({
     resolver: zodResolver(ignoreEventSchema),
     defaultValues: {
@@ -136,27 +140,6 @@ const WatchDogLogs = () => {
   const [isIconClicked, setIsIconClicked] = useState(false)
   const [processedRows, setProcessedRows] = useState<transformWatchDogLog[]>([])
 
-  useMemo(() => {
-    const logEvents = (watchdogLogsData as unknown as LogEventsData)?.logEvents
-    if (logEvents) {
-      const rows = logEvents.map((logEvent, index) => ({
-        id: index,
-        locationId: logEvent.locationId,
-        locationIdentifier: logEvent.locationIdentifier,
-        timestamp: logEvent.timestamp,
-        regionDescription: logEvent.regionDescription,
-        jurisdictionName: logEvent.jurisdictionName,
-        areas: logEvent.areas.map((area: Area) => area.name).join(', '),
-        issueType: logEvent.issueType,
-        phase: logEvent.phase,
-        details: logEvent.details,
-        componentType: logEvent.componentType,
-        componentId: logEvent.componentId,
-      }))
-      setProcessedRows(rows)
-    }
-  }, [watchdogLogsData])
-
   const issueTypes = useMemo(() => {
     if (!issueTypesData) return null
     return issueTypesData.reduce(
@@ -164,6 +147,34 @@ const WatchDogLogs = () => {
       {}
     )
   }, [issueTypesData])
+
+  useMemo(() => {
+    const logEvents = (watchdogLogsData as unknown as LogEventsData)?.logEvents
+    if (logEvents) {
+      const rows = logEvents.map((logEvent) => ({
+        id: logEvent.id,
+        locationId: logEvent.locationId,
+        locationIdentifier: logEvent.locationIdentifier,
+        timestamp: logEvent.timestamp,
+        regionDescription: logEvent.regionDescription,
+        jurisdictionName: logEvent.jurisdictionName,
+        areas: logEvent.areas.map((area: Area) => area.name).join(', '),
+        issueType: issueTypes?.[logEvent.issueType] ?? logEvent.issueType,
+        phase: logEvent.phase,
+        details: logEvent.details,
+        componentType: logEvent.componentType,
+        componentId: logEvent.componentId,
+      }))
+      setProcessedRows(rows)
+    }
+  }, [watchdogLogsData, issueTypes])
+
+  const returnedLogEvents =
+    (watchdogLogsData as unknown as LogEventsData)?.logEvents ?? []
+  const showNoLogsMessage =
+    isWatchdogLogsSuccess &&
+    !isWatchdogLogsLoading &&
+    returnedLogEvents.length === 0
 
   const handleIconClick = useCallback(() => {
     setIsIconClicked(!isIconClicked)
@@ -294,8 +305,7 @@ const WatchDogLogs = () => {
         headerName: 'Issue Type',
         flex: 1,
         headerAlign: 'center',
-        valueGetter: (params) =>
-          addSpaces(issueTypes?.[params as number]) ?? '',
+        valueGetter: (params) => addSpaces(params) ?? '',
       },
       { field: 'phase', headerName: 'Phase', flex: 1, headerAlign: 'center' },
       {
@@ -324,7 +334,7 @@ const WatchDogLogs = () => {
     }
 
     return baseColumns
-  }, [selectedRows, isIconClicked, handleRowSelection, issueTypes])
+  }, [selectedRows, isIconClicked, handleRowSelection])
 
   const CustomToolbar = useCallback(
     () => (
@@ -447,16 +457,32 @@ const WatchDogLogs = () => {
         </StyledPaper>
       </Box>
 
-      <LoadingButton
-        loading={isWatchdogLogsLoading}
-        startIcon={<PlayArrowIcon />}
-        loadingPosition="start"
-        variant="contained"
-        onClick={handleFetchData}
-        sx={{ marginY: 3, padding: '10px' }}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          flexWrap: 'wrap',
+          my: 3,
+        }}
       >
-        Generate Report
-      </LoadingButton>
+        <LoadingButton
+          loading={isWatchdogLogsLoading}
+          startIcon={<PlayArrowIcon />}
+          loadingPosition="start"
+          variant="contained"
+          onClick={handleFetchData}
+          sx={{ padding: '10px' }}
+        >
+          Generate Report
+        </LoadingButton>
+
+        {showNoLogsMessage && (
+          <Alert severity="error">
+            No watchdog logs were found for the selected filters.
+          </Alert>
+        )}
+      </Box>
 
       {watchdogLogsError && (
         <Alert severity="error">
@@ -511,12 +537,27 @@ const WatchDogLogs = () => {
             <DatePicker
               label="Start Date"
               value={startIgnoreTime}
-              onChange={(newValue) => setIgnoreValue('start', newValue)}
+              onChange={(newValue) =>
+                setIgnoreValue('start', newValue, {
+                  shouldValidate: true,
+                })
+              }
             />
             <DatePicker
               label="End Date"
               value={endIgnoreTime}
-              onChange={(newValue) => setIgnoreValue('end', newValue)}
+              onChange={(newValue) =>
+                setIgnoreValue('end', newValue, {
+                  shouldValidate: true,
+                })
+              }
+              slotProps={{
+                textField: {
+                  required: true,
+                  error: !!ignoreErrors.end,
+                  helperText: ignoreErrors.end?.message,
+                },
+              }}
             />
           </Box>
         </DialogContent>

@@ -1,5 +1,5 @@
 #region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Business.TimingAndActuation/TimingAndActuationsForPhaseService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -275,7 +275,7 @@ namespace Utah.Udot.Atspm.Business.TimingAndActuation
             if (string.IsNullOrEmpty(approach.PedestrianDetectors) && approach.Location.PedsAre1to1 && approach.IsProtectedPhaseOverlap
                 || !approach.Location.PedsAre1to1 && approach.PedestrianPhaseNumber.HasValue)
                 return pedestrianEvents;
-            var pedEventCodes = new List<short> { 89, 90 };
+            var pedEventCodes = new List<short> { 90 };
             var pedDedectors = approach.GetPedDetectorsFromApproach();
             var pedEvents = controllerEventLogs.GetPedEvents(options.Start, options.End, approach).ToList();
             foreach (var pedDetector in pedDedectors)
@@ -286,19 +286,12 @@ namespace Utah.Udot.Atspm.Business.TimingAndActuation
                                                                 && c.Timestamp >= options.Start
                                                                 && c.Timestamp <= options.End)
                                                    .ToList();
-                if (pedEvents.Count > 0)
+                if (pedEventsForDetector.Count > 0)
                 {
                     var detectorEvents = new List<DetectorEventBase>();
-                    for (var i = 0; i < pedEvents.Count; i += 2)
+                    for (var i = 0; i < pedEventsForDetector.Count; i++)
                     {
-                        if (i + 1 == pedEvents.Count)
-                        {
-                            detectorEvents.Add(new DetectorEventBase(pedEvents[i].Timestamp, pedEvents[i].Timestamp));
-                        }
-                        else
-                        {
-                            detectorEvents.Add(new DetectorEventBase(pedEvents[i].Timestamp, pedEvents[i + 1].Timestamp));
-                        }
+                        detectorEvents.Add(new DetectorEventBase(pedEvents[i].Timestamp, pedEvents[i].Timestamp));
                     }
                     pedestrianEvents.Add(new DetectorEventDto(lableName, detectorEvents));
                 }

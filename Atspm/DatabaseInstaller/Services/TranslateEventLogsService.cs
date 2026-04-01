@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for DatabaseInstaller - DatabaseInstaller.Services/TranslateEventLogsService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -260,7 +260,7 @@ namespace DatabaseInstaller.Services
             return new CompressedEventLogs<IndianaEvent>
             {
                 LocationIdentifier = location.LocationIdentifier,
-                ArchiveDate = archiveDate,
+                //ArchiveDate = archiveDate,
                 Start = hourStart,
                 End = hourEnd,
                 Data = indianaEvents,

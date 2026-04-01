@@ -1,10 +1,10 @@
 import {
+  MenuItem,
   useDeleteMenuItemsFromKey,
   useGetMenuItems,
   usePatchMenuItemsFromKey,
   usePostMenuItems,
-} from '@/api/config/aTSPMConfigurationApi'
-import { MenuItem } from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -15,6 +15,7 @@ import {
 } from '@/features/identity/pagesCheck'
 import MenuItemsModal from '@/features/menuItems/components/MenuItemModal'
 import { useNotificationStore } from '@/stores/notifications'
+import { toUTCDateStamp } from '@/utils/dateTime'
 import { Backdrop, CircularProgress } from '@mui/material'
 
 const MenuItemsAdmin = () => {
@@ -68,7 +69,6 @@ const MenuItemsAdmin = () => {
   }
 
   const HandleDeleteMenuItem = async (id: number) => {
-    console.log('Deleting Menu Item with ID:', id)
     try {
       await deleteMenuItem({ key: id })
       refetchMenuItems()
@@ -130,16 +130,26 @@ const MenuItemsAdmin = () => {
     //do something?? potentially just delete
   }
 
-  const headers = ['Name', 'Link', 'Display Order', 'Parent']
-  const headerKeys = ['name', 'link', 'displayOrder', 'parentIdName']
+  const filteredItems = menuItems.map((item) => ({
+    ...item,
+    parentIdName: item.parent?.name || 'N/A',
+    modified: item.modified ? toUTCDateStamp(item.modified) : '',
+    created: item.created ? toUTCDateStamp(item.created) : '',
+  }))
+
+  const cells = [
+    { key: 'name', label: 'Name' },
+    { key: 'link', label: 'Link' },
+    { key: 'displayOrder', label: 'Display Order', align: 'right' },
+    { key: 'parentIdName', label: 'Parent' },
+  ]
 
   return (
     <ResponsivePageLayout title="Manage Menu Items" noBottomMargin>
       <AdminTable
         pageName="Menu Item"
-        headers={headers}
-        headerKeys={headerKeys}
-        data={menuItems}
+        cells={cells}
+        data={filteredItems}
         hasEditPrivileges={hasGeneralEditClaim}
         hasDeletePrivileges={hasGeneralDeleteClaim}
         editModal={

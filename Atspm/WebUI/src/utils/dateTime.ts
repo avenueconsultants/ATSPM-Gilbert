@@ -14,16 +14,61 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // #endregion
-import { format } from 'date-fns'
 
-export const dateToTimestamp = (date: Date) => {
-  return format(date, "yyyy-MM-dd'T'HH:mm:ss")
+/**
+ * Converts a Date or date string into a timezone-free timestamp string.
+ * Output format: "YYYY-MM-DDTHH:mm:ss"
+ * - Strips any timezone info (Z, ±HH:mm) if input is a string.
+ * - Uses local date/time parts if input is a Date.
+ *
+ * @param {Date|string} value The input date object or date string
+ * @returns {string} A timezone-free timestamp string, or original string if invalid date
+ */
+export const dateToTimestamp = (value: Date | string): string => {
+  const d = typeof value === 'string' ? new Date(value) : value
+  if (!(d instanceof Date) || isNaN(d.getTime())) return value as string // return original value if not a valid date
+
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const y = d.getFullYear()
+  const m = pad(d.getMonth() + 1)
+  const day = pad(d.getDate())
+  const hh = pad(d.getHours())
+  const mm = pad(d.getMinutes())
+  const ss = pad(d.getSeconds())
+
+  return `${y}-${m}-${day}T${hh}:${mm}:${ss}`
 }
 
-export const toUTCDateStamp = (date: Date): string => {
+export const toUTCDateStamp = (date: Date | string): string => {
+  if (typeof date === 'string') {
+    date = new Date(date)
+  }
   const year = date.getUTCFullYear()
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
   const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+export const toDateStamp = (date: Date | string): string => {
+  // If it's already a YYYY-MM-DD date stamp, return as-is.
+  if (typeof date === 'string') {
+    const s = date.trim()
+
+    // Accept "YYYY-MM-DD" exactly (or with a time part we want to ignore)
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`
+
+    // Fallback: parse other strings, but format using local date parts
+    date = new Date(s)
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`toDateStamp: invalid date input`)
+  }
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
