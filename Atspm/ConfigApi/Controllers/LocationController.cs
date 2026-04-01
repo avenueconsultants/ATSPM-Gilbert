@@ -137,11 +137,10 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
                    .Where(w => w.LocationId == key)
                    .Select(s => s.Id)
                    .ToList();
-                var newLocation = await _repository.CopyLocationToNewVersion(key, newVersionLabel);
+                var newLocation = await _locationManager.CopyLocationToNewVersion(key, newVersionLabel);
                 _deviceRepository.UpdateDevicesForNewVersion(deviceIds, newLocation.Id);
-                //var copiedVersion = await _locationManager.CopyLocationToNewVersion(key, newVersionLabel);
 
-                return Ok(copiedVersion);
+                return Ok(newLocation);
             }
             catch (ArgumentException e)
             {
@@ -159,11 +158,11 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(TemplateLocationModifiedDto), Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult SyncLocation(int key)
+        public async Task<IActionResult> SyncLocationAsync(int key)
         {
             try
             {
-                TemplateLocationModifiedDto modLocation = _signalTemplateService.SyncNewLocationDetectorsAndApproaches(key);
+                TemplateLocationModifiedDto modLocation = await _signalTemplateService.SyncNewLocationDetectorsAndApproachesAsync(key);
                 return Ok(modLocation);
             }
             catch (ArgumentException e)

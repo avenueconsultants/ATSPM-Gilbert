@@ -15,8 +15,8 @@
 // limitations under the License.
 #endregion
 
-using Microsoft.Extensions.Configuration;
 using Google.Cloud.Diagnostics.Common;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.CommandLine.Builder;
@@ -39,58 +39,58 @@ public class Program
                     EventLog.CreateEventSource(AppDomain.CurrentDomain.FriendlyName, "Atspm");
             }
 
-var rootCmd = new EventLogCommands();
-var cmdBuilder = new CommandLineBuilder(rootCmd);
-cmdBuilder.UseDefaults();
+            var rootCmd = new EventLogCommands();
+            var cmdBuilder = new CommandLineBuilder(rootCmd);
+            cmdBuilder.UseDefaults();
 
-cmdBuilder.UseHost(hostBuilderFactory =>
-{
-    return Host.CreateDefaultBuilder(args)
-        .UseConsoleLifetime()
-        .ApplyVolumeConfiguration()
-        .ConfigureAppConfiguration((h, c) =>
-        {
-            c.AddUserSecrets<Program>(optional: true); // Load secrets first
-            c.AddCommandLine(args);                    // Override with command-line args
-
-        })
-        .ConfigureLogging((context, logging) =>
-        {
-            if (OperatingSystem.IsWindows())
+            cmdBuilder.UseHost(hostBuilderFactory =>
             {
-                logging.AddEventLog(options =>
-                {
-                    options.SourceName = AppDomain.CurrentDomain.FriendlyName;
-                    options.LogName = "Atspm";
-                });
-            }
-
-            // Additional logging providers can be configured here
-            logging.AddGoogle(h);
-    })
-                    .ConfigureServices((context, services) =>
+                return Host.CreateDefaultBuilder(args)
+                    .UseConsoleLifetime()
+                    .ApplyVolumeConfiguration()
+                    .ConfigureAppConfiguration((h, c) =>
                     {
-                        services.AddAtspmDbContext(context);
-                        services.AddAtspmEFConfigRepositories();
-                        services.AddAtspmEFEventLogRepositories();
-                        services.AddAtspmEFAggregationRepositories();
-                        services.AddDownloaderClients();
-                        services.AddDeviceDownloaders(context);
-                        services.AddEventLogDecoders();
-                        services.AddEventLogImporters(context);
-                    });
+                        c.AddUserSecrets<Program>(optional: true); // Load secrets first
+                        c.AddCommandLine(args);                    // Override with command-line args
+
+                    })
+                    .ConfigureLogging((context, logging) =>
+                    {
+                        if (OperatingSystem.IsWindows())
+                        {
+                            logging.AddEventLog(options =>
+                            {
+                                options.SourceName = AppDomain.CurrentDomain.FriendlyName;
+                                options.LogName = "Atspm";
+                            });
+                        }
+
+                        // Additional logging providers can be configured here
+                        logging.AddGoogle(context);
+                    })
+                                .ConfigureServices((context, services) =>
+                                {
+                                    services.AddAtspmDbContext(context);
+                                    services.AddAtspmEFConfigRepositories();
+                                    services.AddAtspmEFEventLogRepositories();
+                                    services.AddAtspmEFAggregationRepositories();
+                                    services.AddDownloaderClients();
+                                    services.AddDeviceDownloaders(context);
+                                    services.AddEventLogDecoders();
+                                    services.AddEventLogImporters(context);
+                                });
             },
-            host =>
-            {
-                var cmd = host.GetInvocationContext().ParseResult.CommandResult.Command;
-                host.ConfigureServices((context, services) =>
-                {
-                    if (cmd is ICommandOption opt)
-                    {
-                        opt.BindCommandOptions(context, services);
-                    }
-                });
-            });
+                        host =>
+                        {
+                            var cmd = host.GetInvocationContext().ParseResult.CommandResult.Command;
+                            host.ConfigureServices((context, services) =>
+                            {
+                                if (cmd is ICommandOption opt)
+                                {
+                                    opt.BindCommandOptions(context, services);
+                                }
+                            });
+                        });
 
             var parser = cmdBuilder.Build();
             return await parser.InvokeAsync(args); //  Success exit code from command execution

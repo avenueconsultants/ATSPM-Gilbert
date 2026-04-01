@@ -47,7 +47,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
 
         //Sync signal: From the data in the database return a list of phases and detector channels that are in the logs and compare the newly created signal.
         //Remove any phases or channels that dont exist on the signal, provide a list of non configured event phases. .
-        public TemplateLocationModifiedDto SyncNewLocationDetectorsAndApproaches(int locationId)
+        public async Task<TemplateLocationModifiedDto> SyncNewLocationDetectorsAndApproachesAsync(int locationId)
         {
             var sourceLocation = _locationRepository.GetVersionByIdDetached(locationId);
             if (sourceLocation != null)
@@ -55,7 +55,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
                 DateTime now = DateTime.Now;
                 DateTime yesterday = DateTime.Today.AddDays(-1);
 
-                var compressedLocationsEvents = _eventLogRepository.GetArchivedEvents(sourceLocation.LocationIdentifier, yesterday, now);
+                List<CompressedEventLogBase> compressedLocationsEvents = await _eventLogRepository.GetData(sourceLocation.LocationIdentifier, yesterday, now).ToListAsync();
                 var indianaEvents = compressedLocationsEvents.Where(l => l.DataType == typeof(IndianaEvent)).SelectMany(s => s.Data).ToList().Cast<IndianaEvent>();
                 return ModifyLocationWithEvents(sourceLocation, indianaEvents);
             }

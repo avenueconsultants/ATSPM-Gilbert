@@ -107,7 +107,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Repositories.ConfigurationRepositories
         {
             var result = BaseQuery()
                 .Include(i => i.Devices)
-                .FromSpecification(new LocationIdSpecification(LocationIdentifier))
+                .FromSpecification(new LocationIdentifierSpecification(LocationIdentifier))
                 .FromSpecification(new ActiveLocationSpecification())
                 .ToList();
 
@@ -174,21 +174,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Repositories.ConfigurationRepositories
             return result;
         }
 
-        /// <inheritdoc/>
-        public Location GetLatestVersionOfLocationWithDevice(string LocationIdentifier, DateTime startDate)
-        {
-            var result = BaseQuery()
-                .Include(l => l.Devices).ThenInclude(d => d.DeviceConfiguration).ThenInclude(d => d.Product)
-                .Include(i => i.Approaches).ThenInclude(i => i.Detectors).ThenInclude(i => i.DetectionTypes).ThenInclude(i => i.MeasureTypes)
-                .Include(i => i.Approaches).ThenInclude(i => i.DirectionType)
-                .Include(i => i.Areas)
-                .FromSpecification(new LocationIdSpecification(LocationIdentifier))
-                .Where(Location => Location.Start <= startDate)
-                .FromSpecification(new ActiveLocationSpecification())
-                .FirstOrDefault();
-
-            return result;
-        }
 
         /// <inheritdoc/>
         public IReadOnlyList<Location> GetLatestVersionOfAllLocations(DateTime startDate)
@@ -279,6 +264,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Repositories.ConfigurationRepositories
         }
 
         #endregion
+
 
         /// <inheritdoc/>
         public Location GetLatestVersionOfLocationWithDevice(string LocationIdentifier, DateTime startDate)
