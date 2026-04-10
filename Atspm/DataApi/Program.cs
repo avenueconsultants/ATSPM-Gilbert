@@ -60,6 +60,7 @@ builder.Host
             o.OperationFilter<DataTypeEnumOperationFilter>();
             o.DocumentFilter<GenerateAggregationSchemas>();
             o.DocumentFilter<GenerateEventSchemas>();
+            o.DocumentFilter<SetSwaggerInfoDocumentFilter>();
         });
         s.AddConfiguredCors(builder.Configuration);
         s.AddHttpLogging(l =>

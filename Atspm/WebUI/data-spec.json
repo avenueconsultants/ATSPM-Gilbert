@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "/report"
+      "url": "/api/data"
     }
   ],
   "paths": {

@@ -44,6 +44,7 @@ using Utah.Udot.Atspm.Business.TurningMovementCounts;
 using Utah.Udot.Atspm.Business.WaitTime;
 using Utah.Udot.Atspm.Business.Watchdog;
 using Utah.Udot.Atspm.Business.YellowRedActivations;
+using Utah.Udot.Atspm.ReportApi.CustomOperations;
 using Utah.Udot.Atspm.ReportApi.DataAggregation;
 using Utah.Udot.Atspm.ReportApi.ReportServices;
 using Utah.Udot.ATSPM.Infrastructure.Services.WatchDogServices;
@@ -76,7 +77,7 @@ builder.Host
             o.CustomSchemaIds(type => type.Name);
             o.EnableAnnotations();
             o.AddJwtAuthorization();
-
+            o.DocumentFilter<SetSwaggerInfoDocumentFilter>();
         });
         s.AddConfiguredCors(builder.Configuration);
         s.AddHttpLogging(l =>
