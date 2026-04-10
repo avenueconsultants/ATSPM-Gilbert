@@ -86,11 +86,10 @@ const LocationsAdmin = () => {
     }
   }, [location?.id, setLocation, onSelectLocation])
 
-  const handleOpenWizard = () => {
+  const handleOpenWizard = useCallback(() => {
     setUseWizard(true)
-  }
-
-  const handleOpenWizard = () => setIsWizardOpen(true)
+    setIsWizardOpen(true)
+  }, [setUseWizard])
   const openNewLocationModal = useCallback(() => setModalOpen(true), [])
   const closeModal = useCallback(() => setModalOpen(false), [])
 
