@@ -1,4 +1,4 @@
-import { MapLayer } from '@/api/config/aTSPMConfigurationApi.schemas'
+import type { MapLayer } from '@/api/config'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
   Box,

@@ -1,5 +1,5 @@
-import { useGetMapLayer } from '@/api/config/aTSPMConfigurationApi'
-import { MapLayer } from '@/api/config/aTSPMConfigurationApi.schemas'
+import { useGetMapLayer } from '@/api/config'
+import type { MapLayer } from '@/api/config'
 import MapLayersLegends from '@/components/LocationMap/MapLayersLegends'
 import MapLayersList from '@/components/LocationMap/MapLayersList'
 import Markers from '@/components/LocationMap/Markers'

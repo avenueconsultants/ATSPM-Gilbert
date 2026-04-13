@@ -80,24 +80,119 @@ function authRequestInterceptor(config: InternalAxiosRequestConfig) {
   return config
 }
 
-export const configRequest = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return configAxios.request<unknown, T>(config)
+type RequestConfig = Omit<AxiosRequestConfig, 'headers' | 'data' | 'signal'> &
+  RequestInit & {
+    data?: AxiosRequestConfig['data']
+    headers?: AxiosRequestConfig['headers'] | HeadersInit
+    signal?: AxiosRequestConfig['signal'] | AbortSignal | null
+  }
+
+function normalizeHeaders(
+  headers?: RequestConfig['headers']
+): AxiosRequestConfig['headers'] {
+  if (!headers) {
+    return undefined
+  }
+
+  if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries())
+  }
+
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers)
+  }
+
+  return headers
 }
 
-export const reportsRequest = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return reportsAxios.request<unknown, T>(config)
+function normalizeRequestConfig(config?: RequestConfig): AxiosRequestConfig {
+  if (!config) {
+    return {}
+  }
+
+  const { body, data, headers, ...rest } = config
+
+  return {
+    ...(rest as AxiosRequestConfig),
+    headers: normalizeHeaders(headers),
+    data: data ?? body,
+  }
 }
 
-export const identityRequest = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return identityAxios.request<unknown, T>(config)
+function createRequestConfig(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): AxiosRequestConfig {
+  if (typeof urlOrConfig === 'string') {
+    return {
+      ...normalizeRequestConfig(config),
+      url: urlOrConfig,
+    }
+  }
+
+  return normalizeRequestConfig(urlOrConfig)
 }
 
-export const dataRequest = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return dataAxios.request<unknown, T>(config)
+function requestWithClient<T>(
+  client: ReturnType<typeof createAxiosInstance>,
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return client.request<unknown, T>(createRequestConfig(urlOrConfig, config))
 }
 
-export const speedRequest = <T>(config: AxiosRequestConfig): Promise<T> => {
-  return speedAxios.request<unknown, T>(config)
+export function configRequest<T>(config: RequestConfig): Promise<T>
+export function configRequest<T>(url: string, config?: RequestConfig): Promise<T>
+export function configRequest<T>(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return requestWithClient<T>(configAxios, urlOrConfig, config)
+}
+
+export function reportsRequest<T>(config: RequestConfig): Promise<T>
+export function reportsRequest<T>(
+  url: string,
+  config?: RequestConfig
+): Promise<T>
+export function reportsRequest<T>(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return requestWithClient<T>(reportsAxios, urlOrConfig, config)
+}
+
+export function identityRequest<T>(config: RequestConfig): Promise<T>
+export function identityRequest<T>(
+  url: string,
+  config?: RequestConfig
+): Promise<T>
+export function identityRequest<T>(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return requestWithClient<T>(identityAxios, urlOrConfig, config)
+}
+
+export function dataRequest<T>(config: RequestConfig): Promise<T>
+export function dataRequest<T>(url: string, config?: RequestConfig): Promise<T>
+export function dataRequest<T>(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return requestWithClient<T>(dataAxios, urlOrConfig, config)
+}
+
+export function speedRequest<T>(config: RequestConfig): Promise<T>
+export function speedRequest<T>(
+  url: string,
+  config?: RequestConfig
+): Promise<T>
+export function speedRequest<T>(
+  urlOrConfig: string | RequestConfig,
+  config?: RequestConfig
+): Promise<T> {
+  return requestWithClient<T>(speedAxios, urlOrConfig, config)
 }
 
 function stripZFromDates(data: any): void {

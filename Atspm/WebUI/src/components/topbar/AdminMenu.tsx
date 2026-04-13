@@ -10,6 +10,7 @@ const GROUPS: Record<string, PageNames[]> = {
     PageNames.Routes,
     PageNames.Products,
     PageNames.DeviceConfigurations,
+    PageNames.MapLayers,
   ],
   'Location Categories': [
     PageNames.Areas,

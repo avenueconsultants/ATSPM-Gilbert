@@ -1,5 +1,5 @@
 export * from './approach/approach';
-export * from './aTSPMConfigurationApi.schemas';
+export * from './config-api.schemas';
 export * from './area/area';
 export * from './detection-type/detection-type';
 export * from './detector/detector';
@@ -22,6 +22,5 @@ export * from './region/region';
 export * from './route/route';
 export * from './route-distance/route-distance';
 export * from './route-location/route-location';
-export * from './version-history/version-history';
-export * from './watch-dog-ignore-event/watch-dog-ignore-event';
 export * from './usage-entry/usage-entry';
+export * from './watch-dog-ignore-event/watch-dog-ignore-event';

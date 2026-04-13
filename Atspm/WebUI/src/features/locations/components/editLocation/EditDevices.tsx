@@ -1,8 +1,8 @@
 import {
   useGetLocationDevicesFromKey,
   usePatchDeviceFromKey,
-} from '@/api/config/aTSPMConfigurationApi'
-import { Device } from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
+import type { Device } from '@/api/config'
 import { useGetLoggingSyncNewLocationEvents } from '@/api/data/aTSPMLogDataApi'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useDeleteDevice } from '@/features/devices/api/devices'

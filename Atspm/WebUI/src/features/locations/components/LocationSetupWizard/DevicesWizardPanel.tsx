@@ -1,4 +1,4 @@
-import { Device } from '@/api/config/aTSPMConfigurationApi.schemas'
+import type { Device } from '@/api/config'
 import { DeviceEventDownload } from '@/api/data/aTSPMLogDataApi.schemas'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'

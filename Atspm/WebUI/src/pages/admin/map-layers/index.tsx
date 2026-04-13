@@ -3,8 +3,8 @@ import {
   useGetMapLayer,
   usePatchMapLayerFromKey,
   usePostMapLayer,
-} from '@/api/config/aTSPMConfigurationApi'
-import { MapLayer } from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
+import type { MapLayer } from '@/api/config'
 import AdminTable from '@/components/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
