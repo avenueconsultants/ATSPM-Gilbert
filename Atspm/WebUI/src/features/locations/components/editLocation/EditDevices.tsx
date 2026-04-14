@@ -50,6 +50,7 @@ const EditDevices = () => {
   })
 
   const devices = useMemo(() => devicesData?.value || [], [devicesData])
+  const hasDevices = devices.length > 0
 
   const { data: deviceConfigurationsData } = useGetDeviceConfigurations()
   const { mutate: deleteDevice } = useDeleteDevice()
@@ -152,6 +153,7 @@ const EditDevices = () => {
           startIcon={<LanIcon />}
           variant="contained"
           color="primary"
+          disabled={!hasDevices}
           onClick={() => {
             setShowSyncModal(true)
             handleResync()

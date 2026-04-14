@@ -17,10 +17,6 @@ import {
   Button,
   Checkbox,
   Collapse,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   FormControlLabel,
   IconButton,
@@ -162,6 +158,13 @@ const DeviceModal = ({
   })
 
   const selectedProductId = watch('productId')
+  const selectedDeviceType = watch('deviceType')
+  const selectedDeviceConfigurationId = watch('deviceConfigurationId')
+  const selectedIpAddress = watch('ipaddress')
+  const selectedDeviceConfiguration = deviceConfigurations?.find(
+    (config) => config.id === Number(selectedDeviceConfigurationId)
+  )
+  const isFirCameraSelected = selectedDeviceType === 'FIRCamera'
 
   useEffect(() => {
     if (selectedProductId && deviceConfigurations) {
@@ -219,9 +222,9 @@ const DeviceModal = ({
 
   const handleFindCamerasClick = async () => {
     const cams = await getCameras({
-      detectionType: device?.deviceType,
-      port: device?.deviceConfiguration?.port,
-      IpAddress: device?.ipaddress || '',
+      detectionType: selectedDeviceType,
+      port: selectedDeviceConfiguration?.port,
+      IpAddress: selectedIpAddress || '',
     })
     setCameras(cams || [])
     setShowCameraList(true)
@@ -364,7 +367,7 @@ const DeviceModal = ({
             />
           </FormControl>
 
-            {device?.deviceType === 'FIRCamera' && (
+            {isFirCameraSelected && (
               <>
                 <Button
                   size="small"

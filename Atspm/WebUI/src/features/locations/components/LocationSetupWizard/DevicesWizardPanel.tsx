@@ -53,6 +53,8 @@ const DevicesWizardModal = ({
   ipChanges,
   setIpChanges,
 }: DevicesWizardModalProps) => {
+  const hasDevices = (devices?.length ?? 0) > 0
+
   const handleIpChange = (deviceId: number, newIp: string) => {
     setIpChanges((prev) => ({ ...prev, [deviceId]: newIp }))
   }
@@ -183,6 +185,7 @@ const DevicesWizardModal = ({
             loadingPosition="start"
             variant="contained"
             color="primary"
+            disabled={!hasDevices}
             onClick={onResync}
           >
             Verify IP Addresses
