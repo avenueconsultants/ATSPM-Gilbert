@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getMapLayerResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetMapLayerQueryKey = (params?: GetMapLayerParams,) => {
     }
 
 
-export const getGetMapLayerQueryOptions = <TData = Awaited<ReturnType<typeof getMapLayer>>, TError = void>(params?: GetMapLayerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayer>>, TError, TData>, }
+export const getGetMapLayerQueryOptions = <TData = Awaited<ReturnType<typeof getMapLayer>>, TError = void>(params?: GetMapLayerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayer>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMapLayerQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayer>>> = ({ signal }) => getMapLayer(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayer>>> = ({ signal }) => getMapLayer(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetMapLayerQueryError = void
 
 
 export function useGetMapLayer<TData = Awaited<ReturnType<typeof getMapLayer>>, TError = void>(
- params?: GetMapLayerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayer>>, TError, TData>, }
+ params?: GetMapLayerParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayer>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postMapLayer = async (mapLayer: MapLayer,
 
 
 export const getPostMapLayerMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMapLayer>>, TError,{data: MapLayer;params?: PostMapLayerParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMapLayer>>, TError,{data: MapLayer;params?: PostMapLayerParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postMapLayer>>, TError,{data: MapLayer;params?: PostMapLayerParams}, TContext> => {
 
 const mutationKey = ['postMapLayer'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMapLayer>>, {data: MapLayer;params?: PostMapLayerParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postMapLayer(data,params,)
+          return  postMapLayer(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMapLayerMutationError = void
 
     export const usePostMapLayer = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMapLayer>>, TError,{data: MapLayer;params?: PostMapLayerParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMapLayer>>, TError,{data: MapLayer;params?: PostMapLayerParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postMapLayer>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetMapLayerCountQueryKey = (params?: GetMapLayerCountParams,) =>
     }
 
 
-export const getGetMapLayerCountQueryOptions = <TData = Awaited<ReturnType<typeof getMapLayerCount>>, TError = void>(params?: GetMapLayerCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerCount>>, TError, TData>, }
+export const getGetMapLayerCountQueryOptions = <TData = Awaited<ReturnType<typeof getMapLayerCount>>, TError = void>(params?: GetMapLayerCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMapLayerCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayerCount>>> = ({ signal }) => getMapLayerCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayerCount>>> = ({ signal }) => getMapLayerCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetMapLayerCountQueryError = void
 
 
 export function useGetMapLayerCount<TData = Awaited<ReturnType<typeof getMapLayerCount>>, TError = void>(
- params?: GetMapLayerCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerCount>>, TError, TData>, }
+ params?: GetMapLayerCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetMapLayerFromKeyQueryKey = (key: number,
 
 
 export const getGetMapLayerFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMapLayerFromKey>>, TError = void>(key: number,
-    params?: GetMapLayerFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerFromKey>>, TError, TData>, }
+    params?: GetMapLayerFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMapLayerFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayerFromKey>>> = ({ signal }) => getMapLayerFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMapLayerFromKey>>> = ({ signal }) => getMapLayerFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetMapLayerFromKeyQueryError = void
 
 export function useGetMapLayerFromKey<TData = Awaited<ReturnType<typeof getMapLayerFromKey>>, TError = void>(
  key: number,
-    params?: GetMapLayerFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerFromKey>>, TError, TData>, }
+    params?: GetMapLayerFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMapLayerFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putMapLayerFromKey = async (key: number,
 
 
 export const getPutMapLayerFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}, TContext> => {
 
 const mutationKey = ['putMapLayerFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putMapLayerFromKey>>, {key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putMapLayerFromKey(key,data,params,)
+          return  putMapLayerFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutMapLayerFromKeyMutationError = void
 
     export const usePutMapLayerFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PutMapLayerFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putMapLayerFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchMapLayerFromKey = async (key: number,
 
 
 export const getPatchMapLayerFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchMapLayerFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchMapLayerFromKey>>, {key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchMapLayerFromKey(key,data,params,)
+          return  patchMapLayerFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchMapLayerFromKeyMutationError = void
 
     export const usePatchMapLayerFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMapLayerFromKey>>, TError,{key: number;data: MapLayer;params?: PatchMapLayerFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchMapLayerFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteMapLayerFromKey = async (key: number, options?: RequestInit):
 
 
 export const getDeleteMapLayerFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteMapLayerFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteMapLayerFromKey(key,)
+          return  deleteMapLayerFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteMapLayerFromKeyMutationError = void
 
     export const useDeleteMapLayerFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMapLayerFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteMapLayerFromKey>>,
         TError,

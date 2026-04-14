@@ -79,6 +79,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -349,16 +351,16 @@ export const getGetDetectorDetectorCommentsFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorDetectorCommentsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError = void>(key: number,
-    params?: GetDetectorDetectorCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectorCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorDetectorCommentsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>> = ({ signal }) => getDetectorDetectorCommentsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>> = ({ signal }) => getDetectorDetectorCommentsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -377,7 +379,7 @@ export type GetDetectorDetectorCommentsFromKeyQueryError = void
 
 export function useGetDetectorDetectorCommentsFromKey<TData = Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorDetectorCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectorCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -661,16 +663,16 @@ export const getGetDetectorDetectorCommentsCountFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorDetectorCommentsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError = void>(key: number,
-    params?: GetDetectorDetectorCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectorCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorDetectorCommentsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>> = ({ signal }) => getDetectorDetectorCommentsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>> = ({ signal }) => getDetectorDetectorCommentsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -689,7 +691,7 @@ export type GetDetectorDetectorCommentsCountFromKeyQueryError = void
 
 export function useGetDetectorDetectorCommentsCountFromKey<TData = Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorDetectorCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectorCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectorCommentsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -973,16 +975,16 @@ export const getGetDetectorDetectionTypesFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorDetectionTypesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError = void>(key: number,
-    params?: GetDetectorDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorDetectionTypesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>> = ({ signal }) => getDetectorDetectionTypesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>> = ({ signal }) => getDetectorDetectionTypesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1001,7 +1003,7 @@ export type GetDetectorDetectionTypesFromKeyQueryError = void
 
 export function useGetDetectorDetectionTypesFromKey<TData = Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1285,16 +1287,16 @@ export const getGetDetectorDetectionTypesCountFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorDetectionTypesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError = void>(key: number,
-    params?: GetDetectorDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorDetectionTypesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>> = ({ signal }) => getDetectorDetectionTypesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>> = ({ signal }) => getDetectorDetectionTypesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1313,7 +1315,7 @@ export type GetDetectorDetectionTypesCountFromKeyQueryError = void
 
 export function useGetDetectorDetectionTypesCountFromKey<TData = Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError, TData>, }
+    params?: GetDetectorDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorDetectionTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1390,15 +1392,15 @@ export const getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType = as
 
 
 export const getGetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, TError,{data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, TError,{data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, TError,{data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}, TContext> => {
 
 const mutationKey = ['getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1406,7 +1408,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, {data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType(data,params,)
+          return  getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType(data,params,requestOptions)
         }
 
 
@@ -1421,7 +1423,7 @@ const {mutation: mutationOptions} = options ?
     export type GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeMutationError = void
 
     export const useGetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, TError,{data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>, TError,{data: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOne | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodySeven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyEight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyNine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOneeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyOnenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwozero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwotwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwothree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwofive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwosix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwoeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyTwonine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreezero | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeone | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreetwo | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreethree | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefour | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreefive | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreesix | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeseven | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreeeight | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyThreenine | GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getDetectorRetrieveDetectionZoneIdentifierBasedOnDetectionType>>,
         TError,
@@ -1686,16 +1688,16 @@ export const getGetDetectorQueryKey = (params?: GetDetectorParams,) => {
     }
 
 
-export const getGetDetectorQueryOptions = <TData = Awaited<ReturnType<typeof getDetector>>, TError = void>(params?: GetDetectorParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetector>>, TError, TData>, }
+export const getGetDetectorQueryOptions = <TData = Awaited<ReturnType<typeof getDetector>>, TError = void>(params?: GetDetectorParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetector>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetector>>> = ({ signal }) => getDetector(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetector>>> = ({ signal }) => getDetector(params, { signal, ...requestOptions });
 
 
 
@@ -1710,7 +1712,7 @@ export type GetDetectorQueryError = void
 
 
 export function useGetDetector<TData = Awaited<ReturnType<typeof getDetector>>, TError = void>(
- params?: GetDetectorParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetector>>, TError, TData>, }
+ params?: GetDetectorParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetector>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1782,15 +1784,15 @@ export const postDetector = async (detector: Detector,
 
 
 export const getPostDetectorMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetector>>, TError,{data: Detector;params?: PostDetectorParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetector>>, TError,{data: Detector;params?: PostDetectorParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDetector>>, TError,{data: Detector;params?: PostDetectorParams}, TContext> => {
 
 const mutationKey = ['postDetector'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1798,7 +1800,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDetector>>, {data: Detector;params?: PostDetectorParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDetector(data,params,)
+          return  postDetector(data,params,requestOptions)
         }
 
 
@@ -1813,7 +1815,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDetectorMutationError = void
 
     export const usePostDetector = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetector>>, TError,{data: Detector;params?: PostDetectorParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetector>>, TError,{data: Detector;params?: PostDetectorParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDetector>>,
         TError,
@@ -2078,16 +2080,16 @@ export const getGetDetectorCountQueryKey = (params?: GetDetectorCountParams,) =>
     }
 
 
-export const getGetDetectorCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorCount>>, TError = void>(params?: GetDetectorCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCount>>, TError, TData>, }
+export const getGetDetectorCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorCount>>, TError = void>(params?: GetDetectorCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCount>>> = ({ signal }) => getDetectorCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCount>>> = ({ signal }) => getDetectorCount(params, { signal, ...requestOptions });
 
 
 
@@ -2102,7 +2104,7 @@ export type GetDetectorCountQueryError = void
 
 
 export function useGetDetectorCount<TData = Awaited<ReturnType<typeof getDetectorCount>>, TError = void>(
- params?: GetDetectorCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCount>>, TError, TData>, }
+ params?: GetDetectorCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2378,16 +2380,16 @@ export const getGetDetectorFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorFromKey>>, TError = void>(key: number,
-    params?: GetDetectorFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorFromKey>>, TError, TData>, }
+    params?: GetDetectorFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorFromKey>>> = ({ signal }) => getDetectorFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorFromKey>>> = ({ signal }) => getDetectorFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -2403,7 +2405,7 @@ export type GetDetectorFromKeyQueryError = void
 
 export function useGetDetectorFromKey<TData = Awaited<ReturnType<typeof getDetectorFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorFromKey>>, TError, TData>, }
+    params?: GetDetectorFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2482,15 +2484,15 @@ export const putDetectorFromKey = async (key: number,
 
 
 export const getPutDetectorFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorFromKey>>, TError,{key: number;data: Detector;params?: PutDetectorFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorFromKey>>, TError,{key: number;data: Detector;params?: PutDetectorFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDetectorFromKey>>, TError,{key: number;data: Detector;params?: PutDetectorFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDetectorFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2498,7 +2500,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDetectorFromKey>>, {key: number;data: Detector;params?: PutDetectorFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDetectorFromKey(key,data,params,)
+          return  putDetectorFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2513,7 +2515,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDetectorFromKeyMutationError = void
 
     export const usePutDetectorFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorFromKey>>, TError,{key: number;data: Detector;params?: PutDetectorFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorFromKey>>, TError,{key: number;data: Detector;params?: PutDetectorFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDetectorFromKey>>,
         TError,
@@ -2585,15 +2587,15 @@ export const patchDetectorFromKey = async (key: number,
 
 
 export const getPatchDetectorFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorFromKey>>, TError,{key: number;data: Detector;params?: PatchDetectorFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorFromKey>>, TError,{key: number;data: Detector;params?: PatchDetectorFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDetectorFromKey>>, TError,{key: number;data: Detector;params?: PatchDetectorFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDetectorFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2601,7 +2603,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDetectorFromKey>>, {key: number;data: Detector;params?: PatchDetectorFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDetectorFromKey(key,data,params,)
+          return  patchDetectorFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2616,7 +2618,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDetectorFromKeyMutationError = void
 
     export const usePatchDetectorFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorFromKey>>, TError,{key: number;data: Detector;params?: PatchDetectorFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorFromKey>>, TError,{key: number;data: Detector;params?: PatchDetectorFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDetectorFromKey>>,
         TError,
@@ -2677,15 +2679,15 @@ export const deleteDetectorFromKey = async (key: number, options?: RequestInit):
 
 
 export const getDeleteDetectorFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteDetectorFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2693,7 +2695,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDetectorFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDetectorFromKey(key,)
+          return  deleteDetectorFromKey(key,requestOptions)
         }
 
 
@@ -2708,7 +2710,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDetectorFromKeyMutationError = void
 
     export const useDeleteDetectorFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDetectorFromKey>>,
         TError,

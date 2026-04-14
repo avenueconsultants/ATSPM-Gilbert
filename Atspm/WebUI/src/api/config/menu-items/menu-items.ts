@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getMenuItemsResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetMenuItemsQueryKey = (params?: GetMenuItemsParams,) => {
     }
 
 
-export const getGetMenuItemsQueryOptions = <TData = Awaited<ReturnType<typeof getMenuItems>>, TError = void>(params?: GetMenuItemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItems>>, TError, TData>, }
+export const getGetMenuItemsQueryOptions = <TData = Awaited<ReturnType<typeof getMenuItems>>, TError = void>(params?: GetMenuItemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItems>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMenuItemsQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItems>>> = ({ signal }) => getMenuItems(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItems>>> = ({ signal }) => getMenuItems(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetMenuItemsQueryError = void
 
 
 export function useGetMenuItems<TData = Awaited<ReturnType<typeof getMenuItems>>, TError = void>(
- params?: GetMenuItemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItems>>, TError, TData>, }
+ params?: GetMenuItemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItems>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postMenuItems = async (menuItem: MenuItem,
 
 
 export const getPostMenuItemsMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMenuItems>>, TError,{data: MenuItem;params?: PostMenuItemsParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMenuItems>>, TError,{data: MenuItem;params?: PostMenuItemsParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postMenuItems>>, TError,{data: MenuItem;params?: PostMenuItemsParams}, TContext> => {
 
 const mutationKey = ['postMenuItems'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMenuItems>>, {data: MenuItem;params?: PostMenuItemsParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postMenuItems(data,params,)
+          return  postMenuItems(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMenuItemsMutationError = void
 
     export const usePostMenuItems = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMenuItems>>, TError,{data: MenuItem;params?: PostMenuItemsParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMenuItems>>, TError,{data: MenuItem;params?: PostMenuItemsParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postMenuItems>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetMenuItemsCountQueryKey = (params?: GetMenuItemsCountParams,) 
     }
 
 
-export const getGetMenuItemsCountQueryOptions = <TData = Awaited<ReturnType<typeof getMenuItemsCount>>, TError = void>(params?: GetMenuItemsCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsCount>>, TError, TData>, }
+export const getGetMenuItemsCountQueryOptions = <TData = Awaited<ReturnType<typeof getMenuItemsCount>>, TError = void>(params?: GetMenuItemsCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMenuItemsCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItemsCount>>> = ({ signal }) => getMenuItemsCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItemsCount>>> = ({ signal }) => getMenuItemsCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetMenuItemsCountQueryError = void
 
 
 export function useGetMenuItemsCount<TData = Awaited<ReturnType<typeof getMenuItemsCount>>, TError = void>(
- params?: GetMenuItemsCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsCount>>, TError, TData>, }
+ params?: GetMenuItemsCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetMenuItemsFromKeyQueryKey = (key: number,
 
 
 export const getGetMenuItemsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError = void>(key: number,
-    params?: GetMenuItemsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError, TData>, }
+    params?: GetMenuItemsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMenuItemsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItemsFromKey>>> = ({ signal }) => getMenuItemsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuItemsFromKey>>> = ({ signal }) => getMenuItemsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetMenuItemsFromKeyQueryError = void
 
 export function useGetMenuItemsFromKey<TData = Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError = void>(
  key: number,
-    params?: GetMenuItemsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError, TData>, }
+    params?: GetMenuItemsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMenuItemsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putMenuItemsFromKey = async (key: number,
 
 
 export const getPutMenuItemsFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}, TContext> => {
 
 const mutationKey = ['putMenuItemsFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putMenuItemsFromKey>>, {key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putMenuItemsFromKey(key,data,params,)
+          return  putMenuItemsFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutMenuItemsFromKeyMutationError = void
 
     export const usePutMenuItemsFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PutMenuItemsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putMenuItemsFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchMenuItemsFromKey = async (key: number,
 
 
 export const getPatchMenuItemsFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchMenuItemsFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, {key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchMenuItemsFromKey(key,data,params,)
+          return  patchMenuItemsFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchMenuItemsFromKeyMutationError = void
 
     export const usePatchMenuItemsFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMenuItemsFromKey>>, TError,{key: number;data: MenuItem;params?: PatchMenuItemsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchMenuItemsFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteMenuItemsFromKey = async (key: number, options?: RequestInit)
 
 
 export const getDeleteMenuItemsFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteMenuItemsFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteMenuItemsFromKey(key,)
+          return  deleteMenuItemsFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteMenuItemsFromKeyMutationError = void
 
     export const useDeleteMenuItemsFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMenuItemsFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteMenuItemsFromKey>>,
         TError,

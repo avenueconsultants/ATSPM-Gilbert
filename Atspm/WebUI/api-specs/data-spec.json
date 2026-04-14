@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "ATSPM Data Api",
-    "description": "ATSPM Data with OpenAPI, Swashbuckle, and API versioning.",
+    "title": "Atspm Data Api",
+    "description": "Download Atspm Event Logs and Aggregations",
     "contact": {
       "name": "udotdevelopment",
       "url": "https://udottraffic.utah.gov/atspm/",
@@ -16,13 +16,15 @@
   },
   "servers": [
     {
-      "url": "/api/data"
+      "url": "/report"
     }
   ],
   "paths": {
     "/api/v1/Aggregation/GetDataTypes": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Retrieves the available derived data types defined in the system.",
         "operationId": "GetAggregationDataTypes",
         "responses": {
@@ -64,7 +66,9 @@
     },
     "/api/v1/Aggregation/StreamData/{locationIdentifier}": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Streams archived data records for a specific location within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a <typeparamref name=\"T1\" /> record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?start=2024-01-01&end=2024-12-31\r\n            \r\n### Example Response (NDJSON)\r\n```\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"}\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n```\r\n            \r\n### Streaming and Cancellation\r\n- Results are streamed using `IAsyncEnumerable`.\r\n- Clients can cancel by aborting the HTTP request (e.g., disposing `HttpClient` in .NET or calling `AbortController.abort()` in JavaScript).\r\n- Cancellation immediately stops enumeration and closes the response.",
         "operationId": "GetAggregationStreamDataFromLocationIdentifier",
@@ -143,7 +147,9 @@
     },
     "/api/v1/Aggregation/GetData/{locationIdentifier}": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Retrieves archived data records for a specific location within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedDataBase objects.\r\n            \r\n### Example Request\r\n- GET /GetData/1014?start=2024-01-01&end=2024-12-31\r\n            \r\n### Example Response (JSON Array)\r\n```json\r\n[\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"},\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n]\r\n```",
         "operationId": "GetAggregationDataFromLocationIdentifier",
@@ -248,7 +254,9 @@
     },
     "/api/v1/Aggregation/StreamData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Streams archived data records for a specific location and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a CompressedDataBase record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?start=2024-01-01&end=2024-12-31&dataType=[dataType]\r\n            \r\n### Example Response (NDJSON)\r\n```\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"}\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n```",
         "operationId": "GetAggregationStreamDataFromLocationIdentifierAndDataType",
@@ -353,7 +361,9 @@
     },
     "/api/v1/Aggregation/GetData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Retrieves archived data records for a specific location and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedDataBase objects.\r\n            \r\n### Example Request\r\n- GET /GetData/1014?start=2024-01-01&end=2024-12-31&dataType=[dataType]\r\n            \r\n### Example Response (JSON Array)\r\n```json\r\n[\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"},\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n]\r\n```",
         "operationId": "GetAggregationDataFromLocationIdentifierAndDataType",
@@ -461,7 +471,9 @@
     },
     "/api/v1/Aggregation/GetDaysWithData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["Aggregation"],
+        "tags": [
+          "Aggregation"
+        ],
         "summary": "Retrieves the distinct days that contain data for a specific location and data type\r\nwithin the given date range.",
         "description": "This endpoint allows anonymous access and returns a JSON array of System.DateOnly values.\r\nEach value represents a day for which data exists. The request must specify a valid\r\nlocation identifier, data type, and date range. If the inputs are invalid or the location/data type\r\ncannot be resolved, an appropriate error response is returned.",
         "operationId": "GetAggregationDaysWithDataFromLocationIdentifierAndDataType",
@@ -570,7 +582,9 @@
     },
     "/api/v1/EventLog/StreamData/{locationIdentifier}/{deviceId}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Streams archived data records for a specific location, device, and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a Utah.Udot.Atspm.Data.Models.CompressedEventLogBase record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?deviceId=42&start=2024-01-01&end=2024-12-31&dataType=[dataType]",
         "operationId": "GetEventLogStreamDataFromLocationIdentifierAndDeviceId",
@@ -659,7 +673,9 @@
     },
     "/api/v1/EventLog/GetData/{locationIdentifier}/{deviceId}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves archived data records for a specific location, device, and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedEventLogBase objects.",
         "operationId": "GetEventLogDataFromLocationIdentifierAndDeviceId",
@@ -751,7 +767,9 @@
     },
     "/api/v1/EventLog/StreamData/{locationIdentifier}/{dataType}/{deviceId}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Streams archived data records for a specific location, device, and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a Utah.Udot.Atspm.Data.Models.CompressedEventLogBase record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?deviceId=42&start=2024-01-01&end=2024-12-31&dataType=[dataType]",
         "operationId": "GetEventLogStreamDataFromLocationIdentifierAndDataTypeAndDeviceId",
@@ -771,7 +789,13 @@
             "description": "Name of the data type. Must map to a valid CLR type.",
             "required": true,
             "schema": {
-              "enum": ["IndianaEvent", "PedestrianCounter", "SpeedEvent"],
+              "enum": [
+                "EnhancedEventLog",
+                "IndianaEvent",
+                "PedestrianCounter",
+                "SpeedEvent",
+                "VisionCameraStatisticsEvent"
+              ],
               "type": "string"
             }
           },
@@ -850,7 +874,9 @@
     },
     "/api/v1/EventLog/GetData/{locationIdentifier}/{dataType}/{deviceId}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves archived data records for a specific location, device, and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedEventLogBase objects.",
         "operationId": "GetEventLogDataFromLocationIdentifierAndDataTypeAndDeviceId",
@@ -870,7 +896,13 @@
             "description": "Name of the data type. Must map to a valid CLR type.",
             "required": true,
             "schema": {
-              "enum": ["IndianaEvent", "PedestrianCounter", "SpeedEvent"],
+              "enum": [
+                "EnhancedEventLog",
+                "IndianaEvent",
+                "PedestrianCounter",
+                "SpeedEvent",
+                "VisionCameraStatisticsEvent"
+              ],
               "type": "string"
             }
           },
@@ -952,7 +984,9 @@
     },
     "/api/v1/EventLog/GetDataTypes": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves the available derived data types defined in the system.",
         "operationId": "GetEventLogDataTypes",
         "responses": {
@@ -994,7 +1028,9 @@
     },
     "/api/v1/EventLog/StreamData/{locationIdentifier}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Streams archived data records for a specific location within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a <typeparamref name=\"T1\" /> record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?start=2024-01-01&end=2024-12-31\r\n            \r\n### Example Response (NDJSON)\r\n```\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"}\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n```\r\n            \r\n### Streaming and Cancellation\r\n- Results are streamed using `IAsyncEnumerable`.\r\n- Clients can cancel by aborting the HTTP request (e.g., disposing `HttpClient` in .NET or calling `AbortController.abort()` in JavaScript).\r\n- Cancellation immediately stops enumeration and closes the response.",
         "operationId": "GetEventLogStreamDataFromLocationIdentifier",
@@ -1073,7 +1109,9 @@
     },
     "/api/v1/EventLog/GetData/{locationIdentifier}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves archived data records for a specific location within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedDataBase objects.\r\n            \r\n### Example Request\r\n- GET /GetData/1014?start=2024-01-01&end=2024-12-31\r\n            \r\n### Example Response (JSON Array)\r\n```json\r\n[\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"},\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n]\r\n```",
         "operationId": "GetEventLogDataFromLocationIdentifier",
@@ -1178,7 +1216,9 @@
     },
     "/api/v1/EventLog/StreamData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Streams archived data records for a specific location and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/x-ndjson`\r\n- Each line is a JSON object representing a CompressedDataBase record.\r\n- Clients should parse line-by-line rather than expecting a JSON array.\r\n            \r\n### Example Request\r\n- GET /StreamData/1014?start=2024-01-01&end=2024-12-31&dataType=[dataType]\r\n            \r\n### Example Response (NDJSON)\r\n```\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"}\r\n{\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n```",
         "operationId": "GetEventLogStreamDataFromLocationIdentifierAndDataType",
@@ -1198,7 +1238,13 @@
             "description": "Name of the data type. Must map to a valid CLR type.",
             "required": true,
             "schema": {
-              "enum": ["IndianaEvent", "PedestrianCounter", "SpeedEvent"],
+              "enum": [
+                "EnhancedEventLog",
+                "IndianaEvent",
+                "PedestrianCounter",
+                "SpeedEvent",
+                "VisionCameraStatisticsEvent"
+              ],
               "type": "string"
             }
           },
@@ -1267,7 +1313,9 @@
     },
     "/api/v1/EventLog/GetData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves archived data records for a specific location and data type within a given date range.",
         "description": "### Response Format\r\n- Content type: `application/json`\r\n- Response is a JSON array of Utah.Udot.Atspm.Data.Models.CompressedDataBase objects.\r\n            \r\n### Example Request\r\n- GET /GetData/1014?start=2024-01-01&end=2024-12-31&dataType=[dataType]\r\n            \r\n### Example Response (JSON Array)\r\n```json\r\n[\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-01T00:00:00Z\",\"end\":\"2024-01-01T23:59:59Z\"},\r\n  {\"locationId\":\"1014\",\"start\":\"2024-01-02T00:00:00Z\",\"end\":\"2024-01-02T23:59:59Z\"}\r\n]\r\n```",
         "operationId": "GetEventLogDataFromLocationIdentifierAndDataType",
@@ -1287,7 +1335,13 @@
             "description": "Name of the data type. Must map to a valid CLR type.",
             "required": true,
             "schema": {
-              "enum": ["IndianaEvent", "PedestrianCounter", "SpeedEvent"],
+              "enum": [
+                "EnhancedEventLog",
+                "IndianaEvent",
+                "PedestrianCounter",
+                "SpeedEvent",
+                "VisionCameraStatisticsEvent"
+              ],
               "type": "string"
             }
           },
@@ -1359,7 +1413,9 @@
     },
     "/api/v1/EventLog/GetDaysWithData/{locationIdentifier}/{dataType}": {
       "get": {
-        "tags": ["EventLog"],
+        "tags": [
+          "EventLog"
+        ],
         "summary": "Retrieves the distinct days that contain data for a specific location and data type\r\nwithin the given date range.",
         "description": "This endpoint allows anonymous access and returns a JSON array of System.DateOnly values.\r\nEach value represents a day for which data exists. The request must specify a valid\r\nlocation identifier, data type, and date range. If the inputs are invalid or the location/data type\r\ncannot be resolved, an appropriate error response is returned.",
         "operationId": "GetEventLogDaysWithDataFromLocationIdentifierAndDataType",
@@ -1379,7 +1435,13 @@
             "description": "The name of the event log data type. Must map to a valid derived type of `EventLogModelBase`.",
             "required": true,
             "schema": {
-              "enum": ["IndianaEvent", "PedestrianCounter", "SpeedEvent"],
+              "enum": [
+                "EnhancedEventLog",
+                "IndianaEvent",
+                "PedestrianCounter",
+                "SpeedEvent",
+                "VisionCameraStatisticsEvent"
+              ],
               "type": "string"
             }
           },
@@ -1446,6 +1508,114 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/Logging/log": {
+      "get": {
+        "tags": [
+          "Logging"
+        ],
+        "summary": "This will kick off the workflow to pull events.",
+        "operationId": "GetLoggingSyncNewLocationEvents",
+        "parameters": [
+          {
+            "name": "deviceIds",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "406": {
+            "description": "Not Acceptable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceEventDownload"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceEventDownload"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Logging/deviceEventLoggin": {
+      "post": {
+        "tags": [
+          "Logging"
+        ],
+        "operationId": "GetLoggingDeviceEventLogging",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventLoggingConfiguration"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventLoggingConfiguration"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventLoggingConfiguration"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceEventLoggingConfiguration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "406": {
+            "description": "Not Acceptable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
           }
         }
       }
@@ -1765,7 +1935,13 @@
         "additionalProperties": false
       },
       "CallingConventions": {
-        "enum": [1, 2, 3, 32, 64],
+        "enum": [
+          1,
+          2,
+          3,
+          32,
+          64
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -2077,8 +2253,205 @@
         },
         "additionalProperties": false
       },
+      "DeviceEventDownload": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ipaddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypes"
+          },
+          "beforeWorkflowEventCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "afterWorkflowEventCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "changeInEventCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeviceEventLoggingConfiguration": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "batchSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "parallelProcesses": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deviceEventLoggingQueryOptions": {
+            "$ref": "#/components/schemas/DeviceEventLoggingQueryOptions"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeviceEventLoggingQueryOptions": {
+        "type": "object",
+        "properties": {
+          "includedDevices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "includeConfigurations": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "deviceType": {
+            "$ref": "#/components/schemas/DeviceTypes"
+          },
+          "transportProtocol": {
+            "$ref": "#/components/schemas/TransportProtocols"
+          },
+          "deviceStatus": {
+            "$ref": "#/components/schemas/DeviceStatus"
+          },
+          "includedLocations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "excludedLocations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "includedLocationTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "includedAreas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "includedJurisdictions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "includedRegions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeviceStatus": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "DeviceTypes": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "type": "integer",
+        "format": "int32"
+      },
+      "EnhancedEventLog": {
+        "type": "object",
+        "properties": {
+          "locationIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "detectorId": {
+            "type": "string",
+            "nullable": true
+          },
+          "mph": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "kph": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneName": {
+            "type": "string",
+            "nullable": true
+          },
+          "objectType": {
+            "type": "string",
+            "nullable": true
+          },
+          "length": {
+            "type": "number",
+            "format": "double"
+          },
+          "direction": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "EventAttributes": {
-        "enum": [0, 512, 1024],
+        "enum": [
+          0,
+          512,
+          1024
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -2161,8 +2534,25 @@
       },
       "FieldAttributes": {
         "enum": [
-          0, 1, 2, 3, 4, 5, 6, 7, 16, 32, 64, 128, 256, 512, 1024, 4096, 8192,
-          32768, 38144
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          16,
+          32,
+          64,
+          128,
+          256,
+          512,
+          1024,
+          4096,
+          8192,
+          32768,
+          38144
         ],
         "type": "integer",
         "format": "int32"
@@ -2278,7 +2668,16 @@
         "additionalProperties": false
       },
       "GenericParameterAttributes": {
-        "enum": [0, 1, 2, 3, 4, 8, 16, 28],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          8,
+          16,
+          28
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -2323,7 +2722,11 @@
         "additionalProperties": false
       },
       "LayoutKind": {
-        "enum": [0, 2, 3],
+        "enum": [
+          0,
+          2,
+          3
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -2368,14 +2771,44 @@
         "additionalProperties": false
       },
       "MemberTypes": {
-        "enum": [1, 2, 4, 8, 16, 32, 64, 128, 191],
+        "enum": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          191
+        ],
         "type": "integer",
         "format": "int32"
       },
       "MethodAttributes": {
         "enum": [
-          0, 1, 2, 3, 4, 5, 6, 7, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
-          4096, 8192, 16384, 32768, 53248
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256,
+          512,
+          1024,
+          2048,
+          4096,
+          8192,
+          16384,
+          32768,
+          53248
         ],
         "type": "integer",
         "format": "int32"
@@ -2513,7 +2946,22 @@
         "additionalProperties": false
       },
       "MethodImplAttributes": {
-        "enum": [0, 1, 2, 3, 4, 8, 16, 32, 64, 128, 256, 512, 4096, 65535],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128,
+          256,
+          512,
+          4096,
+          65535
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -2720,7 +3168,19 @@
         "additionalProperties": false
       },
       "ParameterAttributes": {
-        "enum": [0, 1, 2, 4, 8, 16, 4096, 8192, 16384, 32768, 61440],
+        "enum": [
+          0,
+          1,
+          2,
+          4,
+          8,
+          16,
+          4096,
+          8192,
+          16384,
+          32768,
+          61440
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -3026,8 +3486,8 @@
             "nullable": true
           },
           "eightyFifthPercentileSplit": {
-            "type": "integer",
-            "format": "int32"
+            "type": "number",
+            "format": "double"
           },
           "phaseNumber": {
             "type": "integer",
@@ -3167,10 +3627,19 @@
             "nullable": true
           }
         },
-        "additionalProperties": {}
+        "additionalProperties": { }
       },
       "PropertyAttributes": {
-        "enum": [0, 512, 1024, 4096, 8192, 16384, 32768, 62464],
+        "enum": [
+          0,
+          512,
+          1024,
+          4096,
+          8192,
+          16384,
+          32768,
+          62464
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -3283,7 +3752,11 @@
         "additionalProperties": false
       },
       "SecurityRuleSet": {
-        "enum": [0, 1, 2],
+        "enum": [
+          0,
+          1,
+          2
+        ],
         "type": "integer",
         "format": "int32"
       },
@@ -3369,6 +3842,17 @@
           }
         },
         "additionalProperties": false
+      },
+      "TransportProtocols": {
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "type": "integer",
+        "format": "int32"
       },
       "Type": {
         "type": "object",
@@ -3673,8 +4157,32 @@
       },
       "TypeAttributes": {
         "enum": [
-          0, 1, 2, 3, 4, 5, 6, 7, 8, 16, 24, 32, 128, 256, 1024, 2048, 4096,
-          8192, 16384, 65536, 131072, 196608, 262144, 264192, 1048576, 12582912
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          16,
+          24,
+          32,
+          128,
+          256,
+          1024,
+          2048,
+          4096,
+          8192,
+          16384,
+          65536,
+          131072,
+          196608,
+          262144,
+          264192,
+          1048576,
+          12582912
         ],
         "type": "integer",
         "format": "int32"
@@ -4051,6 +4559,60 @@
           }
         },
         "additionalProperties": false
+      },
+      "VisionCameraStatisticsEvent": {
+        "type": "object",
+        "properties": {
+          "locationIdentifier": {
+            "type": "string",
+            "nullable": true
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "zoneName": {
+            "type": "string",
+            "nullable": true
+          },
+          "averageSpeed": {
+            "type": "number",
+            "format": "double"
+          },
+          "volume": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "occupancy": {
+            "type": "number",
+            "format": "double"
+          },
+          "throughCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rightTurnCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leftTurnCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "leftToRightCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rightToLeftCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
@@ -4064,7 +4626,7 @@
   },
   "security": [
     {
-      "Bearer": []
+      "Bearer": [ ]
     }
   ]
 }

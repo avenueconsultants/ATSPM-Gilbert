@@ -38,6 +38,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -308,16 +310,16 @@ export const getGetApproachDetectorsFromKeyQueryKey = (key: number,
 
 
 export const getGetApproachDetectorsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError = void>(key: number,
-    params?: GetApproachDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError, TData>, }
+    params?: GetApproachDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachDetectorsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>> = ({ signal }) => getApproachDetectorsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>> = ({ signal }) => getApproachDetectorsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -336,7 +338,7 @@ export type GetApproachDetectorsFromKeyQueryError = void
 
 export function useGetApproachDetectorsFromKey<TData = Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError = void>(
  key: number,
-    params?: GetApproachDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError, TData>, }
+    params?: GetApproachDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -620,16 +622,16 @@ export const getGetApproachDetectorsCountFromKeyQueryKey = (key: number,
 
 
 export const getGetApproachDetectorsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError = void>(key: number,
-    params?: GetApproachDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError, TData>, }
+    params?: GetApproachDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachDetectorsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>> = ({ signal }) => getApproachDetectorsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>> = ({ signal }) => getApproachDetectorsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -648,7 +650,7 @@ export type GetApproachDetectorsCountFromKeyQueryError = void
 
 export function useGetApproachDetectorsCountFromKey<TData = Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetApproachDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError, TData>, }
+    params?: GetApproachDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachDetectorsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -720,15 +722,15 @@ export const upsertApproachApproach = async (approachDto: ApproachDto,
 
 
 export const getUpsertApproachApproachMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertApproachApproach>>, TError,{data: ApproachDto;params?: UpsertApproachApproachParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertApproachApproach>>, TError,{data: ApproachDto;params?: UpsertApproachApproachParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof upsertApproachApproach>>, TError,{data: ApproachDto;params?: UpsertApproachApproachParams}, TContext> => {
 
 const mutationKey = ['upsertApproachApproach'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -736,7 +738,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertApproachApproach>>, {data: ApproachDto;params?: UpsertApproachApproachParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  upsertApproachApproach(data,params,)
+          return  upsertApproachApproach(data,params,requestOptions)
         }
 
 
@@ -751,7 +753,7 @@ const {mutation: mutationOptions} = options ?
     export type UpsertApproachApproachMutationError = void
 
     export const useUpsertApproachApproach = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertApproachApproach>>, TError,{data: ApproachDto;params?: UpsertApproachApproachParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertApproachApproach>>, TError,{data: ApproachDto;params?: UpsertApproachApproachParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof upsertApproachApproach>>,
         TError,
@@ -825,16 +827,16 @@ export const getGetApproachApproachDtoFromIdQueryKey = (id: number,
 
 
 export const getGetApproachApproachDtoFromIdQueryOptions = <TData = Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError = void>(id: number,
-    params?: GetApproachApproachDtoFromIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError, TData>, }
+    params?: GetApproachApproachDtoFromIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachApproachDtoFromIdQueryKey(id,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>> = ({ signal }) => getApproachApproachDtoFromId(id,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>> = ({ signal }) => getApproachApproachDtoFromId(id,params, { signal, ...requestOptions });
 
 
 
@@ -850,7 +852,7 @@ export type GetApproachApproachDtoFromIdQueryError = void
 
 export function useGetApproachApproachDtoFromId<TData = Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError = void>(
  id: number,
-    params?: GetApproachApproachDtoFromIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError, TData>, }
+    params?: GetApproachApproachDtoFromIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachApproachDtoFromId>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1122,16 +1124,16 @@ export const getGetApproachQueryKey = (params?: GetApproachParams,) => {
     }
 
 
-export const getGetApproachQueryOptions = <TData = Awaited<ReturnType<typeof getApproach>>, TError = void>(params?: GetApproachParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproach>>, TError, TData>, }
+export const getGetApproachQueryOptions = <TData = Awaited<ReturnType<typeof getApproach>>, TError = void>(params?: GetApproachParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproach>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproach>>> = ({ signal }) => getApproach(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproach>>> = ({ signal }) => getApproach(params, { signal, ...requestOptions });
 
 
 
@@ -1146,7 +1148,7 @@ export type GetApproachQueryError = void
 
 
 export function useGetApproach<TData = Awaited<ReturnType<typeof getApproach>>, TError = void>(
- params?: GetApproachParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproach>>, TError, TData>, }
+ params?: GetApproachParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproach>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1218,15 +1220,15 @@ export const postApproach = async (approach: Approach,
 
 
 export const getPostApproachMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApproach>>, TError,{data: Approach;params?: PostApproachParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApproach>>, TError,{data: Approach;params?: PostApproachParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postApproach>>, TError,{data: Approach;params?: PostApproachParams}, TContext> => {
 
 const mutationKey = ['postApproach'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1234,7 +1236,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postApproach>>, {data: Approach;params?: PostApproachParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postApproach(data,params,)
+          return  postApproach(data,params,requestOptions)
         }
 
 
@@ -1249,7 +1251,7 @@ const {mutation: mutationOptions} = options ?
     export type PostApproachMutationError = void
 
     export const usePostApproach = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApproach>>, TError,{data: Approach;params?: PostApproachParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApproach>>, TError,{data: Approach;params?: PostApproachParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postApproach>>,
         TError,
@@ -1514,16 +1516,16 @@ export const getGetApproachCountQueryKey = (params?: GetApproachCountParams,) =>
     }
 
 
-export const getGetApproachCountQueryOptions = <TData = Awaited<ReturnType<typeof getApproachCount>>, TError = void>(params?: GetApproachCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachCount>>, TError, TData>, }
+export const getGetApproachCountQueryOptions = <TData = Awaited<ReturnType<typeof getApproachCount>>, TError = void>(params?: GetApproachCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachCount>>> = ({ signal }) => getApproachCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachCount>>> = ({ signal }) => getApproachCount(params, { signal, ...requestOptions });
 
 
 
@@ -1538,7 +1540,7 @@ export type GetApproachCountQueryError = void
 
 
 export function useGetApproachCount<TData = Awaited<ReturnType<typeof getApproachCount>>, TError = void>(
- params?: GetApproachCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachCount>>, TError, TData>, }
+ params?: GetApproachCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1814,16 +1816,16 @@ export const getGetApproachFromKeyQueryKey = (key: number,
 
 
 export const getGetApproachFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getApproachFromKey>>, TError = void>(key: number,
-    params?: GetApproachFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachFromKey>>, TError, TData>, }
+    params?: GetApproachFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetApproachFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachFromKey>>> = ({ signal }) => getApproachFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApproachFromKey>>> = ({ signal }) => getApproachFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1839,7 +1841,7 @@ export type GetApproachFromKeyQueryError = void
 
 export function useGetApproachFromKey<TData = Awaited<ReturnType<typeof getApproachFromKey>>, TError = void>(
  key: number,
-    params?: GetApproachFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachFromKey>>, TError, TData>, }
+    params?: GetApproachFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApproachFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1918,15 +1920,15 @@ export const putApproachFromKey = async (key: number,
 
 
 export const getPutApproachFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApproachFromKey>>, TError,{key: number;data: Approach;params?: PutApproachFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApproachFromKey>>, TError,{key: number;data: Approach;params?: PutApproachFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putApproachFromKey>>, TError,{key: number;data: Approach;params?: PutApproachFromKeyParams}, TContext> => {
 
 const mutationKey = ['putApproachFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1934,7 +1936,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putApproachFromKey>>, {key: number;data: Approach;params?: PutApproachFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putApproachFromKey(key,data,params,)
+          return  putApproachFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1949,7 +1951,7 @@ const {mutation: mutationOptions} = options ?
     export type PutApproachFromKeyMutationError = void
 
     export const usePutApproachFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApproachFromKey>>, TError,{key: number;data: Approach;params?: PutApproachFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApproachFromKey>>, TError,{key: number;data: Approach;params?: PutApproachFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putApproachFromKey>>,
         TError,
@@ -2021,15 +2023,15 @@ export const patchApproachFromKey = async (key: number,
 
 
 export const getPatchApproachFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApproachFromKey>>, TError,{key: number;data: Approach;params?: PatchApproachFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApproachFromKey>>, TError,{key: number;data: Approach;params?: PatchApproachFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchApproachFromKey>>, TError,{key: number;data: Approach;params?: PatchApproachFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchApproachFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2037,7 +2039,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchApproachFromKey>>, {key: number;data: Approach;params?: PatchApproachFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchApproachFromKey(key,data,params,)
+          return  patchApproachFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2052,7 +2054,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchApproachFromKeyMutationError = void
 
     export const usePatchApproachFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApproachFromKey>>, TError,{key: number;data: Approach;params?: PatchApproachFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchApproachFromKey>>, TError,{key: number;data: Approach;params?: PatchApproachFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchApproachFromKey>>,
         TError,
@@ -2113,15 +2115,15 @@ export const deleteApproachFromKey = async (key: number, options?: RequestInit):
 
 
 export const getDeleteApproachFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApproachFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApproachFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteApproachFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteApproachFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2129,7 +2131,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteApproachFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteApproachFromKey(key,)
+          return  deleteApproachFromKey(key,requestOptions)
         }
 
 
@@ -2144,7 +2146,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteApproachFromKeyMutationError = void
 
     export const useDeleteApproachFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApproachFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApproachFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteApproachFromKey>>,
         TError,

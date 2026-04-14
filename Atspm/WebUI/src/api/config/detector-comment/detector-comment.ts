@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getDetectorCommentResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetDetectorCommentQueryKey = (params?: GetDetectorCommentParams,
     }
 
 
-export const getGetDetectorCommentQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorComment>>, TError = void>(params?: GetDetectorCommentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorComment>>, TError, TData>, }
+export const getGetDetectorCommentQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorComment>>, TError = void>(params?: GetDetectorCommentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorComment>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorCommentQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorComment>>> = ({ signal }) => getDetectorComment(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorComment>>> = ({ signal }) => getDetectorComment(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetDetectorCommentQueryError = void
 
 
 export function useGetDetectorComment<TData = Awaited<ReturnType<typeof getDetectorComment>>, TError = void>(
- params?: GetDetectorCommentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorComment>>, TError, TData>, }
+ params?: GetDetectorCommentParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorComment>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postDetectorComment = async (detectorComment: DetectorComment,
 
 
 export const getPostDetectorCommentMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectorComment>>, TError,{data: DetectorComment;params?: PostDetectorCommentParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectorComment>>, TError,{data: DetectorComment;params?: PostDetectorCommentParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDetectorComment>>, TError,{data: DetectorComment;params?: PostDetectorCommentParams}, TContext> => {
 
 const mutationKey = ['postDetectorComment'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDetectorComment>>, {data: DetectorComment;params?: PostDetectorCommentParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDetectorComment(data,params,)
+          return  postDetectorComment(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDetectorCommentMutationError = void
 
     export const usePostDetectorComment = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectorComment>>, TError,{data: DetectorComment;params?: PostDetectorCommentParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectorComment>>, TError,{data: DetectorComment;params?: PostDetectorCommentParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDetectorComment>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetDetectorCommentCountQueryKey = (params?: GetDetectorCommentCo
     }
 
 
-export const getGetDetectorCommentCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorCommentCount>>, TError = void>(params?: GetDetectorCommentCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentCount>>, TError, TData>, }
+export const getGetDetectorCommentCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorCommentCount>>, TError = void>(params?: GetDetectorCommentCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorCommentCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCommentCount>>> = ({ signal }) => getDetectorCommentCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCommentCount>>> = ({ signal }) => getDetectorCommentCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetDetectorCommentCountQueryError = void
 
 
 export function useGetDetectorCommentCount<TData = Awaited<ReturnType<typeof getDetectorCommentCount>>, TError = void>(
- params?: GetDetectorCommentCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentCount>>, TError, TData>, }
+ params?: GetDetectorCommentCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetDetectorCommentFromKeyQueryKey = (key: number,
 
 
 export const getGetDetectorCommentFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError = void>(key: number,
-    params?: GetDetectorCommentFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError, TData>, }
+    params?: GetDetectorCommentFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectorCommentFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCommentFromKey>>> = ({ signal }) => getDetectorCommentFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectorCommentFromKey>>> = ({ signal }) => getDetectorCommentFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetDetectorCommentFromKeyQueryError = void
 
 export function useGetDetectorCommentFromKey<TData = Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError = void>(
  key: number,
-    params?: GetDetectorCommentFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError, TData>, }
+    params?: GetDetectorCommentFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectorCommentFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putDetectorCommentFromKey = async (key: number,
 
 
 export const getPutDetectorCommentFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDetectorCommentFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, {key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDetectorCommentFromKey(key,data,params,)
+          return  putDetectorCommentFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDetectorCommentFromKeyMutationError = void
 
     export const usePutDetectorCommentFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PutDetectorCommentFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDetectorCommentFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchDetectorCommentFromKey = async (key: number,
 
 
 export const getPatchDetectorCommentFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDetectorCommentFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, {key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDetectorCommentFromKey(key,data,params,)
+          return  patchDetectorCommentFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDetectorCommentFromKeyMutationError = void
 
     export const usePatchDetectorCommentFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectorCommentFromKey>>, TError,{key: number;data: DetectorComment;params?: PatchDetectorCommentFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDetectorCommentFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteDetectorCommentFromKey = async (key: number, options?: Reques
 
 
 export const getDeleteDetectorCommentFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteDetectorCommentFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDetectorCommentFromKey(key,)
+          return  deleteDetectorCommentFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDetectorCommentFromKeyMutationError = void
 
     export const useDeleteDetectorCommentFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDetectorCommentFromKey>>,
         TError,

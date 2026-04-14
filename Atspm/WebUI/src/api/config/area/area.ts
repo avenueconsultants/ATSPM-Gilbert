@@ -35,6 +35,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -305,16 +307,16 @@ export const getGetAreaLocationsFromKeyQueryKey = (key: number,
 
 
 export const getGetAreaLocationsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError = void>(key: number,
-    params?: GetAreaLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError, TData>, }
+    params?: GetAreaLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAreaLocationsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaLocationsFromKey>>> = ({ signal }) => getAreaLocationsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaLocationsFromKey>>> = ({ signal }) => getAreaLocationsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -333,7 +335,7 @@ export type GetAreaLocationsFromKeyQueryError = void
 
 export function useGetAreaLocationsFromKey<TData = Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError = void>(
  key: number,
-    params?: GetAreaLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError, TData>, }
+    params?: GetAreaLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -617,16 +619,16 @@ export const getGetAreaLocationsCountFromKeyQueryKey = (key: number,
 
 
 export const getGetAreaLocationsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError = void>(key: number,
-    params?: GetAreaLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError, TData>, }
+    params?: GetAreaLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAreaLocationsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>> = ({ signal }) => getAreaLocationsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>> = ({ signal }) => getAreaLocationsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -645,7 +647,7 @@ export type GetAreaLocationsCountFromKeyQueryError = void
 
 export function useGetAreaLocationsCountFromKey<TData = Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetAreaLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError, TData>, }
+    params?: GetAreaLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -917,16 +919,16 @@ export const getGetAreaQueryKey = (params?: GetAreaParams,) => {
     }
 
 
-export const getGetAreaQueryOptions = <TData = Awaited<ReturnType<typeof getArea>>, TError = void>(params?: GetAreaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>, }
+export const getGetAreaQueryOptions = <TData = Awaited<ReturnType<typeof getArea>>, TError = void>(params?: GetAreaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAreaQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArea>>> = ({ signal }) => getArea(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getArea>>> = ({ signal }) => getArea(params, { signal, ...requestOptions });
 
 
 
@@ -941,7 +943,7 @@ export type GetAreaQueryError = void
 
 
 export function useGetArea<TData = Awaited<ReturnType<typeof getArea>>, TError = void>(
- params?: GetAreaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>, }
+ params?: GetAreaParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getArea>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1013,15 +1015,15 @@ export const postArea = async (area: Area,
 
 
 export const getPostAreaMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postArea>>, TError,{data: Area;params?: PostAreaParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postArea>>, TError,{data: Area;params?: PostAreaParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postArea>>, TError,{data: Area;params?: PostAreaParams}, TContext> => {
 
 const mutationKey = ['postArea'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1029,7 +1031,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postArea>>, {data: Area;params?: PostAreaParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postArea(data,params,)
+          return  postArea(data,params,requestOptions)
         }
 
 
@@ -1044,7 +1046,7 @@ const {mutation: mutationOptions} = options ?
     export type PostAreaMutationError = void
 
     export const usePostArea = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postArea>>, TError,{data: Area;params?: PostAreaParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postArea>>, TError,{data: Area;params?: PostAreaParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postArea>>,
         TError,
@@ -1309,16 +1311,16 @@ export const getGetAreaCountQueryKey = (params?: GetAreaCountParams,) => {
     }
 
 
-export const getGetAreaCountQueryOptions = <TData = Awaited<ReturnType<typeof getAreaCount>>, TError = void>(params?: GetAreaCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaCount>>, TError, TData>, }
+export const getGetAreaCountQueryOptions = <TData = Awaited<ReturnType<typeof getAreaCount>>, TError = void>(params?: GetAreaCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAreaCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaCount>>> = ({ signal }) => getAreaCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaCount>>> = ({ signal }) => getAreaCount(params, { signal, ...requestOptions });
 
 
 
@@ -1333,7 +1335,7 @@ export type GetAreaCountQueryError = void
 
 
 export function useGetAreaCount<TData = Awaited<ReturnType<typeof getAreaCount>>, TError = void>(
- params?: GetAreaCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaCount>>, TError, TData>, }
+ params?: GetAreaCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1609,16 +1611,16 @@ export const getGetAreaFromKeyQueryKey = (key: number,
 
 
 export const getGetAreaFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getAreaFromKey>>, TError = void>(key: number,
-    params?: GetAreaFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaFromKey>>, TError, TData>, }
+    params?: GetAreaFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetAreaFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaFromKey>>> = ({ signal }) => getAreaFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAreaFromKey>>> = ({ signal }) => getAreaFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1634,7 +1636,7 @@ export type GetAreaFromKeyQueryError = void
 
 export function useGetAreaFromKey<TData = Awaited<ReturnType<typeof getAreaFromKey>>, TError = void>(
  key: number,
-    params?: GetAreaFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaFromKey>>, TError, TData>, }
+    params?: GetAreaFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAreaFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1713,15 +1715,15 @@ export const putAreaFromKey = async (key: number,
 
 
 export const getPutAreaFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAreaFromKey>>, TError,{key: number;data: Area;params?: PutAreaFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAreaFromKey>>, TError,{key: number;data: Area;params?: PutAreaFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putAreaFromKey>>, TError,{key: number;data: Area;params?: PutAreaFromKeyParams}, TContext> => {
 
 const mutationKey = ['putAreaFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1729,7 +1731,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putAreaFromKey>>, {key: number;data: Area;params?: PutAreaFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putAreaFromKey(key,data,params,)
+          return  putAreaFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1744,7 +1746,7 @@ const {mutation: mutationOptions} = options ?
     export type PutAreaFromKeyMutationError = void
 
     export const usePutAreaFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAreaFromKey>>, TError,{key: number;data: Area;params?: PutAreaFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putAreaFromKey>>, TError,{key: number;data: Area;params?: PutAreaFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putAreaFromKey>>,
         TError,
@@ -1816,15 +1818,15 @@ export const patchAreaFromKey = async (key: number,
 
 
 export const getPatchAreaFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAreaFromKey>>, TError,{key: number;data: Area;params?: PatchAreaFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAreaFromKey>>, TError,{key: number;data: Area;params?: PatchAreaFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchAreaFromKey>>, TError,{key: number;data: Area;params?: PatchAreaFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchAreaFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1832,7 +1834,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchAreaFromKey>>, {key: number;data: Area;params?: PatchAreaFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchAreaFromKey(key,data,params,)
+          return  patchAreaFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1847,7 +1849,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchAreaFromKeyMutationError = void
 
     export const usePatchAreaFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAreaFromKey>>, TError,{key: number;data: Area;params?: PatchAreaFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchAreaFromKey>>, TError,{key: number;data: Area;params?: PatchAreaFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchAreaFromKey>>,
         TError,
@@ -1908,15 +1910,15 @@ export const deleteAreaFromKey = async (key: number, options?: RequestInit): Pro
 
 
 export const getDeleteAreaFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAreaFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAreaFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteAreaFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteAreaFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1924,7 +1926,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAreaFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteAreaFromKey(key,)
+          return  deleteAreaFromKey(key,requestOptions)
         }
 
 
@@ -1939,7 +1941,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteAreaFromKeyMutationError = void
 
     export const useDeleteAreaFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAreaFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAreaFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteAreaFromKey>>,
         TError,

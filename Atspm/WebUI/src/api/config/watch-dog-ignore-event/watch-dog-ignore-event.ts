@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getWatchDogIgnoreEventResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetWatchDogIgnoreEventQueryKey = (params?: GetWatchDogIgnoreEven
     }
 
 
-export const getGetWatchDogIgnoreEventQueryOptions = <TData = Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError = void>(params?: GetWatchDogIgnoreEventParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError, TData>, }
+export const getGetWatchDogIgnoreEventQueryOptions = <TData = Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError = void>(params?: GetWatchDogIgnoreEventParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetWatchDogIgnoreEventQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>> = ({ signal }) => getWatchDogIgnoreEvent(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>> = ({ signal }) => getWatchDogIgnoreEvent(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetWatchDogIgnoreEventQueryError = void
 
 
 export function useGetWatchDogIgnoreEvent<TData = Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError = void>(
- params?: GetWatchDogIgnoreEventParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError, TData>, }
+ params?: GetWatchDogIgnoreEventParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEvent>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postWatchDogIgnoreEvent = async (watchDogIgnoreEvent: WatchDogIgnor
 
 
 export const getPostWatchDogIgnoreEventMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, TError,{data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, TError,{data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, TError,{data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}, TContext> => {
 
 const mutationKey = ['postWatchDogIgnoreEvent'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, {data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postWatchDogIgnoreEvent(data,params,)
+          return  postWatchDogIgnoreEvent(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostWatchDogIgnoreEventMutationError = void
 
     export const usePostWatchDogIgnoreEvent = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, TError,{data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>, TError,{data: WatchDogIgnoreEvent;params?: PostWatchDogIgnoreEventParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postWatchDogIgnoreEvent>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetWatchDogIgnoreEventCountQueryKey = (params?: GetWatchDogIgnor
     }
 
 
-export const getGetWatchDogIgnoreEventCountQueryOptions = <TData = Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError = void>(params?: GetWatchDogIgnoreEventCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError, TData>, }
+export const getGetWatchDogIgnoreEventCountQueryOptions = <TData = Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError = void>(params?: GetWatchDogIgnoreEventCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetWatchDogIgnoreEventCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>> = ({ signal }) => getWatchDogIgnoreEventCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>> = ({ signal }) => getWatchDogIgnoreEventCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetWatchDogIgnoreEventCountQueryError = void
 
 
 export function useGetWatchDogIgnoreEventCount<TData = Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError = void>(
- params?: GetWatchDogIgnoreEventCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError, TData>, }
+ params?: GetWatchDogIgnoreEventCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetWatchDogIgnoreEventFromKeyQueryKey = (key: number,
 
 
 export const getGetWatchDogIgnoreEventFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError = void>(key: number,
-    params?: GetWatchDogIgnoreEventFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError, TData>, }
+    params?: GetWatchDogIgnoreEventFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetWatchDogIgnoreEventFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>> = ({ signal }) => getWatchDogIgnoreEventFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>> = ({ signal }) => getWatchDogIgnoreEventFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetWatchDogIgnoreEventFromKeyQueryError = void
 
 export function useGetWatchDogIgnoreEventFromKey<TData = Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError = void>(
  key: number,
-    params?: GetWatchDogIgnoreEventFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError, TData>, }
+    params?: GetWatchDogIgnoreEventFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWatchDogIgnoreEventFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putWatchDogIgnoreEventFromKey = async (key: number,
 
 
 export const getPutWatchDogIgnoreEventFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}, TContext> => {
 
 const mutationKey = ['putWatchDogIgnoreEventFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, {key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putWatchDogIgnoreEventFromKey(key,data,params,)
+          return  putWatchDogIgnoreEventFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutWatchDogIgnoreEventFromKeyMutationError = void
 
     export const usePutWatchDogIgnoreEventFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PutWatchDogIgnoreEventFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putWatchDogIgnoreEventFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchWatchDogIgnoreEventFromKey = async (key: number,
 
 
 export const getPatchWatchDogIgnoreEventFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchWatchDogIgnoreEventFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, {key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchWatchDogIgnoreEventFromKey(key,data,params,)
+          return  patchWatchDogIgnoreEventFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchWatchDogIgnoreEventFromKeyMutationError = void
 
     export const usePatchWatchDogIgnoreEventFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>, TError,{key: number;data: WatchDogIgnoreEvent;params?: PatchWatchDogIgnoreEventFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchWatchDogIgnoreEventFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteWatchDogIgnoreEventFromKey = async (key: number, options?: Re
 
 
 export const getDeleteWatchDogIgnoreEventFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteWatchDogIgnoreEventFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteWatchDogIgnoreEventFromKey(key,)
+          return  deleteWatchDogIgnoreEventFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteWatchDogIgnoreEventFromKeyMutationError = void
 
     export const useDeleteWatchDogIgnoreEventFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteWatchDogIgnoreEventFromKey>>,
         TError,

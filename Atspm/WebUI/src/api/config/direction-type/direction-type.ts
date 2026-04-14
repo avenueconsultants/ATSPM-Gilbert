@@ -40,6 +40,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -310,16 +312,16 @@ export const getGetDirectionTypeApproachesFromKeyQueryKey = (key: string,
 
 
 export const getGetDirectionTypeApproachesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypeApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeApproachesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>> = ({ signal }) => getDirectionTypeApproachesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>> = ({ signal }) => getDirectionTypeApproachesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -338,7 +340,7 @@ export type GetDirectionTypeApproachesFromKeyQueryError = void
 
 export function useGetDirectionTypeApproachesFromKey<TData = Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypeApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -622,16 +624,16 @@ export const getGetDirectionTypeApproachesCountFromKeyQueryKey = (key: string,
 
 
 export const getGetDirectionTypeApproachesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypeApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeApproachesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>> = ({ signal }) => getDirectionTypeApproachesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>> = ({ signal }) => getDirectionTypeApproachesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -650,7 +652,7 @@ export type GetDirectionTypeApproachesCountFromKeyQueryError = void
 
 export function useGetDirectionTypeApproachesCountFromKey<TData = Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypeApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeApproachesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -934,16 +936,16 @@ export const getGetDirectionTypePrimaryDirectionsFromKeyQueryKey = (key: string,
 
 
 export const getGetDirectionTypePrimaryDirectionsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypePrimaryDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError, TData>, }
+    params?: GetDirectionTypePrimaryDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypePrimaryDirectionsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>> = ({ signal }) => getDirectionTypePrimaryDirectionsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>> = ({ signal }) => getDirectionTypePrimaryDirectionsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -962,7 +964,7 @@ export type GetDirectionTypePrimaryDirectionsFromKeyQueryError = void
 
 export function useGetDirectionTypePrimaryDirectionsFromKey<TData = Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypePrimaryDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError, TData>, }
+    params?: GetDirectionTypePrimaryDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1246,16 +1248,16 @@ export const getGetDirectionTypePrimaryDirectionsCountFromKeyQueryKey = (key: st
 
 
 export const getGetDirectionTypePrimaryDirectionsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypePrimaryDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypePrimaryDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypePrimaryDirectionsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>> = ({ signal }) => getDirectionTypePrimaryDirectionsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>> = ({ signal }) => getDirectionTypePrimaryDirectionsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1274,7 +1276,7 @@ export type GetDirectionTypePrimaryDirectionsCountFromKeyQueryError = void
 
 export function useGetDirectionTypePrimaryDirectionsCountFromKey<TData = Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypePrimaryDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypePrimaryDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypePrimaryDirectionsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1558,16 +1560,16 @@ export const getGetDirectionTypeOpposingDirectionsFromKeyQueryKey = (key: string
 
 
 export const getGetDirectionTypeOpposingDirectionsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypeOpposingDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeOpposingDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeOpposingDirectionsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>> = ({ signal }) => getDirectionTypeOpposingDirectionsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>> = ({ signal }) => getDirectionTypeOpposingDirectionsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1586,7 +1588,7 @@ export type GetDirectionTypeOpposingDirectionsFromKeyQueryError = void
 
 export function useGetDirectionTypeOpposingDirectionsFromKey<TData = Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypeOpposingDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeOpposingDirectionsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1870,16 +1872,16 @@ export const getGetDirectionTypeOpposingDirectionsCountFromKeyQueryKey = (key: s
 
 
 export const getGetDirectionTypeOpposingDirectionsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypeOpposingDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeOpposingDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeOpposingDirectionsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>> = ({ signal }) => getDirectionTypeOpposingDirectionsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>> = ({ signal }) => getDirectionTypeOpposingDirectionsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1898,7 +1900,7 @@ export type GetDirectionTypeOpposingDirectionsCountFromKeyQueryError = void
 
 export function useGetDirectionTypeOpposingDirectionsCountFromKey<TData = Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypeOpposingDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeOpposingDirectionsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeOpposingDirectionsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2170,16 +2172,16 @@ export const getGetDirectionTypeQueryKey = (params?: GetDirectionTypeParams,) =>
     }
 
 
-export const getGetDirectionTypeQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionType>>, TError = void>(params?: GetDirectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionType>>, TError, TData>, }
+export const getGetDirectionTypeQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionType>>, TError = void>(params?: GetDirectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionType>>> = ({ signal }) => getDirectionType(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionType>>> = ({ signal }) => getDirectionType(params, { signal, ...requestOptions });
 
 
 
@@ -2194,7 +2196,7 @@ export type GetDirectionTypeQueryError = void
 
 
 export function useGetDirectionType<TData = Awaited<ReturnType<typeof getDirectionType>>, TError = void>(
- params?: GetDirectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionType>>, TError, TData>, }
+ params?: GetDirectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2266,15 +2268,15 @@ export const postDirectionType = async (directionType: DirectionType,
 
 
 export const getPostDirectionTypeMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDirectionType>>, TError,{data: DirectionType;params?: PostDirectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDirectionType>>, TError,{data: DirectionType;params?: PostDirectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDirectionType>>, TError,{data: DirectionType;params?: PostDirectionTypeParams}, TContext> => {
 
 const mutationKey = ['postDirectionType'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2282,7 +2284,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDirectionType>>, {data: DirectionType;params?: PostDirectionTypeParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDirectionType(data,params,)
+          return  postDirectionType(data,params,requestOptions)
         }
 
 
@@ -2297,7 +2299,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDirectionTypeMutationError = void
 
     export const usePostDirectionType = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDirectionType>>, TError,{data: DirectionType;params?: PostDirectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDirectionType>>, TError,{data: DirectionType;params?: PostDirectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDirectionType>>,
         TError,
@@ -2562,16 +2564,16 @@ export const getGetDirectionTypeCountQueryKey = (params?: GetDirectionTypeCountP
     }
 
 
-export const getGetDirectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeCount>>, TError = void>(params?: GetDirectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeCount>>, TError, TData>, }
+export const getGetDirectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeCount>>, TError = void>(params?: GetDirectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeCount>>> = ({ signal }) => getDirectionTypeCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeCount>>> = ({ signal }) => getDirectionTypeCount(params, { signal, ...requestOptions });
 
 
 
@@ -2586,7 +2588,7 @@ export type GetDirectionTypeCountQueryError = void
 
 
 export function useGetDirectionTypeCount<TData = Awaited<ReturnType<typeof getDirectionTypeCount>>, TError = void>(
- params?: GetDirectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeCount>>, TError, TData>, }
+ params?: GetDirectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2862,16 +2864,16 @@ export const getGetDirectionTypeFromKeyQueryKey = (key: string,
 
 
 export const getGetDirectionTypeFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError = void>(key: string,
-    params?: GetDirectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDirectionTypeFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeFromKey>>> = ({ signal }) => getDirectionTypeFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirectionTypeFromKey>>> = ({ signal }) => getDirectionTypeFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -2887,7 +2889,7 @@ export type GetDirectionTypeFromKeyQueryError = void
 
 export function useGetDirectionTypeFromKey<TData = Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError = void>(
  key: string,
-    params?: GetDirectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError, TData>, }
+    params?: GetDirectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirectionTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2966,15 +2968,15 @@ export const putDirectionTypeFromKey = async (key: string,
 
 
 export const getPutDirectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDirectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2982,7 +2984,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, {key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDirectionTypeFromKey(key,data,params,)
+          return  putDirectionTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2997,7 +2999,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDirectionTypeFromKeyMutationError = void
 
     export const usePutDirectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PutDirectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDirectionTypeFromKey>>,
         TError,
@@ -3069,15 +3071,15 @@ export const patchDirectionTypeFromKey = async (key: string,
 
 
 export const getPatchDirectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDirectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -3085,7 +3087,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, {key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDirectionTypeFromKey(key,data,params,)
+          return  patchDirectionTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -3100,7 +3102,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDirectionTypeFromKeyMutationError = void
 
     export const usePatchDirectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDirectionTypeFromKey>>, TError,{key: string;data: DirectionType;params?: PatchDirectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDirectionTypeFromKey>>,
         TError,
@@ -3161,15 +3163,15 @@ export const deleteDirectionTypeFromKey = async (key: string, options?: RequestI
 
 
 export const getDeleteDirectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, TError,{key: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, TError,{key: string}, TContext> => {
 
 const mutationKey = ['deleteDirectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -3177,7 +3179,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, {key: string}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDirectionTypeFromKey(key,)
+          return  deleteDirectionTypeFromKey(key,requestOptions)
         }
 
 
@@ -3192,7 +3194,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDirectionTypeFromKeyMutationError = void
 
     export const useDeleteDirectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, TError,{key: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDirectionTypeFromKey>>,
         TError,

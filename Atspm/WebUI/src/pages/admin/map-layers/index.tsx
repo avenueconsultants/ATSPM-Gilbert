@@ -130,23 +130,15 @@ const MapLayers = () => {
     }
   })
 
-  const headers = [
-    'Name',
-    'Url',
-    'Service Type',
-    'Resource ID',
-    'Style',
-    'Show by Default?',
-    'Refresh Rate (Seconds)',
-  ]
-  const headerKeys = [
-    'name',
-    'mapLayerUrl',
-    'serviceType',
-    'resourceId',
-    'style',
-    'showByDefault',
-    'refreshIntervalSeconds',
+
+  const cells = [
+    { key: 'name', label: 'Name' },
+    { key: 'mapLayerUrl', label: 'Url' },
+    { key: 'serviceType', label: 'Service Type' },
+    { key: 'resourceId', label: 'Resource ID' },
+    { key: 'style', label: 'Style' },
+    { key: 'showByDefault', label: 'Show by Default?' },
+    { key: 'refreshIntervalSeconds', label: 'Refresh Rate (Seconds)' },
   ]
 
   const customCellRender = [
@@ -159,8 +151,7 @@ const MapLayers = () => {
     <ResponsivePageLayout title="Manage Map Layers" noBottomMargin>
       <AdminTable
         pageName="Map Layer"
-        headers={headers}
-        headerKeys={headerKeys}
+        cells={cells}
         data={filteredData}
         customCellRender={customCellRender}
         hasEditPrivileges={hasLocationsEditClaim}

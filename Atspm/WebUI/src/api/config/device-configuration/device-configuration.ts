@@ -36,6 +36,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -306,16 +308,16 @@ export const getGetDeviceConfigurationDevicesFromKeyQueryKey = (key: number,
 
 
 export const getGetDeviceConfigurationDevicesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError = void>(key: number,
-    params?: GetDeviceConfigurationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationDevicesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>> = ({ signal }) => getDeviceConfigurationDevicesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>> = ({ signal }) => getDeviceConfigurationDevicesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -334,7 +336,7 @@ export type GetDeviceConfigurationDevicesFromKeyQueryError = void
 
 export function useGetDeviceConfigurationDevicesFromKey<TData = Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError = void>(
  key: number,
-    params?: GetDeviceConfigurationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -618,16 +620,16 @@ export const getGetDeviceConfigurationDevicesCountFromKeyQueryKey = (key: number
 
 
 export const getGetDeviceConfigurationDevicesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError = void>(key: number,
-    params?: GetDeviceConfigurationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationDevicesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>> = ({ signal }) => getDeviceConfigurationDevicesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>> = ({ signal }) => getDeviceConfigurationDevicesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -646,7 +648,7 @@ export type GetDeviceConfigurationDevicesCountFromKeyQueryError = void
 
 export function useGetDeviceConfigurationDevicesCountFromKey<TData = Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError = void>(
  key: number,
-    params?: GetDeviceConfigurationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationDevicesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -917,16 +919,16 @@ export const getGetDeviceConfigurationEventLogDecodersQueryKey = (params?: GetDe
     }
 
 
-export const getGetDeviceConfigurationEventLogDecodersQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError = void>(params?: GetDeviceConfigurationEventLogDecodersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError, TData>, }
+export const getGetDeviceConfigurationEventLogDecodersQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError = void>(params?: GetDeviceConfigurationEventLogDecodersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationEventLogDecodersQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>> = ({ signal }) => getDeviceConfigurationEventLogDecoders(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>> = ({ signal }) => getDeviceConfigurationEventLogDecoders(params, { signal, ...requestOptions });
 
 
 
@@ -945,7 +947,7 @@ that can be assigned to Utah.Udot.Atspm.Data.Models.DeviceConfiguration for deco
  */
 
 export function useGetDeviceConfigurationEventLogDecoders<TData = Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError = void>(
- params?: GetDeviceConfigurationEventLogDecodersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError, TData>, }
+ params?: GetDeviceConfigurationEventLogDecodersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationEventLogDecoders>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1217,16 +1219,16 @@ export const getGetDeviceConfigurationQueryKey = (params?: GetDeviceConfiguratio
     }
 
 
-export const getGetDeviceConfigurationQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfiguration>>, TError = void>(params?: GetDeviceConfigurationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfiguration>>, TError, TData>, }
+export const getGetDeviceConfigurationQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfiguration>>, TError = void>(params?: GetDeviceConfigurationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfiguration>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfiguration>>> = ({ signal }) => getDeviceConfiguration(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfiguration>>> = ({ signal }) => getDeviceConfiguration(params, { signal, ...requestOptions });
 
 
 
@@ -1241,7 +1243,7 @@ export type GetDeviceConfigurationQueryError = void
 
 
 export function useGetDeviceConfiguration<TData = Awaited<ReturnType<typeof getDeviceConfiguration>>, TError = void>(
- params?: GetDeviceConfigurationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfiguration>>, TError, TData>, }
+ params?: GetDeviceConfigurationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfiguration>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1313,15 +1315,15 @@ export const postDeviceConfiguration = async (deviceConfiguration: DeviceConfigu
 
 
 export const getPostDeviceConfigurationMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDeviceConfiguration>>, TError,{data: DeviceConfiguration;params?: PostDeviceConfigurationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDeviceConfiguration>>, TError,{data: DeviceConfiguration;params?: PostDeviceConfigurationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDeviceConfiguration>>, TError,{data: DeviceConfiguration;params?: PostDeviceConfigurationParams}, TContext> => {
 
 const mutationKey = ['postDeviceConfiguration'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1329,7 +1331,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDeviceConfiguration>>, {data: DeviceConfiguration;params?: PostDeviceConfigurationParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDeviceConfiguration(data,params,)
+          return  postDeviceConfiguration(data,params,requestOptions)
         }
 
 
@@ -1344,7 +1346,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDeviceConfigurationMutationError = void
 
     export const usePostDeviceConfiguration = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDeviceConfiguration>>, TError,{data: DeviceConfiguration;params?: PostDeviceConfigurationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDeviceConfiguration>>, TError,{data: DeviceConfiguration;params?: PostDeviceConfigurationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDeviceConfiguration>>,
         TError,
@@ -1609,16 +1611,16 @@ export const getGetDeviceConfigurationCountQueryKey = (params?: GetDeviceConfigu
     }
 
 
-export const getGetDeviceConfigurationCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError = void>(params?: GetDeviceConfigurationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError, TData>, }
+export const getGetDeviceConfigurationCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError = void>(params?: GetDeviceConfigurationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationCount>>> = ({ signal }) => getDeviceConfigurationCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationCount>>> = ({ signal }) => getDeviceConfigurationCount(params, { signal, ...requestOptions });
 
 
 
@@ -1633,7 +1635,7 @@ export type GetDeviceConfigurationCountQueryError = void
 
 
 export function useGetDeviceConfigurationCount<TData = Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError = void>(
- params?: GetDeviceConfigurationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError, TData>, }
+ params?: GetDeviceConfigurationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1909,16 +1911,16 @@ export const getGetDeviceConfigurationFromKeyQueryKey = (key: number,
 
 
 export const getGetDeviceConfigurationFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError = void>(key: number,
-    params?: GetDeviceConfigurationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceConfigurationFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>> = ({ signal }) => getDeviceConfigurationFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>> = ({ signal }) => getDeviceConfigurationFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1934,7 +1936,7 @@ export type GetDeviceConfigurationFromKeyQueryError = void
 
 export function useGetDeviceConfigurationFromKey<TData = Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError = void>(
  key: number,
-    params?: GetDeviceConfigurationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError, TData>, }
+    params?: GetDeviceConfigurationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceConfigurationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2013,15 +2015,15 @@ export const putDeviceConfigurationFromKey = async (key: number,
 
 
 export const getPutDeviceConfigurationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDeviceConfigurationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2029,7 +2031,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, {key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDeviceConfigurationFromKey(key,data,params,)
+          return  putDeviceConfigurationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2044,7 +2046,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDeviceConfigurationFromKeyMutationError = void
 
     export const usePutDeviceConfigurationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PutDeviceConfigurationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDeviceConfigurationFromKey>>,
         TError,
@@ -2116,15 +2118,15 @@ export const patchDeviceConfigurationFromKey = async (key: number,
 
 
 export const getPatchDeviceConfigurationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDeviceConfigurationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2132,7 +2134,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, {key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDeviceConfigurationFromKey(key,data,params,)
+          return  patchDeviceConfigurationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2147,7 +2149,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDeviceConfigurationFromKeyMutationError = void
 
     export const usePatchDeviceConfigurationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>, TError,{key: number;data: DeviceConfiguration;params?: PatchDeviceConfigurationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDeviceConfigurationFromKey>>,
         TError,
@@ -2208,15 +2210,15 @@ export const deleteDeviceConfigurationFromKey = async (key: number, options?: Re
 
 
 export const getDeleteDeviceConfigurationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteDeviceConfigurationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2224,7 +2226,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDeviceConfigurationFromKey(key,)
+          return  deleteDeviceConfigurationFromKey(key,requestOptions)
         }
 
 
@@ -2239,7 +2241,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDeviceConfigurationFromKeyMutationError = void
 
     export const useDeleteDeviceConfigurationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDeviceConfigurationFromKey>>,
         TError,

@@ -136,7 +136,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
     }
     setErrors(null)
 
-    const modifiedApproach = JSON.parse(
+    let modifiedApproach = JSON.parse(
       JSON.stringify(approach)
     ) as ConfigApproach
 

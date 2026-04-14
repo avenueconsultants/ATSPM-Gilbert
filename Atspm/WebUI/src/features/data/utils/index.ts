@@ -1,4 +1,4 @@
-import { CompressedDataBase } from '@/api/data/aTSPMLogDataApi.schemas'
+import { CompressedDataBase } from '@/api/data'
 import { ResponseFormat } from '@/features/data/api/getEventLogs'
 import { DataTypeOption } from '@/features/data/components/dataTypeSelector'
 import { dateToTimestamp } from '@/utils/dateTime'

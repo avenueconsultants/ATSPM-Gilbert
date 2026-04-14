@@ -37,23 +37,23 @@ module.exports = {
   //     },
   //   },
   // },
-  // data: {
-  //   input: {
-  //     target: './data-spec.json',
-  //   },
-  //   output: {
-  //     workspace: './src/api/data',
-  //     target: './data-api.ts',
-  //     client: 'react-query',
-  //     mock: true,
-  //     templates: './orval-templates',
-  //     mode: 'tags-split',
-  //     override: {
-  //       mutator: {
-  //         path: '../../lib/axios.ts',
-  //         name: 'dataRequest',
-  //       },
-  //     },
-  //   },
-  // },
+  data: {
+    input: {
+      target: './api-specs/data-spec.json',
+    },
+    output: {
+      workspace: './src/api/data',
+      target: './data-api.ts',
+      client: 'react-query',
+      mock: true,
+      templates: './orval-templates',
+      mode: 'tags-split',
+      override: {
+        mutator: {
+          path: '../../lib/axios.ts',
+          name: 'dataRequest',
+        },
+      },
+    },
+  },
 }

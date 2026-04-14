@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getUsageEntryResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetUsageEntryQueryKey = (params?: GetUsageEntryParams,) => {
     }
 
 
-export const getGetUsageEntryQueryOptions = <TData = Awaited<ReturnType<typeof getUsageEntry>>, TError = void>(params?: GetUsageEntryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntry>>, TError, TData>, }
+export const getGetUsageEntryQueryOptions = <TData = Awaited<ReturnType<typeof getUsageEntry>>, TError = void>(params?: GetUsageEntryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntry>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUsageEntryQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntry>>> = ({ signal }) => getUsageEntry(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntry>>> = ({ signal }) => getUsageEntry(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetUsageEntryQueryError = void
 
 
 export function useGetUsageEntry<TData = Awaited<ReturnType<typeof getUsageEntry>>, TError = void>(
- params?: GetUsageEntryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntry>>, TError, TData>, }
+ params?: GetUsageEntryParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntry>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postUsageEntry = async (usageEntry: UsageEntry,
 
 
 export const getPostUsageEntryMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsageEntry>>, TError,{data: UsageEntry;params?: PostUsageEntryParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsageEntry>>, TError,{data: UsageEntry;params?: PostUsageEntryParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postUsageEntry>>, TError,{data: UsageEntry;params?: PostUsageEntryParams}, TContext> => {
 
 const mutationKey = ['postUsageEntry'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postUsageEntry>>, {data: UsageEntry;params?: PostUsageEntryParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postUsageEntry(data,params,)
+          return  postUsageEntry(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostUsageEntryMutationError = void
 
     export const usePostUsageEntry = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsageEntry>>, TError,{data: UsageEntry;params?: PostUsageEntryParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postUsageEntry>>, TError,{data: UsageEntry;params?: PostUsageEntryParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postUsageEntry>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetUsageEntryCountQueryKey = (params?: GetUsageEntryCountParams,
     }
 
 
-export const getGetUsageEntryCountQueryOptions = <TData = Awaited<ReturnType<typeof getUsageEntryCount>>, TError = void>(params?: GetUsageEntryCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryCount>>, TError, TData>, }
+export const getGetUsageEntryCountQueryOptions = <TData = Awaited<ReturnType<typeof getUsageEntryCount>>, TError = void>(params?: GetUsageEntryCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUsageEntryCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntryCount>>> = ({ signal }) => getUsageEntryCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntryCount>>> = ({ signal }) => getUsageEntryCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetUsageEntryCountQueryError = void
 
 
 export function useGetUsageEntryCount<TData = Awaited<ReturnType<typeof getUsageEntryCount>>, TError = void>(
- params?: GetUsageEntryCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryCount>>, TError, TData>, }
+ params?: GetUsageEntryCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetUsageEntryFromKeyQueryKey = (key: number,
 
 
 export const getGetUsageEntryFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError = void>(key: number,
-    params?: GetUsageEntryFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError, TData>, }
+    params?: GetUsageEntryFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetUsageEntryFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntryFromKey>>> = ({ signal }) => getUsageEntryFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsageEntryFromKey>>> = ({ signal }) => getUsageEntryFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetUsageEntryFromKeyQueryError = void
 
 export function useGetUsageEntryFromKey<TData = Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError = void>(
  key: number,
-    params?: GetUsageEntryFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError, TData>, }
+    params?: GetUsageEntryFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsageEntryFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putUsageEntryFromKey = async (key: number,
 
 
 export const getPutUsageEntryFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}, TContext> => {
 
 const mutationKey = ['putUsageEntryFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putUsageEntryFromKey>>, {key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putUsageEntryFromKey(key,data,params,)
+          return  putUsageEntryFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutUsageEntryFromKeyMutationError = void
 
     export const usePutUsageEntryFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PutUsageEntryFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putUsageEntryFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchUsageEntryFromKey = async (key: number,
 
 
 export const getPatchUsageEntryFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchUsageEntryFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, {key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchUsageEntryFromKey(key,data,params,)
+          return  patchUsageEntryFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchUsageEntryFromKeyMutationError = void
 
     export const usePatchUsageEntryFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchUsageEntryFromKey>>, TError,{key: number;data: UsageEntry;params?: PatchUsageEntryFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchUsageEntryFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteUsageEntryFromKey = async (key: number, options?: RequestInit
 
 
 export const getDeleteUsageEntryFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteUsageEntryFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteUsageEntryFromKey(key,)
+          return  deleteUsageEntryFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteUsageEntryFromKeyMutationError = void
 
     export const useDeleteUsageEntryFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUsageEntryFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteUsageEntryFromKey>>,
         TError,

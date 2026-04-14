@@ -38,6 +38,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -308,16 +310,16 @@ export const getGetDetectionTypeDetectorsFromKeyQueryKey = (key: string,
 
 
 export const getGetDetectionTypeDetectorsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError = void>(key: string,
-    params?: GetDetectionTypeDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeDetectorsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>> = ({ signal }) => getDetectionTypeDetectorsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>> = ({ signal }) => getDetectionTypeDetectorsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -336,7 +338,7 @@ export type GetDetectionTypeDetectorsFromKeyQueryError = void
 
 export function useGetDetectionTypeDetectorsFromKey<TData = Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError = void>(
  key: string,
-    params?: GetDetectionTypeDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeDetectorsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -620,16 +622,16 @@ export const getGetDetectionTypeDetectorsCountFromKeyQueryKey = (key: string,
 
 
 export const getGetDetectionTypeDetectorsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError = void>(key: string,
-    params?: GetDetectionTypeDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeDetectorsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>> = ({ signal }) => getDetectionTypeDetectorsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>> = ({ signal }) => getDetectionTypeDetectorsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -648,7 +650,7 @@ export type GetDetectionTypeDetectorsCountFromKeyQueryError = void
 
 export function useGetDetectionTypeDetectorsCountFromKey<TData = Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError = void>(
  key: string,
-    params?: GetDetectionTypeDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeDetectorsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeDetectorsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -932,16 +934,16 @@ export const getGetDetectionTypeMeasureTypesFromKeyQueryKey = (key: string,
 
 
 export const getGetDetectionTypeMeasureTypesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError = void>(key: string,
-    params?: GetDetectionTypeMeasureTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeMeasureTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeMeasureTypesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>> = ({ signal }) => getDetectionTypeMeasureTypesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>> = ({ signal }) => getDetectionTypeMeasureTypesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -960,7 +962,7 @@ export type GetDetectionTypeMeasureTypesFromKeyQueryError = void
 
 export function useGetDetectionTypeMeasureTypesFromKey<TData = Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError = void>(
  key: string,
-    params?: GetDetectionTypeMeasureTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeMeasureTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1244,16 +1246,16 @@ export const getGetDetectionTypeMeasureTypesCountFromKeyQueryKey = (key: string,
 
 
 export const getGetDetectionTypeMeasureTypesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError = void>(key: string,
-    params?: GetDetectionTypeMeasureTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeMeasureTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeMeasureTypesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>> = ({ signal }) => getDetectionTypeMeasureTypesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>> = ({ signal }) => getDetectionTypeMeasureTypesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1272,7 +1274,7 @@ export type GetDetectionTypeMeasureTypesCountFromKeyQueryError = void
 
 export function useGetDetectionTypeMeasureTypesCountFromKey<TData = Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError = void>(
  key: string,
-    params?: GetDetectionTypeMeasureTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeMeasureTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeMeasureTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1544,16 +1546,16 @@ export const getGetDetectionTypeQueryKey = (params?: GetDetectionTypeParams,) =>
     }
 
 
-export const getGetDetectionTypeQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionType>>, TError = void>(params?: GetDetectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionType>>, TError, TData>, }
+export const getGetDetectionTypeQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionType>>, TError = void>(params?: GetDetectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionType>>> = ({ signal }) => getDetectionType(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionType>>> = ({ signal }) => getDetectionType(params, { signal, ...requestOptions });
 
 
 
@@ -1568,7 +1570,7 @@ export type GetDetectionTypeQueryError = void
 
 
 export function useGetDetectionType<TData = Awaited<ReturnType<typeof getDetectionType>>, TError = void>(
- params?: GetDetectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionType>>, TError, TData>, }
+ params?: GetDetectionTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1640,15 +1642,15 @@ export const postDetectionType = async (detectionType: DetectionType,
 
 
 export const getPostDetectionTypeMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectionType>>, TError,{data: DetectionType;params?: PostDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectionType>>, TError,{data: DetectionType;params?: PostDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDetectionType>>, TError,{data: DetectionType;params?: PostDetectionTypeParams}, TContext> => {
 
 const mutationKey = ['postDetectionType'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1656,7 +1658,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDetectionType>>, {data: DetectionType;params?: PostDetectionTypeParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDetectionType(data,params,)
+          return  postDetectionType(data,params,requestOptions)
         }
 
 
@@ -1671,7 +1673,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDetectionTypeMutationError = void
 
     export const usePostDetectionType = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectionType>>, TError,{data: DetectionType;params?: PostDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDetectionType>>, TError,{data: DetectionType;params?: PostDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDetectionType>>,
         TError,
@@ -1936,16 +1938,16 @@ export const getGetDetectionTypeCountQueryKey = (params?: GetDetectionTypeCountP
     }
 
 
-export const getGetDetectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeCount>>, TError = void>(params?: GetDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeCount>>, TError, TData>, }
+export const getGetDetectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeCount>>, TError = void>(params?: GetDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeCount>>> = ({ signal }) => getDetectionTypeCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeCount>>> = ({ signal }) => getDetectionTypeCount(params, { signal, ...requestOptions });
 
 
 
@@ -1960,7 +1962,7 @@ export type GetDetectionTypeCountQueryError = void
 
 
 export function useGetDetectionTypeCount<TData = Awaited<ReturnType<typeof getDetectionTypeCount>>, TError = void>(
- params?: GetDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeCount>>, TError, TData>, }
+ params?: GetDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2236,16 +2238,16 @@ export const getGetDetectionTypeFromKeyQueryKey = (key: string,
 
 
 export const getGetDetectionTypeFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError = void>(key: string,
-    params?: GetDetectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDetectionTypeFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeFromKey>>> = ({ signal }) => getDetectionTypeFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDetectionTypeFromKey>>> = ({ signal }) => getDetectionTypeFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -2261,7 +2263,7 @@ export type GetDetectionTypeFromKeyQueryError = void
 
 export function useGetDetectionTypeFromKey<TData = Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError = void>(
  key: string,
-    params?: GetDetectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError, TData>, }
+    params?: GetDetectionTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDetectionTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2340,15 +2342,15 @@ export const putDetectionTypeFromKey = async (key: string,
 
 
 export const getPutDetectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDetectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2356,7 +2358,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, {key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDetectionTypeFromKey(key,data,params,)
+          return  putDetectionTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2371,7 +2373,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDetectionTypeFromKeyMutationError = void
 
     export const usePutDetectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PutDetectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDetectionTypeFromKey>>,
         TError,
@@ -2443,15 +2445,15 @@ export const patchDetectionTypeFromKey = async (key: string,
 
 
 export const getPatchDetectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDetectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2459,7 +2461,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, {key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDetectionTypeFromKey(key,data,params,)
+          return  patchDetectionTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2474,7 +2476,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDetectionTypeFromKeyMutationError = void
 
     export const usePatchDetectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDetectionTypeFromKey>>, TError,{key: string;data: DetectionType;params?: PatchDetectionTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDetectionTypeFromKey>>,
         TError,
@@ -2535,15 +2537,15 @@ export const deleteDetectionTypeFromKey = async (key: string, options?: RequestI
 
 
 export const getDeleteDetectionTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, TError,{key: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, TError,{key: string}, TContext> => {
 
 const mutationKey = ['deleteDetectionTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2551,7 +2553,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, {key: string}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDetectionTypeFromKey(key,)
+          return  deleteDetectionTypeFromKey(key,requestOptions)
         }
 
 
@@ -2566,7 +2568,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDetectionTypeFromKeyMutationError = void
 
     export const useDeleteDetectionTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, TError,{key: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDetectionTypeFromKey>>,
         TError,

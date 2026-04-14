@@ -76,6 +76,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -336,16 +338,16 @@ export const getGetDeviceActiveDevicesByLocationFromLocationIdQueryKey = (locati
 
 
 export const getGetDeviceActiveDevicesByLocationFromLocationIdQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError = void>(locationId: number,
-    params?: GetDeviceActiveDevicesByLocationFromLocationIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError, TData>, }
+    params?: GetDeviceActiveDevicesByLocationFromLocationIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceActiveDevicesByLocationFromLocationIdQueryKey(locationId,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>> = ({ signal }) => getDeviceActiveDevicesByLocationFromLocationId(locationId,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>> = ({ signal }) => getDeviceActiveDevicesByLocationFromLocationId(locationId,params, { signal, ...requestOptions });
 
 
 
@@ -364,7 +366,7 @@ export type GetDeviceActiveDevicesByLocationFromLocationIdQueryError = void
 
 export function useGetDeviceActiveDevicesByLocationFromLocationId<TData = Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError = void>(
  locationId: number,
-    params?: GetDeviceActiveDevicesByLocationFromLocationIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError, TData>, }
+    params?: GetDeviceActiveDevicesByLocationFromLocationIdParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesByLocationFromLocationId>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -634,16 +636,16 @@ export const getGetDeviceActiveDevicesCountQueryKey = (params?: GetDeviceActiveD
     }
 
 
-export const getGetDeviceActiveDevicesCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError = void>(params?: GetDeviceActiveDevicesCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError, TData>, }
+export const getGetDeviceActiveDevicesCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError = void>(params?: GetDeviceActiveDevicesCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceActiveDevicesCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>> = ({ signal }) => getDeviceActiveDevicesCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>> = ({ signal }) => getDeviceActiveDevicesCount(params, { signal, ...requestOptions });
 
 
 
@@ -661,7 +663,7 @@ export type GetDeviceActiveDevicesCountQueryError = void
  */
 
 export function useGetDeviceActiveDevicesCount<TData = Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError = void>(
- params?: GetDeviceActiveDevicesCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError, TData>, }
+ params?: GetDeviceActiveDevicesCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceActiveDevicesCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -738,15 +740,15 @@ export const getDeviceRetrieveDetectionIdentifierBasedOnDetectionType = async (g
 
 
 export const getGetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, TError,{data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, TError,{data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, TError,{data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}, TContext> => {
 
 const mutationKey = ['getDeviceRetrieveDetectionIdentifierBasedOnDetectionType'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -754,7 +756,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, {data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  getDeviceRetrieveDetectionIdentifierBasedOnDetectionType(data,params,)
+          return  getDeviceRetrieveDetectionIdentifierBasedOnDetectionType(data,params,requestOptions)
         }
 
 
@@ -769,7 +771,7 @@ const {mutation: mutationOptions} = options ?
     export type GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeMutationError = void
 
     export const useGetDeviceRetrieveDetectionIdentifierBasedOnDetectionType = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, TError,{data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>, TError,{data: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOne | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodySeven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyEight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyNine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOneeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyOnenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwozero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwotwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwothree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwofive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwosix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwoeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyTwonine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreezero | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeone | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreetwo | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreethree | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefour | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreefive | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreesix | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeseven | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreeeight | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyThreenine | GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeBodyFourzero;params?: GetDeviceRetrieveDetectionIdentifierBasedOnDetectionTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getDeviceRetrieveDetectionIdentifierBasedOnDetectionType>>,
         TError,
@@ -1034,16 +1036,16 @@ export const getGetDeviceQueryKey = (params?: GetDeviceParams,) => {
     }
 
 
-export const getGetDeviceQueryOptions = <TData = Awaited<ReturnType<typeof getDevice>>, TError = void>(params?: GetDeviceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDevice>>, TError, TData>, }
+export const getGetDeviceQueryOptions = <TData = Awaited<ReturnType<typeof getDevice>>, TError = void>(params?: GetDeviceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDevice>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDevice>>> = ({ signal }) => getDevice(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDevice>>> = ({ signal }) => getDevice(params, { signal, ...requestOptions });
 
 
 
@@ -1058,7 +1060,7 @@ export type GetDeviceQueryError = void
 
 
 export function useGetDevice<TData = Awaited<ReturnType<typeof getDevice>>, TError = void>(
- params?: GetDeviceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDevice>>, TError, TData>, }
+ params?: GetDeviceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDevice>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1130,15 +1132,15 @@ export const postDevice = async (device: Device,
 
 
 export const getPostDeviceMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevice>>, TError,{data: Device;params?: PostDeviceParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevice>>, TError,{data: Device;params?: PostDeviceParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postDevice>>, TError,{data: Device;params?: PostDeviceParams}, TContext> => {
 
 const mutationKey = ['postDevice'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1146,7 +1148,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postDevice>>, {data: Device;params?: PostDeviceParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postDevice(data,params,)
+          return  postDevice(data,params,requestOptions)
         }
 
 
@@ -1161,7 +1163,7 @@ const {mutation: mutationOptions} = options ?
     export type PostDeviceMutationError = void
 
     export const usePostDevice = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevice>>, TError,{data: Device;params?: PostDeviceParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postDevice>>, TError,{data: Device;params?: PostDeviceParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postDevice>>,
         TError,
@@ -1426,16 +1428,16 @@ export const getGetDeviceCountQueryKey = (params?: GetDeviceCountParams,) => {
     }
 
 
-export const getGetDeviceCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceCount>>, TError = void>(params?: GetDeviceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceCount>>, TError, TData>, }
+export const getGetDeviceCountQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceCount>>, TError = void>(params?: GetDeviceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceCount>>> = ({ signal }) => getDeviceCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceCount>>> = ({ signal }) => getDeviceCount(params, { signal, ...requestOptions });
 
 
 
@@ -1450,7 +1452,7 @@ export type GetDeviceCountQueryError = void
 
 
 export function useGetDeviceCount<TData = Awaited<ReturnType<typeof getDeviceCount>>, TError = void>(
- params?: GetDeviceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceCount>>, TError, TData>, }
+ params?: GetDeviceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1726,16 +1728,16 @@ export const getGetDeviceFromKeyQueryKey = (key: number,
 
 
 export const getGetDeviceFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getDeviceFromKey>>, TError = void>(key: number,
-    params?: GetDeviceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceFromKey>>, TError, TData>, }
+    params?: GetDeviceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetDeviceFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceFromKey>>> = ({ signal }) => getDeviceFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDeviceFromKey>>> = ({ signal }) => getDeviceFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1751,7 +1753,7 @@ export type GetDeviceFromKeyQueryError = void
 
 export function useGetDeviceFromKey<TData = Awaited<ReturnType<typeof getDeviceFromKey>>, TError = void>(
  key: number,
-    params?: GetDeviceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceFromKey>>, TError, TData>, }
+    params?: GetDeviceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDeviceFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1830,15 +1832,15 @@ export const putDeviceFromKey = async (key: number,
 
 
 export const getPutDeviceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceFromKey>>, TError,{key: number;data: Device;params?: PutDeviceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceFromKey>>, TError,{key: number;data: Device;params?: PutDeviceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putDeviceFromKey>>, TError,{key: number;data: Device;params?: PutDeviceFromKeyParams}, TContext> => {
 
 const mutationKey = ['putDeviceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1846,7 +1848,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putDeviceFromKey>>, {key: number;data: Device;params?: PutDeviceFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putDeviceFromKey(key,data,params,)
+          return  putDeviceFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1861,7 +1863,7 @@ const {mutation: mutationOptions} = options ?
     export type PutDeviceFromKeyMutationError = void
 
     export const usePutDeviceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceFromKey>>, TError,{key: number;data: Device;params?: PutDeviceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putDeviceFromKey>>, TError,{key: number;data: Device;params?: PutDeviceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putDeviceFromKey>>,
         TError,
@@ -1933,15 +1935,15 @@ export const patchDeviceFromKey = async (key: number,
 
 
 export const getPatchDeviceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceFromKey>>, TError,{key: number;data: Device;params?: PatchDeviceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceFromKey>>, TError,{key: number;data: Device;params?: PatchDeviceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchDeviceFromKey>>, TError,{key: number;data: Device;params?: PatchDeviceFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchDeviceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1949,7 +1951,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchDeviceFromKey>>, {key: number;data: Device;params?: PatchDeviceFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchDeviceFromKey(key,data,params,)
+          return  patchDeviceFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1964,7 +1966,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchDeviceFromKeyMutationError = void
 
     export const usePatchDeviceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceFromKey>>, TError,{key: number;data: Device;params?: PatchDeviceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchDeviceFromKey>>, TError,{key: number;data: Device;params?: PatchDeviceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchDeviceFromKey>>,
         TError,
@@ -2025,15 +2027,15 @@ export const deleteDeviceFromKey = async (key: number, options?: RequestInit): P
 
 
 export const getDeleteDeviceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteDeviceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2041,7 +2043,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDeviceFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteDeviceFromKey(key,)
+          return  deleteDeviceFromKey(key,requestOptions)
         }
 
 
@@ -2056,7 +2058,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteDeviceFromKeyMutationError = void
 
     export const useDeleteDeviceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeviceFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteDeviceFromKey>>,
         TError,

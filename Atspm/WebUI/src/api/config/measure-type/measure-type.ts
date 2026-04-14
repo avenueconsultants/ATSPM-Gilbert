@@ -41,6 +41,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -311,16 +313,16 @@ export const getGetMeasureTypeDetectionTypesFromKeyQueryKey = (key: number,
 
 
 export const getGetMeasureTypeDetectionTypesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeDetectionTypesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>> = ({ signal }) => getMeasureTypeDetectionTypesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>> = ({ signal }) => getMeasureTypeDetectionTypesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -339,7 +341,7 @@ export type GetMeasureTypeDetectionTypesFromKeyQueryError = void
 
 export function useGetMeasureTypeDetectionTypesFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeDetectionTypesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -623,16 +625,16 @@ export const getGetMeasureTypeDetectionTypesCountFromKeyQueryKey = (key: number,
 
 
 export const getGetMeasureTypeDetectionTypesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeDetectionTypesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>> = ({ signal }) => getMeasureTypeDetectionTypesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>> = ({ signal }) => getMeasureTypeDetectionTypesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -651,7 +653,7 @@ export type GetMeasureTypeDetectionTypesCountFromKeyQueryError = void
 
 export function useGetMeasureTypeDetectionTypesCountFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeDetectionTypesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeDetectionTypesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -935,16 +937,16 @@ export const getGetMeasureTypeMeasureCommentsFromKeyQueryKey = (key: number,
 
 
 export const getGetMeasureTypeMeasureCommentsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeMeasureCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeMeasureCommentsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>> = ({ signal }) => getMeasureTypeMeasureCommentsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>> = ({ signal }) => getMeasureTypeMeasureCommentsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -963,7 +965,7 @@ export type GetMeasureTypeMeasureCommentsFromKeyQueryError = void
 
 export function useGetMeasureTypeMeasureCommentsFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeMeasureCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureCommentsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1247,16 +1249,16 @@ export const getGetMeasureTypeMeasureCommentsCountFromKeyQueryKey = (key: number
 
 
 export const getGetMeasureTypeMeasureCommentsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeMeasureCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeMeasureCommentsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>> = ({ signal }) => getMeasureTypeMeasureCommentsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>> = ({ signal }) => getMeasureTypeMeasureCommentsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1275,7 +1277,7 @@ export type GetMeasureTypeMeasureCommentsCountFromKeyQueryError = void
 
 export function useGetMeasureTypeMeasureCommentsCountFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeMeasureCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureCommentsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureCommentsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1559,16 +1561,16 @@ export const getGetMeasureTypeMeasureOptionPresetsFromKeyQueryKey = (key: number
 
 
 export const getGetMeasureTypeMeasureOptionPresetsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeMeasureOptionPresetsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureOptionPresetsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeMeasureOptionPresetsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>> = ({ signal }) => getMeasureTypeMeasureOptionPresetsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>> = ({ signal }) => getMeasureTypeMeasureOptionPresetsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1587,7 +1589,7 @@ export type GetMeasureTypeMeasureOptionPresetsFromKeyQueryError = void
 
 export function useGetMeasureTypeMeasureOptionPresetsFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeMeasureOptionPresetsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureOptionPresetsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1871,16 +1873,16 @@ export const getGetMeasureTypeMeasureOptionPresetsCountFromKeyQueryKey = (key: n
 
 
 export const getGetMeasureTypeMeasureOptionPresetsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeMeasureOptionPresetsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureOptionPresetsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeMeasureOptionPresetsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>> = ({ signal }) => getMeasureTypeMeasureOptionPresetsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>> = ({ signal }) => getMeasureTypeMeasureOptionPresetsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1899,7 +1901,7 @@ export type GetMeasureTypeMeasureOptionPresetsCountFromKeyQueryError = void
 
 export function useGetMeasureTypeMeasureOptionPresetsCountFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeMeasureOptionPresetsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeMeasureOptionPresetsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeMeasureOptionPresetsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2171,16 +2173,16 @@ export const getGetMeasureTypeQueryKey = (params?: GetMeasureTypeParams,) => {
     }
 
 
-export const getGetMeasureTypeQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureType>>, TError = void>(params?: GetMeasureTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureType>>, TError, TData>, }
+export const getGetMeasureTypeQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureType>>, TError = void>(params?: GetMeasureTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureType>>> = ({ signal }) => getMeasureType(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureType>>> = ({ signal }) => getMeasureType(params, { signal, ...requestOptions });
 
 
 
@@ -2195,7 +2197,7 @@ export type GetMeasureTypeQueryError = void
 
 
 export function useGetMeasureType<TData = Awaited<ReturnType<typeof getMeasureType>>, TError = void>(
- params?: GetMeasureTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureType>>, TError, TData>, }
+ params?: GetMeasureTypeParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureType>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2267,15 +2269,15 @@ export const postMeasureType = async (measureType: MeasureType,
 
 
 export const getPostMeasureTypeMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMeasureType>>, TError,{data: MeasureType;params?: PostMeasureTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMeasureType>>, TError,{data: MeasureType;params?: PostMeasureTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postMeasureType>>, TError,{data: MeasureType;params?: PostMeasureTypeParams}, TContext> => {
 
 const mutationKey = ['postMeasureType'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2283,7 +2285,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postMeasureType>>, {data: MeasureType;params?: PostMeasureTypeParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postMeasureType(data,params,)
+          return  postMeasureType(data,params,requestOptions)
         }
 
 
@@ -2298,7 +2300,7 @@ const {mutation: mutationOptions} = options ?
     export type PostMeasureTypeMutationError = void
 
     export const usePostMeasureType = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMeasureType>>, TError,{data: MeasureType;params?: PostMeasureTypeParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postMeasureType>>, TError,{data: MeasureType;params?: PostMeasureTypeParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postMeasureType>>,
         TError,
@@ -2563,16 +2565,16 @@ export const getGetMeasureTypeCountQueryKey = (params?: GetMeasureTypeCountParam
     }
 
 
-export const getGetMeasureTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeCount>>, TError = void>(params?: GetMeasureTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeCount>>, TError, TData>, }
+export const getGetMeasureTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeCount>>, TError = void>(params?: GetMeasureTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeCount>>> = ({ signal }) => getMeasureTypeCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeCount>>> = ({ signal }) => getMeasureTypeCount(params, { signal, ...requestOptions });
 
 
 
@@ -2587,7 +2589,7 @@ export type GetMeasureTypeCountQueryError = void
 
 
 export function useGetMeasureTypeCount<TData = Awaited<ReturnType<typeof getMeasureTypeCount>>, TError = void>(
- params?: GetMeasureTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeCount>>, TError, TData>, }
+ params?: GetMeasureTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2863,16 +2865,16 @@ export const getGetMeasureTypeFromKeyQueryKey = (key: number,
 
 
 export const getGetMeasureTypeFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError = void>(key: number,
-    params?: GetMeasureTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetMeasureTypeFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeFromKey>>> = ({ signal }) => getMeasureTypeFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeasureTypeFromKey>>> = ({ signal }) => getMeasureTypeFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -2888,7 +2890,7 @@ export type GetMeasureTypeFromKeyQueryError = void
 
 export function useGetMeasureTypeFromKey<TData = Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError = void>(
  key: number,
-    params?: GetMeasureTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError, TData>, }
+    params?: GetMeasureTypeFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMeasureTypeFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2967,15 +2969,15 @@ export const putMeasureTypeFromKey = async (key: number,
 
 
 export const getPutMeasureTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['putMeasureTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2983,7 +2985,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, {key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putMeasureTypeFromKey(key,data,params,)
+          return  putMeasureTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2998,7 +3000,7 @@ const {mutation: mutationOptions} = options ?
     export type PutMeasureTypeFromKeyMutationError = void
 
     export const usePutMeasureTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PutMeasureTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putMeasureTypeFromKey>>,
         TError,
@@ -3070,15 +3072,15 @@ export const patchMeasureTypeFromKey = async (key: number,
 
 
 export const getPatchMeasureTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchMeasureTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -3086,7 +3088,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, {key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchMeasureTypeFromKey(key,data,params,)
+          return  patchMeasureTypeFromKey(key,data,params,requestOptions)
         }
 
 
@@ -3101,7 +3103,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchMeasureTypeFromKeyMutationError = void
 
     export const usePatchMeasureTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchMeasureTypeFromKey>>, TError,{key: number;data: MeasureType;params?: PatchMeasureTypeFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchMeasureTypeFromKey>>,
         TError,
@@ -3162,15 +3164,15 @@ export const deleteMeasureTypeFromKey = async (key: number, options?: RequestIni
 
 
 export const getDeleteMeasureTypeFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteMeasureTypeFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -3178,7 +3180,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteMeasureTypeFromKey(key,)
+          return  deleteMeasureTypeFromKey(key,requestOptions)
         }
 
 
@@ -3193,7 +3195,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteMeasureTypeFromKeyMutationError = void
 
     export const useDeleteMeasureTypeFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteMeasureTypeFromKey>>,
         TError,

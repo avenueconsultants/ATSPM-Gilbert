@@ -38,6 +38,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -308,16 +310,16 @@ export const getGetRouteDistancePreviousLocationsFromKeyQueryKey = (key: number,
 
 
 export const getGetRouteDistancePreviousLocationsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError = void>(key: number,
-    params?: GetRouteDistancePreviousLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError, TData>, }
+    params?: GetRouteDistancePreviousLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistancePreviousLocationsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>> = ({ signal }) => getRouteDistancePreviousLocationsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>> = ({ signal }) => getRouteDistancePreviousLocationsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -336,7 +338,7 @@ export type GetRouteDistancePreviousLocationsFromKeyQueryError = void
 
 export function useGetRouteDistancePreviousLocationsFromKey<TData = Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteDistancePreviousLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError, TData>, }
+    params?: GetRouteDistancePreviousLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -620,16 +622,16 @@ export const getGetRouteDistancePreviousLocationsCountFromKeyQueryKey = (key: nu
 
 
 export const getGetRouteDistancePreviousLocationsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError = void>(key: number,
-    params?: GetRouteDistancePreviousLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError, TData>, }
+    params?: GetRouteDistancePreviousLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistancePreviousLocationsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>> = ({ signal }) => getRouteDistancePreviousLocationsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>> = ({ signal }) => getRouteDistancePreviousLocationsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -648,7 +650,7 @@ export type GetRouteDistancePreviousLocationsCountFromKeyQueryError = void
 
 export function useGetRouteDistancePreviousLocationsCountFromKey<TData = Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteDistancePreviousLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError, TData>, }
+    params?: GetRouteDistancePreviousLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistancePreviousLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -932,16 +934,16 @@ export const getGetRouteDistanceNextLocationsFromKeyQueryKey = (key: number,
 
 
 export const getGetRouteDistanceNextLocationsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError = void>(key: number,
-    params?: GetRouteDistanceNextLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceNextLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceNextLocationsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>> = ({ signal }) => getRouteDistanceNextLocationsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>> = ({ signal }) => getRouteDistanceNextLocationsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -960,7 +962,7 @@ export type GetRouteDistanceNextLocationsFromKeyQueryError = void
 
 export function useGetRouteDistanceNextLocationsFromKey<TData = Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteDistanceNextLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceNextLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1244,16 +1246,16 @@ export const getGetRouteDistanceNextLocationsCountFromKeyQueryKey = (key: number
 
 
 export const getGetRouteDistanceNextLocationsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError = void>(key: number,
-    params?: GetRouteDistanceNextLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceNextLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceNextLocationsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>> = ({ signal }) => getRouteDistanceNextLocationsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>> = ({ signal }) => getRouteDistanceNextLocationsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1272,7 +1274,7 @@ export type GetRouteDistanceNextLocationsCountFromKeyQueryError = void
 
 export function useGetRouteDistanceNextLocationsCountFromKey<TData = Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteDistanceNextLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceNextLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceNextLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1555,16 +1557,16 @@ export const getGetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAA
 
 export const getGetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError = void>(locationA: string,
     locationB: string,
-    params?: GetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError, TData>, }
+    params?: GetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBQueryKey(locationA,locationB,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>> = ({ signal }) => getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB(locationA,locationB,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>> = ({ signal }) => getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB(locationA,locationB,params, { signal, ...requestOptions });
 
 
 
@@ -1584,7 +1586,7 @@ export type GetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLo
 export function useGetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB<TData = Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError = void>(
  locationA: string,
     locationB: string,
-    params?: GetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError, TData>, }
+    params?: GetRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationBParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceRouteDistanceByLocationIdentifiersFromLocationAAndLocationB>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1856,16 +1858,16 @@ export const getGetRouteDistanceQueryKey = (params?: GetRouteDistanceParams,) =>
     }
 
 
-export const getGetRouteDistanceQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistance>>, TError = void>(params?: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, }
+export const getGetRouteDistanceQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistance>>, TError = void>(params?: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistance>>> = ({ signal }) => getRouteDistance(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistance>>> = ({ signal }) => getRouteDistance(params, { signal, ...requestOptions });
 
 
 
@@ -1880,7 +1882,7 @@ export type GetRouteDistanceQueryError = void
 
 
 export function useGetRouteDistance<TData = Awaited<ReturnType<typeof getRouteDistance>>, TError = void>(
- params?: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, }
+ params?: GetRouteDistanceParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistance>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1952,15 +1954,15 @@ export const postRouteDistance = async (routeDistance: RouteDistance,
 
 
 export const getPostRouteDistanceMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteDistance>>, TError,{data: RouteDistance;params?: PostRouteDistanceParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteDistance>>, TError,{data: RouteDistance;params?: PostRouteDistanceParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postRouteDistance>>, TError,{data: RouteDistance;params?: PostRouteDistanceParams}, TContext> => {
 
 const mutationKey = ['postRouteDistance'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1968,7 +1970,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRouteDistance>>, {data: RouteDistance;params?: PostRouteDistanceParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postRouteDistance(data,params,)
+          return  postRouteDistance(data,params,requestOptions)
         }
 
 
@@ -1983,7 +1985,7 @@ const {mutation: mutationOptions} = options ?
     export type PostRouteDistanceMutationError = void
 
     export const usePostRouteDistance = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteDistance>>, TError,{data: RouteDistance;params?: PostRouteDistanceParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteDistance>>, TError,{data: RouteDistance;params?: PostRouteDistanceParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postRouteDistance>>,
         TError,
@@ -2248,16 +2250,16 @@ export const getGetRouteDistanceCountQueryKey = (params?: GetRouteDistanceCountP
     }
 
 
-export const getGetRouteDistanceCountQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceCount>>, TError = void>(params?: GetRouteDistanceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceCount>>, TError, TData>, }
+export const getGetRouteDistanceCountQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceCount>>, TError = void>(params?: GetRouteDistanceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceCount>>> = ({ signal }) => getRouteDistanceCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceCount>>> = ({ signal }) => getRouteDistanceCount(params, { signal, ...requestOptions });
 
 
 
@@ -2272,7 +2274,7 @@ export type GetRouteDistanceCountQueryError = void
 
 
 export function useGetRouteDistanceCount<TData = Awaited<ReturnType<typeof getRouteDistanceCount>>, TError = void>(
- params?: GetRouteDistanceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceCount>>, TError, TData>, }
+ params?: GetRouteDistanceCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2548,16 +2550,16 @@ export const getGetRouteDistanceFromKeyQueryKey = (key: number,
 
 
 export const getGetRouteDistanceFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError = void>(key: number,
-    params?: GetRouteDistanceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteDistanceFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceFromKey>>> = ({ signal }) => getRouteDistanceFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteDistanceFromKey>>> = ({ signal }) => getRouteDistanceFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -2573,7 +2575,7 @@ export type GetRouteDistanceFromKeyQueryError = void
 
 export function useGetRouteDistanceFromKey<TData = Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteDistanceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError, TData>, }
+    params?: GetRouteDistanceFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteDistanceFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2652,15 +2654,15 @@ export const putRouteDistanceFromKey = async (key: number,
 
 
 export const getPutRouteDistanceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}, TContext> => {
 
 const mutationKey = ['putRouteDistanceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2668,7 +2670,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, {key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putRouteDistanceFromKey(key,data,params,)
+          return  putRouteDistanceFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2683,7 +2685,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRouteDistanceFromKeyMutationError = void
 
     export const usePutRouteDistanceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PutRouteDistanceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putRouteDistanceFromKey>>,
         TError,
@@ -2755,15 +2757,15 @@ export const patchRouteDistanceFromKey = async (key: number,
 
 
 export const getPatchRouteDistanceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchRouteDistanceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2771,7 +2773,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, {key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchRouteDistanceFromKey(key,data,params,)
+          return  patchRouteDistanceFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2786,7 +2788,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchRouteDistanceFromKeyMutationError = void
 
     export const usePatchRouteDistanceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteDistanceFromKey>>, TError,{key: number;data: RouteDistance;params?: PatchRouteDistanceFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchRouteDistanceFromKey>>,
         TError,
@@ -2847,15 +2849,15 @@ export const deleteRouteDistanceFromKey = async (key: number, options?: RequestI
 
 
 export const getDeleteRouteDistanceFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteRouteDistanceFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2863,7 +2865,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteRouteDistanceFromKey(key,)
+          return  deleteRouteDistanceFromKey(key,requestOptions)
         }
 
 
@@ -2878,7 +2880,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteRouteDistanceFromKeyMutationError = void
 
     export const useDeleteRouteDistanceFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteRouteDistanceFromKey>>,
         TError,

@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getRouteLocationResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetRouteLocationQueryKey = (params?: GetRouteLocationParams,) =>
     }
 
 
-export const getGetRouteLocationQueryOptions = <TData = Awaited<ReturnType<typeof getRouteLocation>>, TError = void>(params?: GetRouteLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocation>>, TError, TData>, }
+export const getGetRouteLocationQueryOptions = <TData = Awaited<ReturnType<typeof getRouteLocation>>, TError = void>(params?: GetRouteLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocation>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteLocationQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocation>>> = ({ signal }) => getRouteLocation(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocation>>> = ({ signal }) => getRouteLocation(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetRouteLocationQueryError = void
 
 
 export function useGetRouteLocation<TData = Awaited<ReturnType<typeof getRouteLocation>>, TError = void>(
- params?: GetRouteLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocation>>, TError, TData>, }
+ params?: GetRouteLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocation>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postRouteLocation = async (routeLocation: RouteLocation,
 
 
 export const getPostRouteLocationMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteLocation>>, TError,{data: RouteLocation;params?: PostRouteLocationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteLocation>>, TError,{data: RouteLocation;params?: PostRouteLocationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postRouteLocation>>, TError,{data: RouteLocation;params?: PostRouteLocationParams}, TContext> => {
 
 const mutationKey = ['postRouteLocation'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postRouteLocation>>, {data: RouteLocation;params?: PostRouteLocationParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postRouteLocation(data,params,)
+          return  postRouteLocation(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostRouteLocationMutationError = void
 
     export const usePostRouteLocation = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteLocation>>, TError,{data: RouteLocation;params?: PostRouteLocationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postRouteLocation>>, TError,{data: RouteLocation;params?: PostRouteLocationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postRouteLocation>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetRouteLocationCountQueryKey = (params?: GetRouteLocationCountP
     }
 
 
-export const getGetRouteLocationCountQueryOptions = <TData = Awaited<ReturnType<typeof getRouteLocationCount>>, TError = void>(params?: GetRouteLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationCount>>, TError, TData>, }
+export const getGetRouteLocationCountQueryOptions = <TData = Awaited<ReturnType<typeof getRouteLocationCount>>, TError = void>(params?: GetRouteLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteLocationCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocationCount>>> = ({ signal }) => getRouteLocationCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocationCount>>> = ({ signal }) => getRouteLocationCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetRouteLocationCountQueryError = void
 
 
 export function useGetRouteLocationCount<TData = Awaited<ReturnType<typeof getRouteLocationCount>>, TError = void>(
- params?: GetRouteLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationCount>>, TError, TData>, }
+ params?: GetRouteLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetRouteLocationFromKeyQueryKey = (key: number,
 
 
 export const getGetRouteLocationFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError = void>(key: number,
-    params?: GetRouteLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError, TData>, }
+    params?: GetRouteLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetRouteLocationFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocationFromKey>>> = ({ signal }) => getRouteLocationFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRouteLocationFromKey>>> = ({ signal }) => getRouteLocationFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetRouteLocationFromKeyQueryError = void
 
 export function useGetRouteLocationFromKey<TData = Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError = void>(
  key: number,
-    params?: GetRouteLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError, TData>, }
+    params?: GetRouteLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getRouteLocationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putRouteLocationFromKey = async (key: number,
 
 
 export const getPutRouteLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['putRouteLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putRouteLocationFromKey>>, {key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putRouteLocationFromKey(key,data,params,)
+          return  putRouteLocationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutRouteLocationFromKeyMutationError = void
 
     export const usePutRouteLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PutRouteLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putRouteLocationFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchRouteLocationFromKey = async (key: number,
 
 
 export const getPatchRouteLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchRouteLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, {key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchRouteLocationFromKey(key,data,params,)
+          return  patchRouteLocationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchRouteLocationFromKeyMutationError = void
 
     export const usePatchRouteLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchRouteLocationFromKey>>, TError,{key: number;data: RouteLocation;params?: PatchRouteLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchRouteLocationFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteRouteLocationFromKey = async (key: number, options?: RequestI
 
 
 export const getDeleteRouteLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteRouteLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteRouteLocationFromKey(key,)
+          return  deleteRouteLocationFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteRouteLocationFromKeyMutationError = void
 
     export const useDeleteRouteLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteRouteLocationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteRouteLocationFromKey>>,
         TError,

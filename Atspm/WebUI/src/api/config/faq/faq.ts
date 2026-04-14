@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getFaqResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetFaqQueryKey = (params?: GetFaqParams,) => {
     }
 
 
-export const getGetFaqQueryOptions = <TData = Awaited<ReturnType<typeof getFaq>>, TError = void>(params?: GetFaqParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaq>>, TError, TData>, }
+export const getGetFaqQueryOptions = <TData = Awaited<ReturnType<typeof getFaq>>, TError = void>(params?: GetFaqParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaq>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetFaqQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaq>>> = ({ signal }) => getFaq(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaq>>> = ({ signal }) => getFaq(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetFaqQueryError = void
 
 
 export function useGetFaq<TData = Awaited<ReturnType<typeof getFaq>>, TError = void>(
- params?: GetFaqParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaq>>, TError, TData>, }
+ params?: GetFaqParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaq>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postFaq = async (faq: Faq,
 
 
 export const getPostFaqMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFaq>>, TError,{data: Faq;params?: PostFaqParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFaq>>, TError,{data: Faq;params?: PostFaqParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postFaq>>, TError,{data: Faq;params?: PostFaqParams}, TContext> => {
 
 const mutationKey = ['postFaq'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postFaq>>, {data: Faq;params?: PostFaqParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postFaq(data,params,)
+          return  postFaq(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostFaqMutationError = void
 
     export const usePostFaq = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFaq>>, TError,{data: Faq;params?: PostFaqParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postFaq>>, TError,{data: Faq;params?: PostFaqParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postFaq>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetFaqCountQueryKey = (params?: GetFaqCountParams,) => {
     }
 
 
-export const getGetFaqCountQueryOptions = <TData = Awaited<ReturnType<typeof getFaqCount>>, TError = void>(params?: GetFaqCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqCount>>, TError, TData>, }
+export const getGetFaqCountQueryOptions = <TData = Awaited<ReturnType<typeof getFaqCount>>, TError = void>(params?: GetFaqCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetFaqCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaqCount>>> = ({ signal }) => getFaqCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaqCount>>> = ({ signal }) => getFaqCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetFaqCountQueryError = void
 
 
 export function useGetFaqCount<TData = Awaited<ReturnType<typeof getFaqCount>>, TError = void>(
- params?: GetFaqCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqCount>>, TError, TData>, }
+ params?: GetFaqCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetFaqFromKeyQueryKey = (key: number,
 
 
 export const getGetFaqFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getFaqFromKey>>, TError = void>(key: number,
-    params?: GetFaqFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqFromKey>>, TError, TData>, }
+    params?: GetFaqFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetFaqFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaqFromKey>>> = ({ signal }) => getFaqFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFaqFromKey>>> = ({ signal }) => getFaqFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetFaqFromKeyQueryError = void
 
 export function useGetFaqFromKey<TData = Awaited<ReturnType<typeof getFaqFromKey>>, TError = void>(
  key: number,
-    params?: GetFaqFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqFromKey>>, TError, TData>, }
+    params?: GetFaqFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFaqFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putFaqFromKey = async (key: number,
 
 
 export const getPutFaqFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putFaqFromKey>>, TError,{key: number;data: Faq;params?: PutFaqFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putFaqFromKey>>, TError,{key: number;data: Faq;params?: PutFaqFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putFaqFromKey>>, TError,{key: number;data: Faq;params?: PutFaqFromKeyParams}, TContext> => {
 
 const mutationKey = ['putFaqFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putFaqFromKey>>, {key: number;data: Faq;params?: PutFaqFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putFaqFromKey(key,data,params,)
+          return  putFaqFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutFaqFromKeyMutationError = void
 
     export const usePutFaqFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putFaqFromKey>>, TError,{key: number;data: Faq;params?: PutFaqFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putFaqFromKey>>, TError,{key: number;data: Faq;params?: PutFaqFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putFaqFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchFaqFromKey = async (key: number,
 
 
 export const getPatchFaqFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchFaqFromKey>>, TError,{key: number;data: Faq;params?: PatchFaqFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchFaqFromKey>>, TError,{key: number;data: Faq;params?: PatchFaqFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchFaqFromKey>>, TError,{key: number;data: Faq;params?: PatchFaqFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchFaqFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchFaqFromKey>>, {key: number;data: Faq;params?: PatchFaqFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchFaqFromKey(key,data,params,)
+          return  patchFaqFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchFaqFromKeyMutationError = void
 
     export const usePatchFaqFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchFaqFromKey>>, TError,{key: number;data: Faq;params?: PatchFaqFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchFaqFromKey>>, TError,{key: number;data: Faq;params?: PatchFaqFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchFaqFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteFaqFromKey = async (key: number, options?: RequestInit): Prom
 
 
 export const getDeleteFaqFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFaqFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFaqFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteFaqFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteFaqFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFaqFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteFaqFromKey(key,)
+          return  deleteFaqFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteFaqFromKeyMutationError = void
 
     export const useDeleteFaqFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFaqFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFaqFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteFaqFromKey>>,
         TError,

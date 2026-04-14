@@ -55,6 +55,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -325,16 +327,16 @@ export const getGetLocationApproachesFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationApproachesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError = void>(key: number,
-    params?: GetLocationApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError, TData>, }
+    params?: GetLocationApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationApproachesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationApproachesFromKey>>> = ({ signal }) => getLocationApproachesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationApproachesFromKey>>> = ({ signal }) => getLocationApproachesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -353,7 +355,7 @@ export type GetLocationApproachesFromKeyQueryError = void
 
 export function useGetLocationApproachesFromKey<TData = Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError, TData>, }
+    params?: GetLocationApproachesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -637,16 +639,16 @@ export const getGetLocationApproachesCountFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationApproachesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError = void>(key: number,
-    params?: GetLocationApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError, TData>, }
+    params?: GetLocationApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationApproachesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>> = ({ signal }) => getLocationApproachesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>> = ({ signal }) => getLocationApproachesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -665,7 +667,7 @@ export type GetLocationApproachesCountFromKeyQueryError = void
 
 export function useGetLocationApproachesCountFromKey<TData = Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError, TData>, }
+    params?: GetLocationApproachesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationApproachesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -949,16 +951,16 @@ export const getGetLocationAreasFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationAreasFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError = void>(key: number,
-    params?: GetLocationAreasFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError, TData>, }
+    params?: GetLocationAreasFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationAreasFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAreasFromKey>>> = ({ signal }) => getLocationAreasFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAreasFromKey>>> = ({ signal }) => getLocationAreasFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -977,7 +979,7 @@ export type GetLocationAreasFromKeyQueryError = void
 
 export function useGetLocationAreasFromKey<TData = Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationAreasFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError, TData>, }
+    params?: GetLocationAreasFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1261,16 +1263,16 @@ export const getGetLocationAreasCountFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationAreasCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError = void>(key: number,
-    params?: GetLocationAreasCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError, TData>, }
+    params?: GetLocationAreasCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationAreasCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>> = ({ signal }) => getLocationAreasCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>> = ({ signal }) => getLocationAreasCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1289,7 +1291,7 @@ export type GetLocationAreasCountFromKeyQueryError = void
 
 export function useGetLocationAreasCountFromKey<TData = Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationAreasCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError, TData>, }
+    params?: GetLocationAreasCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAreasCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1573,16 +1575,16 @@ export const getGetLocationDevicesFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationDevicesFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError = void>(key: number,
-    params?: GetLocationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError, TData>, }
+    params?: GetLocationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationDevicesFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDevicesFromKey>>> = ({ signal }) => getLocationDevicesFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDevicesFromKey>>> = ({ signal }) => getLocationDevicesFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1601,7 +1603,7 @@ export type GetLocationDevicesFromKeyQueryError = void
 
 export function useGetLocationDevicesFromKey<TData = Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError, TData>, }
+    params?: GetLocationDevicesFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1885,16 +1887,16 @@ export const getGetLocationDevicesCountFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationDevicesCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError = void>(key: number,
-    params?: GetLocationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError, TData>, }
+    params?: GetLocationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationDevicesCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>> = ({ signal }) => getLocationDevicesCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>> = ({ signal }) => getLocationDevicesCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1913,7 +1915,7 @@ export type GetLocationDevicesCountFromKeyQueryError = void
 
 export function useGetLocationDevicesCountFromKey<TData = Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError, TData>, }
+    params?: GetLocationDevicesCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDevicesCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -2183,15 +2185,15 @@ export const getLocationCopyLocationToNewVersionFromKey = async (key: number,
 
 
 export const getGetLocationCopyLocationToNewVersionFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, TError,{key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, TError,{key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, TError,{key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}, TContext> => {
 
 const mutationKey = ['getLocationCopyLocationToNewVersionFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2199,7 +2201,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, {key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}> = (props) => {
           const {key,params} = props ?? {};
 
-          return  getLocationCopyLocationToNewVersionFromKey(key,params,)
+          return  getLocationCopyLocationToNewVersionFromKey(key,params,requestOptions)
         }
 
 
@@ -2217,7 +2219,7 @@ const {mutation: mutationOptions} = options ?
  * @summary Copies Utah.Udot.Atspm.Data.Models.Location and associated Utah.Udot.Atspm.Data.Models.Approach to new version
  */
 export const useGetLocationCopyLocationToNewVersionFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, TError,{key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>, TError,{key: number;params?: GetLocationCopyLocationToNewVersionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getLocationCopyLocationToNewVersionFromKey>>,
         TError,
@@ -2480,15 +2482,15 @@ export const getLocationSyncLocationFromKey = async (key: number,
 
 
 export const getGetLocationSyncLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, TError,{key: number;params?: GetLocationSyncLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, TError,{key: number;params?: GetLocationSyncLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, TError,{key: number;params?: GetLocationSyncLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['getLocationSyncLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2496,7 +2498,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, {key: number;params?: GetLocationSyncLocationFromKeyParams}> = (props) => {
           const {key,params} = props ?? {};
 
-          return  getLocationSyncLocationFromKey(key,params,)
+          return  getLocationSyncLocationFromKey(key,params,requestOptions)
         }
 
 
@@ -2514,7 +2516,7 @@ const {mutation: mutationOptions} = options ?
  * @summary Copies Utah.Udot.Atspm.Data.Models.Location and associated Utah.Udot.Atspm.Data.Models.Approach to new version
  */
 export const useGetLocationSyncLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, TError,{key: number;params?: GetLocationSyncLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>, TError,{key: number;params?: GetLocationSyncLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getLocationSyncLocationFromKey>>,
         TError,
@@ -2779,15 +2781,15 @@ export const getLocationSaveTemplatedLocationFromKey = async (key: number,
 
 
 export const getGetLocationSaveTemplatedLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, TError,{key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, TError,{key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, TError,{key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['getLocationSaveTemplatedLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2795,7 +2797,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, {key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  getLocationSaveTemplatedLocationFromKey(key,data,params,)
+          return  getLocationSaveTemplatedLocationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -2813,7 +2815,7 @@ const {mutation: mutationOptions} = options ?
  * @summary Templates Utah.Udot.Atspm.Data.Models.Location and associated Utah.Udot.Atspm.Data.Models.Approach to new version
  */
 export const useGetLocationSaveTemplatedLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, TError,{key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>, TError,{key: number;data: LocationSaveTemplatedLocationParameters;params?: GetLocationSaveTemplatedLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof getLocationSaveTemplatedLocationFromKey>>,
         TError,
@@ -2881,15 +2883,15 @@ export const deleteLocationSetLocationTodFromKey = async (key: number,
 
 
 export const getDeleteLocationSetLocationTodFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, TError,{key: number;params?: DeleteLocationSetLocationTodFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, TError,{key: number;params?: DeleteLocationSetLocationTodFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, TError,{key: number;params?: DeleteLocationSetLocationTodFromKeyParams}, TContext> => {
 
 const mutationKey = ['deleteLocationSetLocationTodFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2897,7 +2899,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, {key: number;params?: DeleteLocationSetLocationTodFromKeyParams}> = (props) => {
           const {key,params} = props ?? {};
 
-          return  deleteLocationSetLocationTodFromKey(key,params,)
+          return  deleteLocationSetLocationTodFromKey(key,params,requestOptions)
         }
 
 
@@ -2915,7 +2917,7 @@ const {mutation: mutationOptions} = options ?
  * @summary Marks Utah.Udot.Atspm.Data.Models.Location to deleted
  */
 export const useDeleteLocationSetLocationTodFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, TError,{key: number;params?: DeleteLocationSetLocationTodFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>, TError,{key: number;params?: DeleteLocationSetLocationTodFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteLocationSetLocationTodFromKey>>,
         TError,
@@ -2983,15 +2985,15 @@ export const deleteLocationAllVersionsFromKey = async (key: string,
 
 
 export const getDeleteLocationAllVersionsFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, TError,{key: string;params?: DeleteLocationAllVersionsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, TError,{key: string;params?: DeleteLocationAllVersionsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, TError,{key: string;params?: DeleteLocationAllVersionsFromKeyParams}, TContext> => {
 
 const mutationKey = ['deleteLocationAllVersionsFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -2999,7 +3001,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, {key: string;params?: DeleteLocationAllVersionsFromKeyParams}> = (props) => {
           const {key,params} = props ?? {};
 
-          return  deleteLocationAllVersionsFromKey(key,params,)
+          return  deleteLocationAllVersionsFromKey(key,params,requestOptions)
         }
 
 
@@ -3017,7 +3019,7 @@ const {mutation: mutationOptions} = options ?
  * @summary Marks Utah.Udot.Atspm.Data.Models.Location to deleted
  */
 export const useDeleteLocationAllVersionsFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, TError,{key: string;params?: DeleteLocationAllVersionsFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>, TError,{key: string;params?: DeleteLocationAllVersionsFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteLocationAllVersionsFromKey>>,
         TError,
@@ -3289,16 +3291,16 @@ export const getGetLocationLatestVersionOfLocationFromIdentifierQueryKey = (iden
 
 
 export const getGetLocationLatestVersionOfLocationFromIdentifierQueryOptions = <TData = Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError = void>(identifier: string,
-    params?: GetLocationLatestVersionOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError, TData>, }
+    params?: GetLocationLatestVersionOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationLatestVersionOfLocationFromIdentifierQueryKey(identifier,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>> = ({ signal }) => getLocationLatestVersionOfLocationFromIdentifier(identifier,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>> = ({ signal }) => getLocationLatestVersionOfLocationFromIdentifier(identifier,params, { signal, ...requestOptions });
 
 
 
@@ -3317,7 +3319,7 @@ export type GetLocationLatestVersionOfLocationFromIdentifierQueryError = void
 
 export function useGetLocationLatestVersionOfLocationFromIdentifier<TData = Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError = void>(
  identifier: string,
-    params?: GetLocationLatestVersionOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError, TData>, }
+    params?: GetLocationLatestVersionOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfLocationFromIdentifier>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -3596,16 +3598,16 @@ export const getGetLocationAllVersionsOfLocationFromIdentifierQueryKey = (identi
 
 
 export const getGetLocationAllVersionsOfLocationFromIdentifierQueryOptions = <TData = Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError = void>(identifier: string,
-    params?: GetLocationAllVersionsOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError, TData>, }
+    params?: GetLocationAllVersionsOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationAllVersionsOfLocationFromIdentifierQueryKey(identifier,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>> = ({ signal }) => getLocationAllVersionsOfLocationFromIdentifier(identifier,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>> = ({ signal }) => getLocationAllVersionsOfLocationFromIdentifier(identifier,params, { signal, ...requestOptions });
 
 
 
@@ -3624,7 +3626,7 @@ export type GetLocationAllVersionsOfLocationFromIdentifierQueryError = void
 
 export function useGetLocationAllVersionsOfLocationFromIdentifier<TData = Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError = void>(
  identifier: string,
-    params?: GetLocationAllVersionsOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError, TData>, }
+    params?: GetLocationAllVersionsOfLocationFromIdentifierParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationAllVersionsOfLocationFromIdentifier>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -3894,16 +3896,16 @@ export const getGetLocationLatestVersionOfAllLocationsQueryKey = (params?: GetLo
     }
 
 
-export const getGetLocationLatestVersionOfAllLocationsQueryOptions = <TData = Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError = void>(params?: GetLocationLatestVersionOfAllLocationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError, TData>, }
+export const getGetLocationLatestVersionOfAllLocationsQueryOptions = <TData = Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError = void>(params?: GetLocationLatestVersionOfAllLocationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationLatestVersionOfAllLocationsQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>> = ({ signal }) => getLocationLatestVersionOfAllLocations(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>> = ({ signal }) => getLocationLatestVersionOfAllLocations(params, { signal, ...requestOptions });
 
 
 
@@ -3921,7 +3923,7 @@ export type GetLocationLatestVersionOfAllLocationsQueryError = void
  */
 
 export function useGetLocationLatestVersionOfAllLocations<TData = Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError = void>(
- params?: GetLocationLatestVersionOfAllLocationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError, TData>, }
+ params?: GetLocationLatestVersionOfAllLocationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLatestVersionOfAllLocations>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -4191,16 +4193,16 @@ export const getGetLocationDetectionTypeCountQueryKey = (params?: GetLocationDet
     }
 
 
-export const getGetLocationDetectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError = void>(params?: GetLocationDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError, TData>, }
+export const getGetLocationDetectionTypeCountQueryOptions = <TData = Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError = void>(params?: GetLocationDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationDetectionTypeCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>> = ({ signal }) => getLocationDetectionTypeCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>> = ({ signal }) => getLocationDetectionTypeCount(params, { signal, ...requestOptions });
 
 
 
@@ -4218,7 +4220,7 @@ export type GetLocationDetectionTypeCountQueryError = void
  */
 
 export function useGetLocationDetectionTypeCount<TData = Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError = void>(
- params?: GetLocationDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError, TData>, }
+ params?: GetLocationDetectionTypeCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationDetectionTypeCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -4493,16 +4495,16 @@ export const getGetLocationLocationsForSearchQueryKey = (params?: GetLocationLoc
     }
 
 
-export const getGetLocationLocationsForSearchQueryOptions = <TData = Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError = void>(params?: GetLocationLocationsForSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError, TData>, }
+export const getGetLocationLocationsForSearchQueryOptions = <TData = Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError = void>(params?: GetLocationLocationsForSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationLocationsForSearchQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLocationsForSearch>>> = ({ signal }) => getLocationLocationsForSearch(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationLocationsForSearch>>> = ({ signal }) => getLocationLocationsForSearch(params, { signal, ...requestOptions });
 
 
 
@@ -4520,7 +4522,7 @@ export type GetLocationLocationsForSearchQueryError = void
  */
 
 export function useGetLocationLocationsForSearch<TData = Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError = void>(
- params?: GetLocationLocationsForSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError, TData>, }
+ params?: GetLocationLocationsForSearchParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationLocationsForSearch>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -4792,16 +4794,16 @@ export const getGetLocationQueryKey = (params?: GetLocationParams,) => {
     }
 
 
-export const getGetLocationQueryOptions = <TData = Awaited<ReturnType<typeof getLocation>>, TError = void>(params?: GetLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocation>>, TError, TData>, }
+export const getGetLocationQueryOptions = <TData = Awaited<ReturnType<typeof getLocation>>, TError = void>(params?: GetLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocation>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocation>>> = ({ signal }) => getLocation(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocation>>> = ({ signal }) => getLocation(params, { signal, ...requestOptions });
 
 
 
@@ -4816,7 +4818,7 @@ export type GetLocationQueryError = void
 
 
 export function useGetLocation<TData = Awaited<ReturnType<typeof getLocation>>, TError = void>(
- params?: GetLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocation>>, TError, TData>, }
+ params?: GetLocationParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocation>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -4888,15 +4890,15 @@ export const postLocation = async (location: Location,
 
 
 export const getPostLocationMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLocation>>, TError,{data: Location;params?: PostLocationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLocation>>, TError,{data: Location;params?: PostLocationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postLocation>>, TError,{data: Location;params?: PostLocationParams}, TContext> => {
 
 const mutationKey = ['postLocation'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -4904,7 +4906,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postLocation>>, {data: Location;params?: PostLocationParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postLocation(data,params,)
+          return  postLocation(data,params,requestOptions)
         }
 
 
@@ -4919,7 +4921,7 @@ const {mutation: mutationOptions} = options ?
     export type PostLocationMutationError = void
 
     export const usePostLocation = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLocation>>, TError,{data: Location;params?: PostLocationParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postLocation>>, TError,{data: Location;params?: PostLocationParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postLocation>>,
         TError,
@@ -5184,16 +5186,16 @@ export const getGetLocationCountQueryKey = (params?: GetLocationCountParams,) =>
     }
 
 
-export const getGetLocationCountQueryOptions = <TData = Awaited<ReturnType<typeof getLocationCount>>, TError = void>(params?: GetLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationCount>>, TError, TData>, }
+export const getGetLocationCountQueryOptions = <TData = Awaited<ReturnType<typeof getLocationCount>>, TError = void>(params?: GetLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationCount>>> = ({ signal }) => getLocationCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationCount>>> = ({ signal }) => getLocationCount(params, { signal, ...requestOptions });
 
 
 
@@ -5208,7 +5210,7 @@ export type GetLocationCountQueryError = void
 
 
 export function useGetLocationCount<TData = Awaited<ReturnType<typeof getLocationCount>>, TError = void>(
- params?: GetLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationCount>>, TError, TData>, }
+ params?: GetLocationCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -5484,16 +5486,16 @@ export const getGetLocationFromKeyQueryKey = (key: number,
 
 
 export const getGetLocationFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getLocationFromKey>>, TError = void>(key: number,
-    params?: GetLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationFromKey>>, TError, TData>, }
+    params?: GetLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetLocationFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationFromKey>>> = ({ signal }) => getLocationFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLocationFromKey>>> = ({ signal }) => getLocationFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -5509,7 +5511,7 @@ export type GetLocationFromKeyQueryError = void
 
 export function useGetLocationFromKey<TData = Awaited<ReturnType<typeof getLocationFromKey>>, TError = void>(
  key: number,
-    params?: GetLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationFromKey>>, TError, TData>, }
+    params?: GetLocationFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLocationFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -5588,15 +5590,15 @@ export const putLocationFromKey = async (key: number,
 
 
 export const getPutLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLocationFromKey>>, TError,{key: number;data: Location;params?: PutLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLocationFromKey>>, TError,{key: number;data: Location;params?: PutLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putLocationFromKey>>, TError,{key: number;data: Location;params?: PutLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['putLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -5604,7 +5606,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putLocationFromKey>>, {key: number;data: Location;params?: PutLocationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putLocationFromKey(key,data,params,)
+          return  putLocationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -5619,7 +5621,7 @@ const {mutation: mutationOptions} = options ?
     export type PutLocationFromKeyMutationError = void
 
     export const usePutLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLocationFromKey>>, TError,{key: number;data: Location;params?: PutLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putLocationFromKey>>, TError,{key: number;data: Location;params?: PutLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putLocationFromKey>>,
         TError,
@@ -5691,15 +5693,15 @@ export const patchLocationFromKey = async (key: number,
 
 
 export const getPatchLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchLocationFromKey>>, TError,{key: number;data: Location;params?: PatchLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchLocationFromKey>>, TError,{key: number;data: Location;params?: PatchLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchLocationFromKey>>, TError,{key: number;data: Location;params?: PatchLocationFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -5707,7 +5709,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchLocationFromKey>>, {key: number;data: Location;params?: PatchLocationFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchLocationFromKey(key,data,params,)
+          return  patchLocationFromKey(key,data,params,requestOptions)
         }
 
 
@@ -5722,7 +5724,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchLocationFromKeyMutationError = void
 
     export const usePatchLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchLocationFromKey>>, TError,{key: number;data: Location;params?: PatchLocationFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchLocationFromKey>>, TError,{key: number;data: Location;params?: PatchLocationFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchLocationFromKey>>,
         TError,
@@ -5783,15 +5785,15 @@ export const deleteLocationFromKey = async (key: number, options?: RequestInit):
 
 
 export const getDeleteLocationFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteLocationFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteLocationFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -5799,7 +5801,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteLocationFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteLocationFromKey(key,)
+          return  deleteLocationFromKey(key,requestOptions)
         }
 
 
@@ -5814,7 +5816,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteLocationFromKeyMutationError = void
 
     export const useDeleteLocationFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteLocationFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteLocationFromKey>>,
         TError,

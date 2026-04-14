@@ -35,6 +35,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 /**
@@ -305,16 +307,16 @@ export const getGetJurisdictionLocationsFromKeyQueryKey = (key: number,
 
 
 export const getGetJurisdictionLocationsFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError = void>(key: number,
-    params?: GetJurisdictionLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError, TData>, }
+    params?: GetJurisdictionLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetJurisdictionLocationsFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>> = ({ signal }) => getJurisdictionLocationsFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>> = ({ signal }) => getJurisdictionLocationsFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -333,7 +335,7 @@ export type GetJurisdictionLocationsFromKeyQueryError = void
 
 export function useGetJurisdictionLocationsFromKey<TData = Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError = void>(
  key: number,
-    params?: GetJurisdictionLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError, TData>, }
+    params?: GetJurisdictionLocationsFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -617,16 +619,16 @@ export const getGetJurisdictionLocationsCountFromKeyQueryKey = (key: number,
 
 
 export const getGetJurisdictionLocationsCountFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError = void>(key: number,
-    params?: GetJurisdictionLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError, TData>, }
+    params?: GetJurisdictionLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetJurisdictionLocationsCountFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>> = ({ signal }) => getJurisdictionLocationsCountFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>> = ({ signal }) => getJurisdictionLocationsCountFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -645,7 +647,7 @@ export type GetJurisdictionLocationsCountFromKeyQueryError = void
 
 export function useGetJurisdictionLocationsCountFromKey<TData = Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError = void>(
  key: number,
-    params?: GetJurisdictionLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError, TData>, }
+    params?: GetJurisdictionLocationsCountFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionLocationsCountFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -917,16 +919,16 @@ export const getGetJurisdictionQueryKey = (params?: GetJurisdictionParams,) => {
     }
 
 
-export const getGetJurisdictionQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdiction>>, TError = void>(params?: GetJurisdictionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdiction>>, TError, TData>, }
+export const getGetJurisdictionQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdiction>>, TError = void>(params?: GetJurisdictionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdiction>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetJurisdictionQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdiction>>> = ({ signal }) => getJurisdiction(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdiction>>> = ({ signal }) => getJurisdiction(params, { signal, ...requestOptions });
 
 
 
@@ -941,7 +943,7 @@ export type GetJurisdictionQueryError = void
 
 
 export function useGetJurisdiction<TData = Awaited<ReturnType<typeof getJurisdiction>>, TError = void>(
- params?: GetJurisdictionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdiction>>, TError, TData>, }
+ params?: GetJurisdictionParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdiction>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1013,15 +1015,15 @@ export const postJurisdiction = async (jurisdiction: Jurisdiction,
 
 
 export const getPostJurisdictionMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postJurisdiction>>, TError,{data: Jurisdiction;params?: PostJurisdictionParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postJurisdiction>>, TError,{data: Jurisdiction;params?: PostJurisdictionParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postJurisdiction>>, TError,{data: Jurisdiction;params?: PostJurisdictionParams}, TContext> => {
 
 const mutationKey = ['postJurisdiction'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1029,7 +1031,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postJurisdiction>>, {data: Jurisdiction;params?: PostJurisdictionParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postJurisdiction(data,params,)
+          return  postJurisdiction(data,params,requestOptions)
         }
 
 
@@ -1044,7 +1046,7 @@ const {mutation: mutationOptions} = options ?
     export type PostJurisdictionMutationError = void
 
     export const usePostJurisdiction = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postJurisdiction>>, TError,{data: Jurisdiction;params?: PostJurisdictionParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postJurisdiction>>, TError,{data: Jurisdiction;params?: PostJurisdictionParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postJurisdiction>>,
         TError,
@@ -1309,16 +1311,16 @@ export const getGetJurisdictionCountQueryKey = (params?: GetJurisdictionCountPar
     }
 
 
-export const getGetJurisdictionCountQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdictionCount>>, TError = void>(params?: GetJurisdictionCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionCount>>, TError, TData>, }
+export const getGetJurisdictionCountQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdictionCount>>, TError = void>(params?: GetJurisdictionCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetJurisdictionCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionCount>>> = ({ signal }) => getJurisdictionCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionCount>>> = ({ signal }) => getJurisdictionCount(params, { signal, ...requestOptions });
 
 
 
@@ -1333,7 +1335,7 @@ export type GetJurisdictionCountQueryError = void
 
 
 export function useGetJurisdictionCount<TData = Awaited<ReturnType<typeof getJurisdictionCount>>, TError = void>(
- params?: GetJurisdictionCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionCount>>, TError, TData>, }
+ params?: GetJurisdictionCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1609,16 +1611,16 @@ export const getGetJurisdictionFromKeyQueryKey = (key: number,
 
 
 export const getGetJurisdictionFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError = void>(key: number,
-    params?: GetJurisdictionFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError, TData>, }
+    params?: GetJurisdictionFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetJurisdictionFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionFromKey>>> = ({ signal }) => getJurisdictionFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getJurisdictionFromKey>>> = ({ signal }) => getJurisdictionFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1634,7 +1636,7 @@ export type GetJurisdictionFromKeyQueryError = void
 
 export function useGetJurisdictionFromKey<TData = Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError = void>(
  key: number,
-    params?: GetJurisdictionFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError, TData>, }
+    params?: GetJurisdictionFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getJurisdictionFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1713,15 +1715,15 @@ export const putJurisdictionFromKey = async (key: number,
 
 
 export const getPutJurisdictionFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}, TContext> => {
 
 const mutationKey = ['putJurisdictionFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1729,7 +1731,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putJurisdictionFromKey>>, {key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putJurisdictionFromKey(key,data,params,)
+          return  putJurisdictionFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1744,7 +1746,7 @@ const {mutation: mutationOptions} = options ?
     export type PutJurisdictionFromKeyMutationError = void
 
     export const usePutJurisdictionFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PutJurisdictionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putJurisdictionFromKey>>,
         TError,
@@ -1816,15 +1818,15 @@ export const patchJurisdictionFromKey = async (key: number,
 
 
 export const getPatchJurisdictionFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchJurisdictionFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1832,7 +1834,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, {key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchJurisdictionFromKey(key,data,params,)
+          return  patchJurisdictionFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1847,7 +1849,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchJurisdictionFromKeyMutationError = void
 
     export const usePatchJurisdictionFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchJurisdictionFromKey>>, TError,{key: number;data: Jurisdiction;params?: PatchJurisdictionFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchJurisdictionFromKey>>,
         TError,
@@ -1908,15 +1910,15 @@ export const deleteJurisdictionFromKey = async (key: number, options?: RequestIn
 
 
 export const getDeleteJurisdictionFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteJurisdictionFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1924,7 +1926,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteJurisdictionFromKey(key,)
+          return  deleteJurisdictionFromKey(key,requestOptions)
         }
 
 
@@ -1939,7 +1941,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteJurisdictionFromKeyMutationError = void
 
     export const useDeleteJurisdictionFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteJurisdictionFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteJurisdictionFromKey>>,
         TError,

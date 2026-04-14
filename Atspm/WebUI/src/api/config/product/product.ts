@@ -32,6 +32,8 @@ import type {
 import { configRequest } from '../../../lib/axios';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getProductResponse200ApplicationJsonOdataMetadataMinimalOdataStreamingTrue = {
@@ -290,16 +292,16 @@ export const getGetProductQueryKey = (params?: GetProductParams,) => {
     }
 
 
-export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = void>(params?: GetProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, }
+export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = void>(params?: GetProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProduct>>> = ({ signal }) => getProduct(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProduct>>> = ({ signal }) => getProduct(params, { signal, ...requestOptions });
 
 
 
@@ -314,7 +316,7 @@ export type GetProductQueryError = void
 
 
 export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = void>(
- params?: GetProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, }
+ params?: GetProductParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -386,15 +388,15 @@ export const postProduct = async (product: Product,
 
 
 export const getPostProductMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProduct>>, TError,{data: Product;params?: PostProductParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProduct>>, TError,{data: Product;params?: PostProductParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postProduct>>, TError,{data: Product;params?: PostProductParams}, TContext> => {
 
 const mutationKey = ['postProduct'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -402,7 +404,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postProduct>>, {data: Product;params?: PostProductParams}> = (props) => {
           const {data,params} = props ?? {};
 
-          return  postProduct(data,params,)
+          return  postProduct(data,params,requestOptions)
         }
 
 
@@ -417,7 +419,7 @@ const {mutation: mutationOptions} = options ?
     export type PostProductMutationError = void
 
     export const usePostProduct = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProduct>>, TError,{data: Product;params?: PostProductParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postProduct>>, TError,{data: Product;params?: PostProductParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof postProduct>>,
         TError,
@@ -682,16 +684,16 @@ export const getGetProductCountQueryKey = (params?: GetProductCountParams,) => {
     }
 
 
-export const getGetProductCountQueryOptions = <TData = Awaited<ReturnType<typeof getProductCount>>, TError = void>(params?: GetProductCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCount>>, TError, TData>, }
+export const getGetProductCountQueryOptions = <TData = Awaited<ReturnType<typeof getProductCount>>, TError = void>(params?: GetProductCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductCountQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductCount>>> = ({ signal }) => getProductCount(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductCount>>> = ({ signal }) => getProductCount(params, { signal, ...requestOptions });
 
 
 
@@ -706,7 +708,7 @@ export type GetProductCountQueryError = void
 
 
 export function useGetProductCount<TData = Awaited<ReturnType<typeof getProductCount>>, TError = void>(
- params?: GetProductCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCount>>, TError, TData>, }
+ params?: GetProductCountParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductCount>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -982,16 +984,16 @@ export const getGetProductFromKeyQueryKey = (key: number,
 
 
 export const getGetProductFromKeyQueryOptions = <TData = Awaited<ReturnType<typeof getProductFromKey>>, TError = void>(key: number,
-    params?: GetProductFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductFromKey>>, TError, TData>, }
+    params?: GetProductFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetProductFromKeyQueryKey(key,params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductFromKey>>> = ({ signal }) => getProductFromKey(key,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProductFromKey>>> = ({ signal }) => getProductFromKey(key,params, { signal, ...requestOptions });
 
 
 
@@ -1007,7 +1009,7 @@ export type GetProductFromKeyQueryError = void
 
 export function useGetProductFromKey<TData = Awaited<ReturnType<typeof getProductFromKey>>, TError = void>(
  key: number,
-    params?: GetProductFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductFromKey>>, TError, TData>, }
+    params?: GetProductFromKeyParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProductFromKey>>, TError, TData>, request?: SecondParameter<typeof configRequest>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -1086,15 +1088,15 @@ export const putProductFromKey = async (key: number,
 
 
 export const getPutProductFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductFromKey>>, TError,{key: number;data: Product;params?: PutProductFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductFromKey>>, TError,{key: number;data: Product;params?: PutProductFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof putProductFromKey>>, TError,{key: number;data: Product;params?: PutProductFromKeyParams}, TContext> => {
 
 const mutationKey = ['putProductFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1102,7 +1104,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof putProductFromKey>>, {key: number;data: Product;params?: PutProductFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  putProductFromKey(key,data,params,)
+          return  putProductFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1117,7 +1119,7 @@ const {mutation: mutationOptions} = options ?
     export type PutProductFromKeyMutationError = void
 
     export const usePutProductFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductFromKey>>, TError,{key: number;data: Product;params?: PutProductFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putProductFromKey>>, TError,{key: number;data: Product;params?: PutProductFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof putProductFromKey>>,
         TError,
@@ -1189,15 +1191,15 @@ export const patchProductFromKey = async (key: number,
 
 
 export const getPatchProductFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductFromKey>>, TError,{key: number;data: Product;params?: PatchProductFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductFromKey>>, TError,{key: number;data: Product;params?: PatchProductFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof patchProductFromKey>>, TError,{key: number;data: Product;params?: PatchProductFromKeyParams}, TContext> => {
 
 const mutationKey = ['patchProductFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1205,7 +1207,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchProductFromKey>>, {key: number;data: Product;params?: PatchProductFromKeyParams}> = (props) => {
           const {key,data,params} = props ?? {};
 
-          return  patchProductFromKey(key,data,params,)
+          return  patchProductFromKey(key,data,params,requestOptions)
         }
 
 
@@ -1220,7 +1222,7 @@ const {mutation: mutationOptions} = options ?
     export type PatchProductFromKeyMutationError = void
 
     export const usePatchProductFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductFromKey>>, TError,{key: number;data: Product;params?: PatchProductFromKeyParams}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchProductFromKey>>, TError,{key: number;data: Product;params?: PatchProductFromKeyParams}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof patchProductFromKey>>,
         TError,
@@ -1281,15 +1283,15 @@ export const deleteProductFromKey = async (key: number, options?: RequestInit): 
 
 
 export const getDeleteProductFromKeyMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteProductFromKey>>, TError,{key: number}, TContext> => {
 
 const mutationKey = ['deleteProductFromKey'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
 
 
@@ -1297,7 +1299,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProductFromKey>>, {key: number}> = (props) => {
           const {key} = props ?? {};
 
-          return  deleteProductFromKey(key,)
+          return  deleteProductFromKey(key,requestOptions)
         }
 
 
@@ -1312,7 +1314,7 @@ const {mutation: mutationOptions} = options ?
     export type DeleteProductFromKeyMutationError = void
 
     export const useDeleteProductFromKey = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductFromKey>>, TError,{key: number}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProductFromKey>>, TError,{key: number}, TContext>, request?: SecondParameter<typeof configRequest>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof deleteProductFromKey>>,
         TError,
