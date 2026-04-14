@@ -28,6 +28,7 @@ import {
   Paper,
   Select,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { AxiosHeaders } from 'axios'
@@ -165,6 +166,17 @@ const DeviceModal = ({
     (config) => config.id === Number(selectedDeviceConfigurationId)
   )
   const isFirCameraSelected = selectedDeviceType === 'FIRCamera'
+  const normalizedIpAddress = selectedIpAddress?.trim() ?? ''
+  const hasIpAddress = Boolean(normalizedIpAddress)
+  const hasDeviceConfiguration = Boolean(selectedDeviceConfiguration)
+  const canFindCameras = hasIpAddress && hasDeviceConfiguration
+  const findCamerasTooltip = !hasDeviceConfiguration && !hasIpAddress
+    ? 'Select a device configuration and enter an IP address before finding cameras'
+    : !hasDeviceConfiguration
+      ? 'Select a device configuration before finding cameras'
+      : !hasIpAddress
+        ? 'Enter an IP address before finding cameras'
+        : ''
 
   useEffect(() => {
     if (selectedProductId && deviceConfigurations) {
@@ -221,10 +233,14 @@ const DeviceModal = ({
   }
 
   const handleFindCamerasClick = async () => {
+    if (!canFindCameras) {
+      return
+    }
+
     const cams = await getCameras({
       detectionType: selectedDeviceType,
       port: selectedDeviceConfiguration?.port,
-      IpAddress: selectedIpAddress || '',
+      IpAddress: normalizedIpAddress,
     })
     setCameras(cams || [])
     setShowCameraList(true)
@@ -369,14 +385,22 @@ const DeviceModal = ({
 
             {isFirCameraSelected && (
               <>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  sx={{ mb: 2 }}
-                  onClick={handleFindCamerasClick}
+                <Tooltip
+                  title={findCamerasTooltip}
+                  disableHoverListener={canFindCameras}
                 >
-                  Find Cameras
-                </Button>
+                  <span>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      sx={{ mb: 2 }}
+                      onClick={handleFindCamerasClick}
+                      disabled={!canFindCameras}
+                    >
+                      Find Cameras
+                    </Button>
+                  </span>
+                </Tooltip>
 
                 <Collapse in={showCameraList} sx={{ mb: 2 }}>
                   <Paper variant="outlined" sx={{ p: 2 }}>
