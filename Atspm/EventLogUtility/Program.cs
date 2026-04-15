@@ -1,5 +1,5 @@
 #region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for EventLogUtility - %Namespace%/Program.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +15,7 @@
 // limitations under the License.
 #endregion
 
+using Google.Cloud.Diagnostics.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Utah.Udot.Atspm.EventLogUtility.Commands;
 using Utah.Udot.Atspm.Infrastructure.Extensions;
+
 
 public class Program
 {
@@ -39,7 +41,6 @@ public class Program
 
             var rootCmd = new EventLogCommands();
             var cmdBuilder = new CommandLineBuilder(rootCmd);
-
             cmdBuilder.UseDefaults();
 
             cmdBuilder.UseHost(hostBuilderFactory =>
@@ -65,30 +66,31 @@ public class Program
                         }
 
                         // Additional logging providers can be configured here
+                        logging.AddGoogle(context);
                     })
-                    .ConfigureServices((context, services) =>
-                    {
-                        services.AddAtspmDbContext(context);
-                        services.AddAtspmEFConfigRepositories();
-                        services.AddAtspmEFEventLogRepositories();
-                        services.AddAtspmEFAggregationRepositories();
-                        services.AddDownloaderClients();
-                        services.AddDeviceDownloaders(context);
-                        services.AddEventLogDecoders();
-                        services.AddEventLogImporters(context);
-                    });
+                                .ConfigureServices((context, services) =>
+                                {
+                                    services.AddAtspmDbContext(context);
+                                    services.AddAtspmEFConfigRepositories();
+                                    services.AddAtspmEFEventLogRepositories();
+                                    services.AddAtspmEFAggregationRepositories();
+                                    services.AddDownloaderClients();
+                                    services.AddDeviceDownloaders(context);
+                                    services.AddEventLogDecoders();
+                                    services.AddEventLogImporters(context);
+                                });
             },
-            host =>
-            {
-                var cmd = host.GetInvocationContext().ParseResult.CommandResult.Command;
-                host.ConfigureServices((context, services) =>
-                {
-                    if (cmd is ICommandOption opt)
-                    {
-                        opt.BindCommandOptions(context, services);
-                    }
-                });
-            });
+                        host =>
+                        {
+                            var cmd = host.GetInvocationContext().ParseResult.CommandResult.Command;
+                            host.ConfigureServices((context, services) =>
+                            {
+                                if (cmd is ICommandOption opt)
+                                {
+                                    opt.BindCommandOptions(context, services);
+                                }
+                            });
+                        });
 
             var parser = cmdBuilder.Build();
             return await parser.InvokeAsync(args); //  Success exit code from command execution

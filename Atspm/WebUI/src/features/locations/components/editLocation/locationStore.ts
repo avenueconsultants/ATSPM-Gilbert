@@ -1,12 +1,10 @@
 import {
+  Approach,
   deleteApproachFromKey,
   deleteDetectorFromKey,
-} from '@/api/config/aTSPMConfigurationApi'
-import {
-  Approach,
   Detector,
   Location,
-} from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
 import { devtools } from 'zustand/middleware'
 import { createWithEqualityFn } from 'zustand/traditional'
 
@@ -62,8 +60,9 @@ interface ApproachSlice {
   updateApproaches: (newApproaches: ConfigApproach[]) => void
   addApproach: (protectedPhaseNumber?: number) => void
   updateApproach: (updatedApproach: ConfigApproach) => void
-  updateSavedApproaches: (updatedApproach: ConfigApproach) => void
-  updateSavedApproachesFromCurrent: () => void
+  updateSavedApproach: (updatedApproach: ConfigApproach) => void
+  updateSavedApproaches: (updatedApproaches: ConfigApproach[]) => void
+  resetApproaches: () => void
   copyApproach: (approach: ConfigApproach) => void
   deleteApproach: (approach: ConfigApproach) => void
   resetStore: () => void
@@ -93,12 +92,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         )
       )
       set(() => ({
-        location: location
-          ? {
-              ...location,
-              approaches: undefined,
-            }
-          : null,
+        location: location ? location : null,
         approaches: approachList,
         savedApproaches: JSON.parse(JSON.stringify(approachList)),
         channelMap: newMap,
@@ -151,7 +145,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       set({ approaches: copy })
     },
 
-    updateSavedApproaches: (updatedApproach) => {
+    updateSavedApproach: (updatedApproach) => {
       const { savedApproaches } = get()
       const idx = savedApproaches.findIndex((a) => a.id === updatedApproach.id)
 
@@ -165,9 +159,13 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       set({ savedApproaches: copy })
     },
 
-    updateSavedApproachesFromCurrent: () => {
-      const { approaches } = get()
-      set({ savedApproaches: JSON.parse(JSON.stringify(approaches)) })
+    updateSavedApproaches: (updatedApproaches) => {
+      set({ savedApproaches: updatedApproaches })
+    },
+
+    resetApproaches: () => {
+      const { savedApproaches } = get()
+      set({ approaches: JSON.parse(JSON.stringify(savedApproaches)) })
     },
 
     addApproach: (protectedPhaseNumber) => {

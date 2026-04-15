@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for ReportApi - Utah.Udot.Atspm.ReportApi.ReportServices/ApproachVolumeReportService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -121,7 +121,10 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
                 controllerEventLogs,
                 primaryApproaches,
                 opposingApproaches,
-                detectionType));
+                detectionType,
+                primaryDirection,
+                opposingDirection
+                ));
         }
 
         private async Task<ApproachVolumeResult> GetApproachVolumeByDetectionType(
@@ -130,9 +133,11 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
             List<IndianaEvent> controllerEventLogs,
             List<Approach> primaryApproaches,
             List<Approach> opposingApproaches,
-            DetectionType detectionType)
+            DetectionType detectionType,
+            DirectionTypes primaryDirection,
+            DirectionTypes opposingDirection)
         {
-            if (primaryApproaches.IsNullOrEmpty() || opposingApproaches.IsNullOrEmpty())
+            if (primaryApproaches.IsNullOrEmpty() && opposingApproaches.IsNullOrEmpty())
             {
                 return null;
             }
@@ -153,7 +158,10 @@ namespace Utah.Udot.Atspm.ReportApi.ReportServices
                 primaryApproaches,
                 opposingApproaches,
                 primaryDistanceFromStopBar,
-                detectionType);
+                detectionType,
+                primaryDirection,
+                opposingDirection
+                );
             viewModel.LocationDescription = Location.LocationDescription();
             return viewModel;
         }

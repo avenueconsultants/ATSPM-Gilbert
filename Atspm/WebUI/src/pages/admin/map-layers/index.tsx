@@ -3,8 +3,8 @@ import {
   useGetMapLayer,
   usePatchMapLayerFromKey,
   usePostMapLayer,
-} from '@/api/config/aTSPMConfigurationApi'
-import { MapLayer } from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
+import type { MapLayer } from '@/api/config'
 import AdminTable from '@/components/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -130,23 +130,15 @@ const MapLayers = () => {
     }
   })
 
-  const headers = [
-    'Name',
-    'Url',
-    'Service Type',
-    'Resource ID',
-    'Style',
-    'Show by Default?',
-    'Refresh Rate (Seconds)',
-  ]
-  const headerKeys = [
-    'name',
-    'mapLayerUrl',
-    'serviceType',
-    'resourceId',
-    'style',
-    'showByDefault',
-    'refreshIntervalSeconds',
+
+  const cells = [
+    { key: 'name', label: 'Name' },
+    { key: 'mapLayerUrl', label: 'Url' },
+    { key: 'serviceType', label: 'Service Type' },
+    { key: 'resourceId', label: 'Resource ID' },
+    { key: 'style', label: 'Style' },
+    { key: 'showByDefault', label: 'Show by Default?' },
+    { key: 'refreshIntervalSeconds', label: 'Refresh Rate (Seconds)' },
   ]
 
   const customCellRender = [
@@ -159,8 +151,7 @@ const MapLayers = () => {
     <ResponsivePageLayout title="Manage Map Layers" noBottomMargin>
       <AdminTable
         pageName="Map Layer"
-        headers={headers}
-        headerKeys={headerKeys}
+        cells={cells}
         data={filteredData}
         customCellRender={customCellRender}
         hasEditPrivileges={hasLocationsEditClaim}

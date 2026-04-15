@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for OracleDatabaseProvider - Utah.Udot.ATSPM.OracleDatabaseProvider.Migrations.Aggregation/AggregationContextModelSnapshot.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,9 +46,6 @@ namespace Utah.Udot.ATSPM.OracleDatabaseProvider.Migrations.Aggregation
                         .IsUnicode(false)
                         .HasColumnType("VARCHAR2(10)");
 
-                    b.Property<DateTime>("ArchiveDate")
-                        .HasColumnType("Date");
-
                     b.Property<string>("DataType")
                         .HasMaxLength(32)
                         .HasColumnType("NVARCHAR2(32)");
@@ -62,7 +59,7 @@ namespace Utah.Udot.ATSPM.OracleDatabaseProvider.Migrations.Aggregation
                     b.Property<byte[]>("Data")
                         .HasColumnType("RAW(2000)");
 
-                    b.HasKey("LocationIdentifier", "ArchiveDate", "DataType", "Start", "End");
+                    b.HasKey("LocationIdentifier", "DataType", "Start", "End");
 
                     b.ToTable("CompressedAggregations", t =>
                         {

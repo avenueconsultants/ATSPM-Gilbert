@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Analysis.WorkflowSteps/AggregatePreemptCodes.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,10 @@ namespace Utah.Udot.Atspm.Analysis.WorkflowSteps
         {
             var Location = input.Item1;
             var preempt = input.Item2;
-            var logs = input.Item3.FromSpecification(new IndianaLogLocationAndParamterFilterSpecification(Location, preempt));
+            var logs = input.Item3
+                .FromSpecification(new EventLogSpecification(Location))
+                .Cast<IndianaEvent>()
+                .Where(w => w.EventParam == (short)preempt);
 
             var tl = new Timeline<PreemptionAggregation>(logs, TimeSpan.FromMinutes(15));
 

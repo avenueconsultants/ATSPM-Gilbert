@@ -1,5 +1,5 @@
-#region license
-// Copyright 2025 Utah Departement of Transportation
+﻿#region license
+// Copyright 2026 Utah Departement of Transportation
 // for DataApi - %Namespace%/Program.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +15,18 @@
 // limitations under the License.
 #endregion
 
-using Asp.Versioning;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
-using Utah.Udot.Atspm.DataApi.Configuration;
+using System.Reflection;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 using Utah.Udot.Atspm.DataApi.CustomOperations;
-using Utah.Udot.Atspm.DataApi.Formatters;
+using Utah.Udot.NetStandardToolkit.Configuration;
 
-//gitactions: III
+//git 1
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -33,6 +34,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host
     .ApplyVolumeConfiguration()
+    .ConfigureLogging((h, l) => l.AddGoogle(h))
     .ConfigureServices((h, s) =>
     {
         s.AddControllers(o =>
@@ -40,70 +42,27 @@ builder.Host
             o.ReturnHttpNotAcceptable = true;
             o.Filters.Add(new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));
             //o.Filters.Add(new ProducesAttribute("application/json", "application/xml"));
-            o.OutputFormatters.Add(new EventLogCsvFormatter());
+            //o.OutputFormatters.Add(new EventLogCsvFormatter());
             o.OutputFormatters.RemoveType<StringOutputFormatter>();
         })
-        .AddNewtonsoftJson()
-        .AddXmlDataContractSerializerFormatters();
+        .AddNewtonsoftJson();
         s.AddProblemDetails();
-
-        s.AddResponseCompression(o =>
+        s.AddConfiguredCompression(new[] { "application/json", "application/xml", "text/csv", "application/x-ndjson" });
+        s.AddConfiguredSwagger(builder.Configuration, o =>
         {
-            o.EnableForHttps = true; // Enable compression for HTTPS requests
-                                     //o.Providers.Add<GzipCompressionProvider>(); // Enable GZIP compression
-                                     //o.Providers.Add<BrotliCompressionProvider>();
-
-            o.MimeTypes = new[] { "application/json", "application/xml", "text/csv" };
-        });
-
-        //https://github.com/dotnet/aspnet-api-versioning/wiki/OData-Versioned-Metadata
-        s.AddApiVersioning(o =>
-        {
-            o.ReportApiVersions = true;
-            o.DefaultApiVersion = new ApiVersion(1, 0);
-            o.AssumeDefaultVersionWhenUnspecified = true;
-
-            //Sunset policies
-            o.Policies.Sunset(0.1).Effective(DateTimeOffset.Now.AddDays(60)).Link("").Title("These are only available during development").Type("text/html");
-
-        }).AddApiExplorer(o =>
-        {
-            o.GroupNameFormat = "'v'VVV";
-            o.SubstituteApiVersionInUrl = true;
-            //configure query options(which cannot otherwise be configured by OData conventions)
-            //o.QueryOptions.Controller<JurisdictionController>()
-            //                    .Action(c => c.Get(default))
-            //                        .Allow(AllowedQueryOptions.Skip | AllowedQueryOptions.Count)
-            //                        .AllowTop(100);
-        });
-
-        s.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        s.AddSwaggerGen(o =>
-        {
-            o.IncludeXmlComments(typeof(Program));
+            o.IncludeXmlComments(typeof(Program).Assembly);
             o.CustomOperationIds((controller, verb, action) => $"{verb}{controller}{action}");
+            o.CustomSchemaIds(type => type.Name);
             o.EnableAnnotations();
             o.AddJwtAuthorization();
 
-            o.OperationFilter<TimestampFormatHeader>();
+            //o.OperationFilter<TimestampFormatHeader>();
+            o.OperationFilter<DataTypeEnumOperationFilter>();
             o.DocumentFilter<GenerateAggregationSchemas>();
             o.DocumentFilter<GenerateEventSchemas>();
+            o.DocumentFilter<SetSwaggerInfoDocumentFilter>();
         });
-
-        var allowedHosts = builder.Configuration.GetSection("AllowedHosts").Get<string>() ?? "*";
-        s.AddCors(options =>
-        {
-            options.AddPolicy("CorsPolicy",
-            builder =>
-            {
-                builder.WithOrigins(allowedHosts.Split(','))
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
-            });
-        });
-
-        //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/http-logging/?view=aspnetcore-7.0
+        s.AddConfiguredCors(builder.Configuration);
         s.AddHttpLogging(l =>
         {
             l.LoggingFields = HttpLoggingFields.All;
@@ -113,44 +72,252 @@ builder.Host
             l.RequestBodyLogLimit = 4096;
             l.ResponseBodyLogLimit = 4096;
         });
-
-    s.AddAtspmDbContext(h);
-    s.AddAtspmEFEventLogRepositories();
-    s.AddAtspmEFConfigRepositories();
-    s.AddAtspmEFAggregationRepositories();
-
+        s.AddAtspmDbContext(h);
+        s.AddAtspmEFConfigRepositories();
+        s.AddAtspmEFEventLogRepositories();
+        s.AddAtspmEFAggregationRepositories();
         s.AddPathBaseFilter(h);
-
         s.AddAtspmIdentity(h);
+        s.AddHealthChecks();
     });
 
 var app = builder.Build();
 
+#region Middleware Pipeline
+
+//Error handling
 if (!app.Environment.IsProduction())
 {
     app.Services.PrintHostInformation();
     app.UseDeveloperExceptionPage();
 }
-
-app.UseResponseCompression();
-app.UseCors("CorsPolicy");
-app.UseHttpLogging();
-app.UseSwagger();
-app.UseSwaggerUI(o =>
+else
 {
-    var descriptions = app.DescribeApiVersions();
+    app.UseExceptionHandler("/error");
+}
 
-    // build a swagger endpoint for each discovered API version
-    foreach (var description in descriptions)
-    {
-        var url = $"{app.Configuration["PathBaseSettings:ApplicationPathBase"]}/swagger/{description.GroupName}/swagger.json";
-        var name = description.GroupName.ToUpperInvariant();
-        o.SwaggerEndpoint(url, name);
-    }
-});
-
+//Security
 app.UseHttpsRedirection();
+app.UseCors("Default");
+app.UseAuthentication();
 app.UseAuthorization();
+
+//Cross-cutting
+app.UseResponseCompression();
+app.UseHttpLogging();
+app.UseMiddleware<UsageLoggingMiddleware>(
+    (HttpContext ctx) => Assembly.GetEntryAssembly()?.GetName().Name,
+    (HttpContext ctx, ControllerActionDescriptor? ad) => ad?.ActionName == "StreamData",
+    (HttpContext ctx, ControllerActionDescriptor? ad) => ad?.ActionName == "GetData",
+    (HttpContext ctx) => ctx.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? ctx.User?.Identity?.Name);
+
+//Swagger
+app.UseConfiguredSwaggerUI();
+
+//Endpoints
 app.MapControllers();
+app.MapJsonHealthChecks();
+
+#endregion
 
 app.Run();
+
+public static class TempCorsExtension
+{
+    public static IServiceCollection AddConfiguredCors(this IServiceCollection services, IConfiguration config)
+    {
+        var corsPolicies = config.GetSection("CorsPolicies").Get<Dictionary<string, CorsPolicyConfiguration>>();
+
+        services.AddCors(options =>
+        {
+            if (corsPolicies == null || corsPolicies.Count == 0)
+            {
+                options.AddPolicy("Default", builder =>
+                {
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+
+                return;
+            }
+
+            foreach (var kvp in corsPolicies)
+            {
+                options.AddPolicy(kvp.Key, policy =>
+                {
+                    var cfg = kvp.Value;
+
+                    if (cfg.Origins.Length == 1 && cfg.Origins[0] == "*")
+                        policy.AllowAnyOrigin();
+                    else
+                        policy.WithOrigins(cfg.Origins);
+
+                    if (cfg.Methods.Length == 1 && cfg.Methods[0] == "*")
+                        policy.AllowAnyMethod();
+                    else
+                        policy.WithMethods(cfg.Methods);
+
+                    if (cfg.Headers.Length == 1 && cfg.Headers[0] == "*")
+                        policy.AllowAnyHeader();
+                    else
+                        policy.WithHeaders(cfg.Headers);
+
+                    if (cfg.AllowCredentials)
+                        policy.AllowCredentials();
+                    else
+                        policy.DisallowCredentials();
+                });
+            }
+        });
+
+        return services;
+    }
+}
+
+
+//builder.Services.Configure<RateLimitingOptions>(
+//builder.Configuration.GetSection("RateLimiting"));
+
+//builder.Services.AddSingleton<RateLimitingPolicyService>();
+
+//builder.Services.AddRateLimiter(options =>
+//{
+//    var sp = builder.Services.BuildServiceProvider();
+//    var policyService = sp.GetRequiredService<RateLimitingPolicyService>();
+//    options.GlobalLimiter = policyService.CreateGlobalLimiter();
+//});
+
+//builder.Services.AddRateLimiter(options =>
+//{
+//    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+//    {
+//        // Partition key: combine IP + user
+//        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+//        var user = httpContext.User.Identity?.Name ?? "anonymous";
+
+//        // Example deny list
+//        var blockedIps = new[] { "203.0.113.42", "198.51.100.77" };
+//        var blockedUsers = new[] { "baduser@example.com", "spammer", "anonymous" };
+
+//        // Block specific IPs outright
+//        if (blockedIps.Contains(ip))
+//        {
+//            return RateLimitPartition.GetNoLimiter($"ip:{ip}");
+//        }
+
+//        // Block specific users outright
+//        if (blockedUsers.Contains(user))
+//        {
+//            return RateLimitPartition.GetNoLimiter($"user:{user}");
+//        }
+
+//        // Otherwise apply a sliding window limiter per user+IP combo
+//        var key = $"{user}:{ip}";
+//        return RateLimitPartition.GetSlidingWindowLimiter(key, _ => new SlidingWindowRateLimiterOptions
+//        {
+//            PermitLimit = 10,                  // max 10 requests
+//            Window = TimeSpan.FromMinutes(1),  // per 1 minute
+//            SegmentsPerWindow = 2,             // smoother distribution
+//            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+//            QueueLimit = 0
+//        });
+//    });
+//});
+
+//app.UseRateLimiter();
+
+
+//"RateLimiting": {
+//    "PermitLimit": 10,
+//  "QueueLimit": 2,
+//  "WindowSeconds": 30,
+//  "Algorithm": "Sliding",
+//  "BlockedIps": ["203.0.113.42", "198.51.100.77"],
+//  "BlockedUsers": ["baduser@example.com", "spammer"]
+//}
+
+public class RateLimitingOptions
+{
+    public int PermitLimit { get; set; }
+    public int QueueLimit { get; set; }
+    public int WindowSeconds { get; set; }
+    public string Algorithm { get; set; } = "Fixed"; // Fixed, Sliding, TokenBucket, Concurrency
+    public List<string> BlockedIps { get; set; } = new();
+    public List<string> BlockedUsers { get; set; } = new();
+}
+
+
+public class RateLimitingPolicyService
+{
+    private readonly RateLimitingOptions _options;
+    private readonly ILogger<RateLimitingPolicyService> _logger;
+
+    public RateLimitingPolicyService(IOptions<RateLimitingOptions> options,
+                                     ILogger<RateLimitingPolicyService> logger)
+    {
+        _options = options.Value;
+        _logger = logger;
+    }
+
+    public PartitionedRateLimiter<HttpContext> CreateGlobalLimiter()
+    {
+        return PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        {
+            var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var user = httpContext.User.Identity?.Name ?? "anonymous";
+
+            if (_options.BlockedIps.Contains(ip))
+            {
+                _logger.LogWarning("Blocked IP attempted access: {Ip}", ip);
+                return RateLimitPartition.GetNoLimiter($"ip:{ip}");
+            }
+
+            if (_options.BlockedUsers.Contains(user))
+            {
+                _logger.LogWarning("Blocked user attempted access: {User}", user);
+                return RateLimitPartition.GetNoLimiter($"user:{user}");
+            }
+
+            var key = $"{user}:{ip}";
+
+            return _options.Algorithm switch
+            {
+                "Fixed" => RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = _options.PermitLimit,
+                    Window = TimeSpan.FromSeconds(_options.WindowSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = _options.QueueLimit
+                }),
+                "Sliding" => RateLimitPartition.GetSlidingWindowLimiter(key, _ => new SlidingWindowRateLimiterOptions
+                {
+                    PermitLimit = _options.PermitLimit,
+                    Window = TimeSpan.FromSeconds(_options.WindowSeconds),
+                    SegmentsPerWindow = 2,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = _options.QueueLimit
+                }),
+                "TokenBucket" => RateLimitPartition.GetTokenBucketLimiter(key, _ => new TokenBucketRateLimiterOptions
+                {
+                    TokenLimit = _options.PermitLimit,
+                    TokensPerPeriod = _options.PermitLimit / 2,
+                    ReplenishmentPeriod = TimeSpan.FromSeconds(_options.WindowSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = _options.QueueLimit
+                }),
+                "Concurrency" => RateLimitPartition.GetConcurrencyLimiter(key, _ => new ConcurrencyLimiterOptions
+                {
+                    PermitLimit = _options.PermitLimit,
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = _options.QueueLimit
+                }),
+                _ => RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = _options.PermitLimit,
+                    Window = TimeSpan.FromSeconds(_options.WindowSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = _options.QueueLimit
+                })
+            };
+        });
+    }
+}

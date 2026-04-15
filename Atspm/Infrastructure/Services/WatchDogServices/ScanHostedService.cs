@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.ATSPM.Infrastructure.Services.WatchDogServices/ScanHostedService.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,69 +15,89 @@
 // limitations under the License.
 #endregion
 
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using Utah.Udot.Atspm.Business.Watchdog;
+using Utah.Udot.Atspm.Infrastructure.Services.HostedServices;
 
 namespace Utah.Udot.ATSPM.Infrastructure.Services.WatchDogServices
 {
-    public class ScanHostedService : IHostedService
+    /// <summary>
+    /// Hosted background service that executes the signal performance scan process as part of the Watchdog system.
+    /// Inherits from <see cref="HostedServiceBase"/> to provide scoped execution and logging.
+    /// 
+    /// This service configures scan and email options from <see cref="WatchdogConfiguration"/> and invokes
+    /// the <see cref="ScanService"/> to perform the scan operation, typically used for monitoring and reporting
+    /// on traffic signal performance and anomalies.
+    /// </summary>
+    public class ScanHostedService(ILogger<ScanHostedService> log, IServiceScopeFactory serviceProvider, IOptions<WatchdogConfiguration> options) : HostedServiceBase(log, serviceProvider)
     {
-        private readonly ScanService _scanService;
-        private readonly ILogger<ScanHostedService> _log;
-        private readonly WatchdogConfiguration _options;
+        private readonly WatchdogConfiguration _options = options.Value;
 
-        public ScanHostedService(ScanService scanService, ILogger<ScanHostedService> logger, IOptions<WatchdogConfiguration> options)
+        /// <inheritdoc/>
+        public override async Task Process(IServiceScope scope, Stopwatch stopwatch = null, CancellationToken cancellationToken = default)
         {
-            _scanService = scanService;
-            _log = logger;
-            _options = options.Value;
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            try
+            var options = new WatchdogLoggingOptions
             {
-                var options = new WatchdogLoggingOptions
-                {
-                    ConsecutiveCount = _options.ConsecutiveCount,
-                    LowHitThreshold = _options.LowHitThreshold,
-                    MaximumPedestrianEvents = _options.MaximumPedestrianEvents,
-                    MinimumRecords = _options.MinimumRecords,
-                    MinPhaseTerminations = _options.MinPhaseTerminations,
-                    PercentThreshold = _options.PercentThreshold,
-                    PreviousDayPMPeakEnd = _options.PreviousDayPMPeakEnd,
-                    PreviousDayPMPeakStart = _options.PreviousDayPMPeakStart,
-                    ScanDate = _options.ScanDate,
-                    ScanDayEndHour = _options.ScanDayEndHour,
-                    ScanDayStartHour = _options.ScanDayStartHour,
-                    WeekdayOnly = _options.WeekdayOnly
-                };
-                var emailOptions = new WatchdogEmailOptions
-                {
-                    PreviousDayPMPeakEnd = _options.PreviousDayPMPeakEnd,
-                    PreviousDayPMPeakStart = _options.PreviousDayPMPeakStart,
-                    ScanDate = _options.ScanDate,
-                    ScanDayEndHour = _options.ScanDayEndHour,
-                    ScanDayStartHour = _options.ScanDayStartHour,
-                    WeekdayOnly = _options.WeekdayOnly,
-                    DefaultEmailAddress = _options.DefaultEmailAddress,
-                    EmailAllErrors = _options.EmailAllErrors,
-                    Sort = _options.Sort
-                };
-
-                await _scanService.StartScan(options, emailOptions, cancellationToken);
-            }
-            catch (Exception ex)
+                AmScanDate = _options.AmScanDate,
+                PmScanDate = _options.PmScanDate,
+                RampMissedDetectorHitsStartScanDate = _options.RampMissedDetectorHitsStartScanDate,
+                RampMissedDetectorHitsEndScanDate = _options.RampMissedDetectorHitsEndScanDate,
+                AmStartHour = _options.AmStartHour,
+                AmEndHour = _options.AmEndHour,
+                PmPeakStartHour = _options.PmPeakStartHour,
+                PmPeakEndHour = _options.PmPeakEndHour,
+                RampDetectorStartHour = _options.RampDetectorStartHour,
+                RampDetectorEndHour = _options.RampDetectorEndHour,
+                RampMissedDetectorHitStartHour = _options.RampMissedDetectorHitStartHour,
+                RampMissedDetectorHitEndHour = _options.RampMissedDetectorHitEndHour,
+                RampMainlineStartHour = _options.RampMainlineStartHour,
+                RampMainlineEndHour = _options.RampMainlineEndHour,
+                RampStuckQueueStartHour = _options.RampStuckQueueStartHour,
+                RampStuckQueueEndHour = _options.RampStuckQueueEndHour,
+                WeekdayOnly = _options.WeekdayOnly,
+                ConsecutiveCount = _options.ConsecutiveCount,
+                MinPhaseTerminations = _options.MinPhaseTerminations,
+                PercentThreshold = _options.PercentThreshold,
+                MinimumRecords = _options.MinimumRecords,
+                LowHitThreshold = _options.LowHitThreshold,
+                LowHitRampThreshold = _options.LowHitRampThreshold,
+                MaximumPedestrianEvents = _options.MaximumPedestrianEvents,
+                RampMissedEventsThreshold = _options.RampMissedEventsThreshold,
+            };
+            var emailOptions = new WatchdogEmailOptions
             {
-                _log.LogError(ex, "An error occurred during scanning.");
-            }
-        }
+                //EmailScanDate = _options.PmScanDate,
+                AmScanDate = _options.AmScanDate,
+                PmScanDate = _options.PmScanDate,
+                RampMissedDetectorHitsStartScanDate = _options.RampMissedDetectorHitsStartScanDate,
+                AmStartHour = _options.AmStartHour,
+                AmEndHour = _options.AmEndHour,
+                PmPeakStartHour = _options.PmPeakStartHour,
+                PmPeakEndHour = _options.PmPeakEndHour,
+                RampDetectorStartHour = _options.RampDetectorStartHour,
+                RampDetectorEndHour = _options.RampDetectorEndHour,
+                RampMissedDetectorHitStartHour = _options.RampMissedDetectorHitStartHour,
+                RampMissedDetectorHitEndHour = _options.RampMissedDetectorHitEndHour,
+                RampMainlineStartHour = _options.RampMainlineStartHour,
+                RampMainlineEndHour = _options.RampMainlineEndHour,
+                RampStuckQueueStartHour = _options.RampStuckQueueStartHour,
+                RampStuckQueueEndHour = _options.RampStuckQueueEndHour,
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
+                WeekdayOnly = _options.WeekdayOnly,
+                DefaultEmailAddress = _options.DefaultEmailAddress,
+                EmailAllErrors = _options.EmailAllErrors,
+                EmailAmErrors = _options.EmailAmErrors,
+                EmailPmErrors = _options.EmailPmErrors,
+                EmailRampErrors = _options.EmailRampErrors,
+                Sort = _options.Sort
+            };
+
+            var scanService = scope.ServiceProvider.GetService<ScanService>();
+
+            await scanService.StartScan(options, emailOptions, cancellationToken);
         }
     }
 }

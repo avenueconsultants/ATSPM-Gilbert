@@ -13,9 +13,7 @@
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
 		<UserSecretsId>4a25a28a-6471-4d98-ae56-b46fe556756b</UserSecretsId>
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-		<VersionPrefix>5.0</VersionPrefix>
-		<VersionSuffix>rc.1</VersionSuffix>
-		<Version>$(VersionPrefix)-$(VersionSuffix)</Version>
+		<Version>5.2.1-rc1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -47,7 +45,7 @@
 
 	<ItemGroup>
 	  <Reference Include="Utah.Udot.NetStandardToolkit">
-	    <HintPath>..\..\..\udot-atspm\Atspm\Utah.Udot.NetStandardToolkit.dll</HintPath>
+	    <HintPath>..\..\..\Atspm\Atspm\Utah.Udot.NetStandardToolkit.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
@@ -59,6 +57,19 @@
 	  <Using Include="Utah.Udot.Atspm.Repositories.ConfigurationRepositories" />
 	  <Using Include="Utah.Udot.Atspm.Repositories.EventLogRepositories" />
 	  <Using Include="Utah.Udot.NetStandardToolkit.Services" />
+	  <Using Include="Utah.Udot.NetStandardToolkit.Extensions" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="appsettings.Development.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="appsettings.Production.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="appsettings.Staging.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

@@ -1,11 +1,12 @@
 import {
+  Area,
+  Location,
   useDeleteAreaFromKey,
   useGetArea,
   useGetLocationLocationsForSearch,
   usePatchAreaFromKey,
   usePostArea,
-} from '@/api/config/aTSPMConfigurationApi'
-import { Area, Location } from '@/api/config/aTSPMConfigurationApi.schemas'
+} from '@/api/config'
 import AdminTable from '@/components/AdminTable/AdminTable'
 import DeleteModal from '@/components/AdminTable/DeleteModal'
 import { ResponsivePageLayout } from '@/components/ResponsivePage'
@@ -16,6 +17,7 @@ import {
   useViewPage,
 } from '@/features/identity/pagesCheck'
 import { useNotificationStore } from '@/stores/notifications'
+import { toUTCDateStamp } from '@/utils/dateTime'
 import { Backdrop, CircularProgress } from '@mui/material'
 const AreasAdmin = () => {
   const pageAccess = useViewPage(PageNames.Areas)
@@ -101,20 +103,25 @@ const AreasAdmin = () => {
     return <div>Error returning data</div>
   }
 
-  const filteredData = areas.map((area) => ({
-    id: area.id,
-    name: area.name,
-  }))
+  const filteredData = areas.map((area) => {
+    const { modified, modifiedBy, created, createdBy } = area
+    return {
+      id: area.id,
+      name: area.name,
+      modified: modified ? toUTCDateStamp(modified) : '',
+      modifiedBy,
+      created: created ? toUTCDateStamp(created) : '',
+      createdBy,
+    }
+  })
 
-  const headers = ['Name']
-  const headerKeys = ['name']
+  const cells = [{ key: 'name', label: 'Name' }]
 
   return (
     <ResponsivePageLayout title="Manage Areas" noBottomMargin>
       <AdminTable
         pageName="Area"
-        headers={headers}
-        headerKeys={headerKeys}
+        cells={cells}
         data={filteredData}
         hasEditPrivileges={hasLocationsEditClaim}
         hasDeletePrivileges={hasLocationsDeleteClaim}

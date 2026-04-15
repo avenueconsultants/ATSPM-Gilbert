@@ -1,11 +1,8 @@
-import { useGetLocationSaveTemplatedLocationFromKey } from '@/api/config/aTSPMConfigurationApi'
 import {
   useCreateLocation,
   useLatestVersionOfAllLocations,
 } from '@/features/locations/api'
-import { useLocationConfigHandler } from '@/features/locations/components/editLocation/editLocationConfigHandler'
 import { Location, LocationExpanded } from '@/features/locations/types'
-import { removeAuditFields } from '@/utils/removeAuditFields'
 import { zodResolver } from '@hookform/resolvers/zod'
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined'
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
@@ -21,11 +18,9 @@ import {
   InputAdornment,
   TextField,
 } from '@mui/material'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import LocationTemplateInputs from './LocationTemplateInputs'
 
 interface NewLocationModalProps {
   closeModal: () => void
@@ -33,8 +28,6 @@ interface NewLocationModalProps {
   onCreatedFromTemplate: () => void
 }
 
-// Schemas
-// For no template: Only locationIdentifier is required
 const noTemplateSchema = z.object({
   locationIdentifier: z
     .string()
@@ -44,63 +37,14 @@ const noTemplateSchema = z.object({
     }),
 })
 
-// For template: locationIdentifier + latitude + longitude + devices (with ipaddress)
-const templateSchema = z.object({
-  locationIdentifier: z
-    .string()
-    .min(1, { message: 'Location Identifier is required.' })
-    .max(10, {
-      message: 'Location Identifier must be 10 characters or fewer.',
-    }),
-  primaryName: z.string().optional(),
-  secondaryName: z.string().optional(),
-  latitude: z
-    .union([z.string(), z.number()])
-    .transform((val) => (val === '' ? NaN : Number(val)))
-    .refine((val) => !isNaN(val), {
-      message: 'Latitude is required when copying from template',
-    }),
-  longitude: z
-    .union([z.string(), z.number()])
-    .transform((val) => (val === '' ? NaN : Number(val)))
-    .refine((val) => !isNaN(val), {
-      message: 'Longitude is required when copying from template',
-    }),
-  devices: z
-    .array(
-      z.object({
-        ipaddress: z.string().min(1, { message: 'IP Address is required.' }),
-      })
-    )
-    .min(1, {
-      message: 'At least one device is required when copying from template',
-    }),
-})
-
 const NewLocationModal = ({
   closeModal,
   setLocation,
-  onCreatedFromTemplate,
+  onCreatedFromTemplate: _onCreatedFromTemplate,
 }: NewLocationModalProps) => {
-  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
-    null
-  )
-  const [copyLocationFromTemplate, setCopyLocationFromTemplate] =
-    useState<boolean>(false)
-
-  const locationHandler = useLocationConfigHandler({
-    location: selectedLocation as Location,
-  })
-
-  const { mutateAsync: createFromTemplate } =
-    useGetLocationSaveTemplatedLocationFromKey()
   const { mutate: createLocation } = useCreateLocation()
   const { data: allLocationsData } = useLatestVersionOfAllLocations()
   const allLocations = allLocationsData?.value || []
-
-  const chosenSchema = useMemo(() => {
-    return copyLocationFromTemplate ? templateSchema : noTemplateSchema
-  }, [copyLocationFromTemplate])
 
   const {
     control,
@@ -108,7 +52,7 @@ const NewLocationModal = ({
     formState: { errors, isSubmitting },
     watch,
   } = useForm<LocationExpanded>({
-    resolver: zodResolver(chosenSchema),
+    resolver: zodResolver(noTemplateSchema),
     defaultValues: {
       locationIdentifier: '',
       primaryName: '',
@@ -128,68 +72,28 @@ const NewLocationModal = ({
   const locationIsLessThan10Characters = (locationIdentifier || '').length <= 10
 
   const onSubmit = async (data: LocationExpanded) => {
-    const devices = locationHandler?.expandedLocation?.devices || []
-    const transformedDevices = devices.map((device, index) => {
-      const { id, locationId, ...rest } = device
-      return {
-        ...rest,
-        ipaddress: data.devices ? data.devices[index].ipaddress : '',
-      }
-    })
-
-    const devicesWithoutAuditFields = transformedDevices.map(removeAuditFields)
-
-    if (copyLocationFromTemplate && selectedLocation) {
-      const templateData = {
-        locationIdentifier: data.locationIdentifier,
-        primaryName: data.primaryName || '',
-        secondaryName: data.secondaryName || '',
-        latitude: data.latitude || null,
-        longitude: data.longitude || null,
-        devices: devicesWithoutAuditFields,
-      }
-
-      const withoutAuditFields = removeAuditFields(templateData)
-
-      await createFromTemplate(
-        {
-          key: parseInt(selectedLocation.id),
-          data: withoutAuditFields,
-        },
-        {
-          onSuccess: (createdData) => {
-            setLocation(createdData as unknown as Location)
-
-            onCreatedFromTemplate()
-          },
-          onSettled: closeModal,
-        }
-      )
-    } else {
-      // If not copying template, we just need locationIdentifier.
-      const defaultValues = {
-        locationIdentifier: data.locationIdentifier,
-        note: '',
-        start: new Date().toISOString(),
-        primaryName: '',
-        secondaryName: '',
-        latitude: 0,
-        longitude: 0,
-        pedsAre1to1: false,
-        locationTypeId: 1,
-        chartEnabled: false,
-        regionId: 10,
-        jurisdictionId: 1,
-        versionAction: 'Initial',
-      }
-
-      createLocation(defaultValues, {
-        onSuccess: (createdData) => {
-          setLocation(createdData as unknown as Location)
-        },
-        onSettled: closeModal,
-      })
+    const defaultValues = {
+      locationIdentifier: data.locationIdentifier,
+      note: '',
+      start: new Date().toISOString(),
+      primaryName: '',
+      secondaryName: '',
+      latitude: 0,
+      longitude: 0,
+      pedsAre1to1: false,
+      locationTypeId: 1,
+      chartEnabled: false,
+      regionId: 10,
+      jurisdictionId: 1,
+      versionAction: 'Initial',
     }
+
+    createLocation(defaultValues, {
+      onSuccess: (createdData) => {
+        setLocation(createdData as unknown as Location)
+      },
+      onSettled: closeModal,
+    })
   }
 
   const errorMessage = () => {
@@ -203,15 +107,6 @@ const NewLocationModal = ({
       return 'Location Identifier already exists.'
     }
     return ''
-  }
-
-  const handleCopyLocationCheckBoxChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCopyLocationFromTemplate(event.target.checked)
-    if (!event.target.checked) {
-      setSelectedLocation(null)
-    }
   }
 
   return (
@@ -264,25 +159,6 @@ const NewLocationModal = ({
               )}
             />
           </Box>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={copyLocationFromTemplate}
-                onChange={handleCopyLocationCheckBoxChange}
-              />
-            }
-            label={'Copy existing Location'}
-          />
-          {copyLocationFromTemplate && (
-            <LocationTemplateInputs
-              locationHandler={locationHandler}
-              control={control}
-              selectedLocation={selectedLocation}
-              setSelectedLocation={setSelectedLocation}
-              locations={allLocations}
-              errors={errors}
-            />
-          )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button

@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Extensions/ServiceExtensions.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,11 @@
 // limitations under the License.
 #endregion
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Utah.Udot.Atspm.Data;
 using Utah.Udot.Atspm.Data.Utility;
 using Utah.Udot.Atspm.Infrastructure.Repositories;
@@ -36,6 +33,7 @@ using Utah.Udot.Atspm.Repositories;
 using Utah.Udot.Atspm.SqlDatabaseProvider;
 using Utah.Udot.Atspm.SqlLiteDatabaseProvider;
 using Utah.Udot.NetStandardToolkit.Authentication;
+
 
 namespace Utah.Udot.Atspm.Infrastructure.Extensions
 {
@@ -100,7 +98,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Extensions
 
                 default:
                     {
-                        return builder.UseSqlServer(opt.ConnectionString, opt => opt.MigrationsAssembly(SqlServerProvider.Migration));
+                        return builder.UseInMemoryDatabase(Guid.NewGuid().ToString());
                     }
             }
         }
@@ -138,6 +136,12 @@ namespace Utah.Udot.Atspm.Infrastructure.Extensions
             services.AddDbContext<EventLogContext>(db => db.DbDefaults<EventLogContext>(host, QueryTrackingBehavior.NoTracking));
             services.AddDbContext<IdentityContext>(db => db.DbDefaults<IdentityContext>(host, QueryTrackingBehavior.NoTracking));
 
+            services.AddHealthChecks()
+                .AddDbContextCheck<ConfigContext>()
+                .AddDbContextCheck<AggregationContext>()
+                .AddDbContextCheck<EventLogContext>()
+                .AddDbContextCheck<IdentityContext>();
+
             return services;
         }
 
@@ -150,6 +154,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Extensions
         {
             services.AddScoped<IApproachRepository, ApproachEFRepository>();
             services.AddScoped<IAreaRepository, AreaEFRepository>();
+            services.AddScoped<IUsageEntryRepository, UsageEntryEFRepository>();
             services.AddScoped<IDetectionTypeRepository, DetectionTypeEFRepository>();
             services.AddScoped<IDetectorCommentRepository, DetectorCommentEFRepository>();
             services.AddScoped<IDetectorRepository, DetectorEFRepository>();
@@ -175,7 +180,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Extensions
             services.AddScoped<IUserAreaRepository, UserAreaEFRepository>();
             services.AddScoped<IUserJurisdictionRepository, UserJurisdictionEFRepository>();
             services.AddScoped<IUserRegionRepository, UserRegionEFRepository>();
-            services.AddScoped<IVersionHistoryRepository, VersionHistoryEFRepository>();
             services.AddScoped<IWatchDogEventLogRepository, WatchDogLogEventEFRepository>();
             services.AddScoped<IWatchDogIgnoreEventRepository, WatchDogIgnoreEventEFRepository>();
 
@@ -287,122 +291,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Extensions
             }
 
             return services;
-        }
-
-        /// <summary>
-        /// Registers an <see cref="IStartupFilter"/> to set path base on web applications
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="host"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddPathBaseFilter(this IServiceCollection services, HostBuilderContext host)
-        {
-            services.Configure<PathBaseSettings>(host.Configuration.GetSection($"{nameof(PathBaseSettings)}"));
-
-            services.AddTransient<IStartupFilter, PathBaseStartupFilter>();
-
-            return services;
-        }
-
-        /// <summary>
-        /// Used to read confiuration values from mapped container volumes.
-        /// <list type="bullet">
-        /// <listheader>Configuration files providers</listheader>
-        /// <item><see cref="ApplyVolumeJsonConfiguration(IConfigurationBuilder, HostBuilderContext, DirectoryInfo)"/></item>
-        /// <item><see cref="ApplyVolumeTxtConfiguration(IConfigurationBuilder, HostBuilderContext, DirectoryInfo)"/></item>
-        /// </list>
-        /// </summary>
-        /// <param name="hostBuilder"></param>
-        /// <param name="path">Path to where the container volume is mapped</param>
-        /// <returns></returns>
-        public static IHostBuilder ApplyVolumeConfiguration(this IHostBuilder hostBuilder, string path = "Configuration")
-        {
-            var dir = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), path));
-
-            if (dir.Exists)
-            {
-                hostBuilder.ConfigureAppConfiguration((h, c) =>
-                {
-                    c.ApplyVolumeJsonConfiguration(h, dir).ApplyVolumeTxtConfiguration(h, dir);
-                });
-            }
-
-            return hostBuilder;
-        }
-
-        /// <summary>
-        /// Used to read configuration values from .json files when using mapped container volumes.
-        /// </summary>
-        /// <param name="configurationBuilder"></param>
-        /// <param name="host"></param>
-        /// <param name="dir">Directory of mapped container volume</param>
-        /// <returns></returns>
-        public static IConfigurationBuilder ApplyVolumeJsonConfiguration(this IConfigurationBuilder configurationBuilder, HostBuilderContext host, DirectoryInfo dir)
-        {
-            foreach (var file in dir.GetFiles("*.json", SearchOption.AllDirectories))
-            {
-                configurationBuilder.AddJsonFile(file.FullName, true, true);
-            }
-
-            return configurationBuilder;
-        }
-
-        /// <summary>
-        /// Used to read configuration values from .txt files when using mapped container volumes.
-        /// </summary>
-        /// <param name="configurationBuilder"></param>
-        /// <param name="host"></param>
-        /// <param name="dir">Directory of mapped container volume</param>
-        /// <returns></returns>
-        public static IConfigurationBuilder ApplyVolumeTxtConfiguration(this IConfigurationBuilder configurationBuilder, HostBuilderContext host, DirectoryInfo dir)
-        {
-            configurationBuilder.AddKeyPerFile(a =>
-            {
-                a.FileProvider = new PhysicalFileProvider(dir.FullName);
-                a.Optional = true;
-                a.ReloadOnChange = true;
-                a.IgnoreCondition = f => !f.EndsWith(".txt");
-            });
-
-            return configurationBuilder;
-        }
-    }
-
-    /// <summary>
-    /// Configuration settings to set path base of applications
-    /// </summary>
-    public class PathBaseSettings
-    {
-        /// <summary>
-        /// Path base of application
-        /// </summary>
-        public string ApplicationPathBase { get; set; }
-    }
-
-    /// <summary>
-    /// Adds a filter to web applications to set path base
-    /// </summary>
-    public class PathBaseStartupFilter : IStartupFilter
-    {
-        private readonly string _pathBase;
-
-        /// <summary>
-        /// Adds a filter to web applications to set path base
-        /// </summary>
-        /// <param name="options"></param>
-        public PathBaseStartupFilter(IOptions<PathBaseSettings> options)
-        {
-            _pathBase = options.Value.ApplicationPathBase;
-        }
-
-        /// <inheritdoc/>
-        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-        {
-            return app =>
-            {
-                app.UsePathBase(_pathBase);
-                next(app);
-            };
         }
     }
 }

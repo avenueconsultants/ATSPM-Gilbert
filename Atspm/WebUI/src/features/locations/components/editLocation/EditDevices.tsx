@@ -1,9 +1,9 @@
 import {
   useGetLocationDevicesFromKey,
   usePatchDeviceFromKey,
-} from '@/api/config/aTSPMConfigurationApi'
-import { Device } from '@/api/config/aTSPMConfigurationApi.schemas'
-import { useGetLoggingSyncNewLocationEvents } from '@/api/data/aTSPMLogDataApi'
+} from '@/api/config'
+import type { Device } from '@/api/config'
+import { useGetLoggingSyncNewLocationEvents } from '@/api/data'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useDeleteDevice } from '@/features/devices/api/devices'
 import DeviceCard from '@/features/locations/components/editLocation/DeviceCard'
@@ -50,6 +50,7 @@ const EditDevices = () => {
   })
 
   const devices = useMemo(() => devicesData?.value || [], [devicesData])
+  const hasDevices = devices.length > 0
 
   const { data: deviceConfigurationsData } = useGetDeviceConfigurations()
   const { mutate: deleteDevice } = useDeleteDevice()
@@ -65,17 +66,17 @@ const EditDevices = () => {
     { query: { enabled: false } }
   )
 
-  const handleResync = useCallback(async () => {
-    try {
-      setIsFetchingEvents(true)
+    const handleResync = useCallback( async() => {
+      try {
+        setIsFetchingEvents(true)
 
-      fetchDeviceEventResults()
-    } catch (err) {
-      console.error('Failed to fetch device event data: ', err)
-    } finally {
-      setIsFetchingEvents(false)
-    }
-  }, [fetchDeviceEventResults])
+        fetchDeviceEventResults()
+      } catch (err) {
+        console.error('Failed to fetch device event data: ', err)
+      } finally {
+        setIsFetchingEvents(false)
+      }
+    }, [fetchDeviceEventResults])
 
   // ------------------------------------------------
   // 1) If the wizard says "READY_TO_RUN", open modal & run check
@@ -152,6 +153,7 @@ const EditDevices = () => {
           startIcon={<LanIcon />}
           variant="contained"
           color="primary"
+          disabled={!hasDevices}
           onClick={() => {
             setShowSyncModal(true)
             handleResync()

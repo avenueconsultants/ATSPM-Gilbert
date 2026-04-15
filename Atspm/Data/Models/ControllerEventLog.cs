@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Models/ControllerEventLog.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,9 @@
 #endregion
 
 using Utah.Udot.Atspm.Data.Models.EventLogModels;
-using Utah.Udot.NetStandardToolkit.Common;
+using Utah.Udot.NetStandardToolkit.Interfaces;
 
 #nullable disable
-#pragma warning disable
 
 namespace Utah.Udot.Atspm.Data.Models
 {

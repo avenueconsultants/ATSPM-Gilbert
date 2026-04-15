@@ -20,11 +20,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>C#; .net standard; .net core</PackageTags>
 		<PackageId>$(AssemblyName)</PackageId>
-		<VersionPrefix>5.1.0</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<Version>5.2.1-rc1</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -50,25 +48,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Google.Cloud.Diagnostics.Common" Version="5.2.0" />
 		<PackageReference Include="FluentFTP" Version="52.1.0" />
-		<PackageReference Include="Google.Cloud.Diagnostics.Common" Version="5.2.0" />
 		<PackageReference Include="Lextm.SharpSnmpLib" Version="12.5.5" />
 		<PackageReference Include="MailKit" Version="4.8.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.14" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.20" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.22" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.22" />
 		<PackageReference Include="OData.Swagger" Version="1.0.0" />
 		<PackageReference Include="Parquet.Net" Version="3.10.0" />
 		<PackageReference Include="SendGrid" Version="9.29.3" />
 		<PackageReference Include="SSH.NET" Version="2024.2.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.1.0" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -102,6 +97,7 @@
 	  <Using Include="Utah.Udot.NetStandardToolkit.Configuration" />
 	  <Using Include="Utah.Udot.NetStandardToolkit.Exceptions" />
 	  <Using Include="Utah.Udot.NetStandardToolkit.Extensions" />
+	  <Using Include="Utah.Udot.NetStandardToolkit.Interfaces" />
 	  <Using Include="Utah.Udot.NetStandardToolkit.Services" />
 	  <Using Include="Utah.Udot.NetStandardToolkit.Specifications" />
 	</ItemGroup>

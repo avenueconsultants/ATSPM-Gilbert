@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Infrastructure - Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders/DeviceDownloader.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Utah.Udot.Atspm.Common;
 using Utah.Udot.Atspm.Data.Enums;
-using Utah.Udot.NetStandardToolkit.Interfaces;
 
 namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 {

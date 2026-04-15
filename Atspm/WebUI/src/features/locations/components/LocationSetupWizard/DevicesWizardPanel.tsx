@@ -1,5 +1,5 @@
-import { Device } from '@/api/config/aTSPMConfigurationApi.schemas'
-import { DeviceEventDownload } from '@/api/data/aTSPMLogDataApi.schemas'
+import type { Device } from '@/api/config'
+import { DeviceEventDownload } from '@/api/data'
 import CheckIcon from '@mui/icons-material/Check'
 import CloseIcon from '@mui/icons-material/Close'
 import LanIcon from '@mui/icons-material/Lan'
@@ -53,6 +53,8 @@ const DevicesWizardModal = ({
   ipChanges,
   setIpChanges,
 }: DevicesWizardModalProps) => {
+  const hasDevices = (devices?.length ?? 0) > 0
+
   const handleIpChange = (deviceId: number, newIp: string) => {
     setIpChanges((prev) => ({ ...prev, [deviceId]: newIp }))
   }
@@ -183,6 +185,7 @@ const DevicesWizardModal = ({
             loadingPosition="start"
             variant="contained"
             color="primary"
+            disabled={!hasDevices}
             onClick={onResync}
           >
             Verify IP Addresses

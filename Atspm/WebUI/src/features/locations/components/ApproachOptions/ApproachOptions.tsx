@@ -1,7 +1,7 @@
 import {
   useGetDeviceConfiguration,
   useGetLocationSyncLocationFromKey,
-} from '@/api/config/aTSPMConfigurationApi'
+} from '@/api/config'
 import { AddButton } from '@/components/addButton'
 import ApproachesInfo from '@/features/locations/components/ApproachesInfo/approachesInfo'
 import ApproachesReconcilationReport from '@/features/locations/components/ApproachesReconcilationReport/ApproachesReconcilationReport'
@@ -93,7 +93,7 @@ const ApproachOptions = () => {
       const deviceConfig = deviceConfigurationsData?.value?.find(
         (cfg) => cfg.id === device.deviceConfigurationId
       )
-      const label = `${device.deviceType} – ${device.deviceIdentifier}`
+      const label = `${device.deviceType} � ${device.deviceIdentifier}`
 
       try {
         const res = await getZones({

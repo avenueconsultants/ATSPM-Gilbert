@@ -1,7 +1,4 @@
-import {
-  useGetDetectionType,
-  useGetLocationType,
-} from '@/api/config/aTSPMConfigurationApi'
+import { useGetDetectionType, useGetLocationType } from '@/api/config'
 import CalendarCell from '@/features/locations/components/Cell/CalendarCell'
 import CommentCell from '@/features/locations/components/Cell/CommentCell'
 import { MultiSelectCell } from '@/features/locations/components/Cell/MultiSelectCell'
@@ -123,6 +120,7 @@ const EditDetectors = ({
                 Advanced Speed Only
               </Typography>
             </TableCell>
+            <TableCell />
           </TableRow>
           <TableRow>
             {[
@@ -140,6 +138,7 @@ const EditDetectors = ({
               'Decision Point',
               'Minimum Speed Filter',
               'Movement Delay',
+              '', // audit
             ].map((h, i) => (
               <TableCell
                 key={i}
@@ -384,6 +383,12 @@ const EditDetectors = ({
                     value={det.movementDelay}
                     onUpdate={(v) => updateDetector(det.id, 'movementDelay', v)}
                   />
+                  <TableCell align="center" sx={{ p: 0, width: 36 }}>
+                    <AuditIcon
+                      obj={det}
+                      aria={`audit info for channel ${det.detectorChannel}`}
+                    />
+                  </TableCell>
                   {deleteMode && (
                     <TableCell
                       colSpan={colCount}
@@ -409,3 +414,69 @@ const EditDetectors = ({
 }
 
 export default EditDetectors
+
+// AuditIcon.tsx
+import { toUTCDateStamp } from '@/utils/dateTime'
+import HistoryIcon from '@mui/icons-material/History'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
+import { Box, IconButton } from '@mui/material'
+
+type DS = Date | string | null | undefined
+const asDate = (d: DS) => {
+  if (!d) return undefined
+  const dt = typeof d === 'string' ? new Date(d) : d
+  return isNaN(dt.getTime()) ? undefined : dt
+}
+const fmt = (d: DS) => (asDate(d) ? toUTCDateStamp(asDate(d)!) : 'Not recorded')
+
+export function AuditIcon({
+  obj,
+  aria = 'audit info',
+}: {
+  obj?: {
+    created?: DS
+    createdBy?: string | null
+    modified?: DS
+    modifiedBy?: string | null
+  }
+  aria?: string
+}) {
+  const hasCreated = !!asDate(obj?.created) || !!obj?.createdBy
+  const hasModified = !!asDate(obj?.modified) || !!obj?.modifiedBy
+  const nothing = !hasCreated && !hasModified
+
+  const tooltip = nothing ? (
+    <Box sx={{ p: 0.5 }}>
+      <Typography variant="caption" display="block">
+        No history available.
+      </Typography>
+    </Box>
+  ) : (
+    <Box sx={{ p: 0.5 }}>
+      <Typography variant="caption" display="block">
+        Created: {fmt(obj?.created)}
+        {obj?.createdBy ? ` • ${obj.createdBy}` : ''}
+      </Typography>
+      <Typography variant="caption" display="block">
+        Last Modified: {fmt(obj?.modified)}
+        {obj?.modifiedBy ? ` • ${obj?.modifiedBy}` : ''}
+      </Typography>
+    </Box>
+  )
+
+  return (
+    <Tooltip arrow title={tooltip} disableInteractive placement="left">
+      <IconButton
+        size="small"
+        aria-label={aria}
+        sx={{ p: 0.25, opacity: 0.75 }}
+      >
+        {nothing ? (
+          <InfoOutlinedIcon fontSize="small" />
+        ) : (
+          <HistoryIcon fontSize="small" />
+        )}
+      </IconButton>
+    </Tooltip>
+  )
+}

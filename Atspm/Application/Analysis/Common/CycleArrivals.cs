@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for Application - Utah.Udot.Atspm.Analysis.Common/CycleArrivals.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,7 @@ namespace Utah.Udot.Atspm.Analysis.Common
     /// </summary>
     public class CycleArrivals : StartEndRange, ICycleArrivals, ILocationPhaseLayer
     {
-        private readonly ICycleTotal _cycle = new RedToRedCycle();
+        private readonly ICycleTotal _cycle; //= new RedToRedCycle();
 
         public CycleArrivals() { }
 

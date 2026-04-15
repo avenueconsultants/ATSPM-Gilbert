@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for ConfigApi - Utah.Udot.Atspm.ConfigApi.Controllers/LocationController.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -122,13 +122,14 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
         /// Copies <see cref="Location"/> and associated <see cref="Approach"/> to new version
         /// </summary>
         /// <param name="key">Location version to copy</param>
+        /// <param name="newVersionLabel">Label of new version</param>
         /// <returns>New version of copied <see cref="Location"/></returns>
         /// 
         [Authorize(Policy = "CanEditLocationConfigurations")]
         [HttpPost]
         [ProducesResponseType(typeof(Location), Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> CopyLocationToNewVersion(int key)
+        public async Task<IActionResult> CopyLocationToNewVersion(int key, string newVersionLabel)
         {
             try
             {
@@ -136,10 +137,10 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
                    .Where(w => w.LocationId == key)
                    .Select(s => s.Id)
                    .ToList();
-                var newLocation = await _repository.CopyLocationToNewVersion(key);
+                var newLocation = await _locationManager.CopyLocationToNewVersion(key, newVersionLabel);
                 _deviceRepository.UpdateDevicesForNewVersion(deviceIds, newLocation.Id);
 
-                return Ok();
+                return Ok(newLocation);
             }
             catch (ArgumentException e)
             {
@@ -157,11 +158,11 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(TemplateLocationModifiedDto), Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public IActionResult SyncLocation(int key)
+        public async Task<IActionResult> SyncLocationAsync(int key)
         {
             try
             {
-                TemplateLocationModifiedDto modLocation = _signalTemplateService.SyncNewLocationDetectorsAndApproaches(key);
+                TemplateLocationModifiedDto modLocation = await _signalTemplateService.SyncNewLocationDetectorsAndApproachesAsync(key);
                 return Ok(modLocation);
             }
             catch (ArgumentException e)
@@ -260,8 +261,6 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
 
             return Ok();
         }
-
-        //HACK: move this to LocationManagementController
 
         /// <summary>
         /// Marks <see cref="Location"/> to deleted

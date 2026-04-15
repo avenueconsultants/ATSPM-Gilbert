@@ -1,5 +1,5 @@
 ﻿#region license
-// Copyright 2025 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for ApplicationTests - Utah.Udot.Atspm.ApplicationTests.Analysis.WorkflowSteps/GroupApproachesByLocationTests.cs
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -203,7 +203,7 @@ namespace Utah.Udot.Atspm.ApplicationTests.Analysis.WorkflowSteps
 
             foreach (var k in test.Select(s => s.Key))
             {
-                _output.WriteLine($"{k}");
+                _output.WriteLine($"{k} - {test[k].Count()}");
             }
 
             //option 1
