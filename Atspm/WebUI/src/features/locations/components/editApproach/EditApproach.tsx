@@ -229,6 +229,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
 
           updateApproachInStore(normalizedSaved)
           updateSavedApproaches(normalizedSaved)
+
           addNotification({
             title: 'Approach saved successfully',
             type: 'success',
@@ -272,6 +273,7 @@ function EditApproach({ approach }: ApproachAdminProps) {
     updateApproachInStore,
     deleteApproachInStore,
     addNotification,
+    updateSavedApproaches,
   ])
 
   const confirmDeleteSelected = useCallback(() => {

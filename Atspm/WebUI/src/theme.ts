@@ -50,6 +50,9 @@ export const themeSettings = (mode: modeOptions) => {
               paper: '#1f2a40',
               highlight: '#1F2A40',
             },
+            action: {
+              selected: '#2a3a5a',
+            },
           }
         : {
             primary: {
@@ -76,6 +79,9 @@ export const themeSettings = (mode: modeOptions) => {
               default: '#f9f9fb',
               paper: '#fff',
               highlight: '#eeeeee',
+            },
+            action: {
+              selected: '#e5f6fd',
             },
           }),
     },

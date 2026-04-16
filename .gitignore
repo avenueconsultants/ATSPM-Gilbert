@@ -121,3 +121,10 @@ Thumbs.db
 **/.sonarqube/
 
 **/nuget.config
+/Atspm/.env
+/Atspm/docker-compose.override.yml
+
+/Atspm/settings.env
+/Atspm/Data
+/Atspm/ftp_data
+/Atspm/.env

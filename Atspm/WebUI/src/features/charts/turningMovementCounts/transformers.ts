@@ -77,15 +77,11 @@ export default function transformTurningMovementCountsData(
   )
   const preferred = ['Left', 'Thru-Left', 'Thru', 'Thru-Right', 'Right']
 
-  const movementTypes = buildMovementTypeMap(
-    response.data.table,
-    preferred,
-    directions
-  )
+  const movementTypes = buildMovementTypeMap(tableData, preferred, directions)
   const labels = buildLabels(directions, movementTypes)
 
   const peakRow = buildPeakHourRow(
-    response.data.table,
+    tableData,
     response.data.peakHour,
     directions,
     movementTypes
@@ -203,7 +199,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     series.push(
       ...createSeries({
         name: `Lane ${lane.laneNumber}`,
-        data: transformSeriesData(lane.volume),
+        data: transformSeriesData(lane.volume ?? []),
         type: 'line',
         color: colorValues[i % colorValues.length],
         tooltip: {
@@ -285,7 +281,7 @@ function buildLabels(
   directions.forEach((dir) => {
     columnGroups.push({
       title: dir,
-      columns: [...movementTypes[dir], 'Total'],
+      columns: [...(movementTypes[dir] ?? []), 'Total'],
     })
   })
 
@@ -302,7 +298,7 @@ function buildPeakHourRow(
   movementTypes: Record<string, string[]>
 ): TableRow | null {
   if (!peakHour?.key) return null
-
+  console.log('Building peak hour row for', rawTable)
   const valueAtPH = (dir: string, mt: string) =>
     rawTable.find(
       (r) =>
@@ -318,7 +314,7 @@ function buildPeakHourRow(
 
   directions.forEach((dir) => {
     let dirSum = 0
-    movementTypes[dir].forEach((mt) => {
+    ;(movementTypes[dir] ?? []).forEach((mt) => {
       const v = valueAtPH(dir, mt)
       row.push(v)
       dirSum += v

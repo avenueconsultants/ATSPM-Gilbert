@@ -213,17 +213,16 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
           id: Math.round(Math.random() * 10000),
           isNew: true,
           detectorChannel: null,
+          dectectorIdentifier: '',
         })),
       }
-      set({
-        approaches: [newApproach, ...approaches],
-        scrollToApproach: newApproach.id,
-      })
+      set({ approaches: [...approaches, newApproach] })
     },
 
     deleteApproach: (approach) => {
       const { approaches } = get()
       const filtered = approaches.filter((a) => a.id !== approach.id)
+
       if (!approach.isNew) {
         try {
           deleteApproachFromKey(approach.id)
@@ -356,11 +355,6 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
   }))
 )
 
-const deepClone = <T>(v: T): T => JSON.parse(JSON.stringify(v))
-
-const toBaseline = (approaches: ConfigApproach[]) =>
-  deepClone(approaches.map(stripUIFlags))
-
 const normalize = (v: any): any => {
   if (Array.isArray(v)) return v.map(normalize)
   if (v !== null && typeof v === 'object')
@@ -369,6 +363,11 @@ const normalize = (v: any): any => {
     )
   return typeof v === 'number' ? String(v) : v
 }
+
+const deepClone = <T>(v: T): T => JSON.parse(JSON.stringify(v))
+
+const toBaseline = (approaches: ConfigApproach[]) =>
+  deepClone(approaches.map(stripUIFlags))
 
 const stripUIFlags = (approach: ConfigApproach) => {
   const { open, index, isNew, ...clean } = approach

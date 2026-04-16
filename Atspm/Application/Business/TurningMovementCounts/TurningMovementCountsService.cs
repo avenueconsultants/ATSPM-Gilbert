@@ -79,7 +79,15 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
 
             var highestDetectorCountByLane = laneNumberVolumes.Values.Max(l => l.TotalDetectorCounts);
             var totalDetectorCounts = allLanesMovementVolumes.TotalDetectorCounts;
-            var flu = totalDetectorCounts / (tmcDetectors.Count * (double)highestDetectorCountByLane);
+            var fluDenominator = tmcDetectors.Count * (double)highestDetectorCountByLane;
+            double? flu = fluDenominator > 0
+                ? totalDetectorCounts / fluDenominator
+                : null;
+
+            if (flu.HasValue && !double.IsFinite(flu.Value))
+            {
+                flu = null;
+            }
 
             var peakHour = GetPeakHour(allLanesMovementVolumes, 60 / options.BinSize);
             var peakHourEnd = peakHour.Key.AddHours(1);
@@ -158,15 +166,29 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
 
         public double? GetPeakHourFactor(int PHV, int PeakHourMAXVolume, int binMultiplier)
         {
-            if (PeakHourMAXVolume > 0)
-            {
-                return SetSigFigs(
-                    Convert.ToDouble(PHV) / (Convert.ToDouble(PeakHourMAXVolume) * Convert.ToDouble(binMultiplier)), 2);
-            }
-            else
+            if (PeakHourMAXVolume <= 0 || binMultiplier <= 0)
             {
                 return null;
             }
+
+            var denominator = Convert.ToDouble(PeakHourMAXVolume) * Convert.ToDouble(binMultiplier);
+            if (denominator == 0)
+            {
+                return null;
+            }
+
+            var factor = Convert.ToDouble(PHV) / denominator;
+            if (!double.IsFinite(factor))
+            {
+                return null;
+            }
+
+            if (factor == 0)
+            {
+                return 0;
+            }
+
+            return SetSigFigs(factor, 2);
         }
 
         public KeyValuePair<DateTime, int> GetPeakHour(VolumeCollection volumeCollection, int binMultiplier)

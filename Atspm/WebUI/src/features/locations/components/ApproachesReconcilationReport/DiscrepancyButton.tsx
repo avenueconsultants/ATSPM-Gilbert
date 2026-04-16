@@ -1,51 +1,48 @@
-import { Button, Tooltip } from '@mui/material'
+// DiscrepancyButton.tsx
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
+import { Button } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import React from 'react'
 
 export interface DiscrepancyButtonProps {
   item: { id: string | number; label: string | number }
-  status: 'pending' | 'ignored' | 'added' | 'deleted' | 'unsaved'
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  selected?: boolean
+  onToggle: () => void
+  width?: number
 }
 
 const DiscrepancyButton = ({
   item,
-  status,
-  onClick,
+  selected,
+  onToggle,
+  width,
 }: DiscrepancyButtonProps) => {
   const theme = useTheme()
-  if (status === 'unsaved') {
-    return (
-      <Tooltip title="Added but unsaved.">
-        <Button
-          variant="contained"
-          onClick={onClick}
-          size="small"
-          // on hover make background darker green
-          sx={{
-            margin: 1,
-            backgroundColor: '#d0f1d0',
-            color: 'black',
-            '&:hover': {
-              backgroundColor: '#b0e0b0',
-            },
-          }}
-          disableElevation
-        >
-          {item.label}
-        </Button>
-      </Tooltip>
-    )
-  }
+
   return (
     <Button
       variant="outlined"
-      onClick={onClick}
+      onClick={onToggle}
       size="small"
+      startIcon={
+        selected ? (
+          <CheckBoxIcon fontSize="small" color="info" />
+        ) : (
+          <CheckBoxOutlineBlankIcon fontSize="small" />
+        )
+      }
       sx={{
-        margin: 1,
+        width: width ?? 60,
+        margin: 0.5,
+        justifyContent: 'flex-start',
         color: theme.palette.grey[700],
-        borderColor: theme.palette.grey[700],
+        borderColor: selected
+          ? theme.palette.primary.main
+          : theme.palette.grey[700],
+        backgroundColor: selected
+          ? theme.palette.action.selected
+          : 'transparent',
+        '& .MuiButton-startIcon': { marginRight: 0.75 },
       }}
       disableElevation
     >
