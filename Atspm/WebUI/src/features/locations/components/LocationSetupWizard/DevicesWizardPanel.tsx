@@ -1,23 +1,27 @@
 import type { Device } from '@/api/config'
-import { DeviceEventDownload } from '@/api/data'
-import CheckIcon from '@mui/icons-material/Check'
-import CloseIcon from '@mui/icons-material/Close'
+import type { DeviceEventDownload } from '@/api/data'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
 import LanIcon from '@mui/icons-material/Lan'
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
 import { LoadingButton } from '@mui/lab'
 import {
-  Badge,
+  Alert,
   Box,
   Button,
   Modal,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from '@mui/material'
 
-type CombinedDeviceEvent = Device &
-  DeviceEventDownload & {
-    ipModified: boolean
-  }
+type CombinedDeviceEvent = Device & Partial<DeviceEventDownload>
 
 interface DevicesWizardModalProps {
   open: boolean
@@ -40,7 +44,44 @@ const getDeviceName = (device: Device) => {
       ' '
   }
   deviceName += device?.firmware ? device?.firmware : ''
-  return deviceName
+  return deviceName || `Device ${device.id}`
+}
+
+const formatCount = (count?: number) =>
+  typeof count === 'number' ? count.toLocaleString() : '--'
+
+const getVerificationStatus = (device: CombinedDeviceEvent) => {
+  const beforeWorkflowEventCount = device.beforeWorkflowEventCount
+  const afterWorkflowEventCount = device.afterWorkflowEventCount
+  const changeInEventCount = device.changeInEventCount
+
+  const hasVerificationResult =
+    typeof beforeWorkflowEventCount === 'number' &&
+    typeof afterWorkflowEventCount === 'number' &&
+    typeof changeInEventCount === 'number'
+
+  if (!hasVerificationResult) {
+    return {
+      detail: '',
+      icon: <RadioButtonUncheckedIcon color="disabled" fontSize="small" />,
+      label: 'Not checked',
+    }
+  }
+
+  if (changeInEventCount > 0) {
+    return {
+      detail:
+        `${changeInEventCount.toLocaleString()} new rows downloaded.`,
+      icon: <CheckCircleOutlineIcon color="success" fontSize="small" />,
+      label: 'Connection verified',
+    }
+  }
+
+  return {
+    detail: '',
+    icon: <ErrorOutlineIcon color="error" fontSize="small" />,
+    label: 'Unable to verify',
+  }
 }
 
 const DevicesWizardModal = ({
@@ -60,7 +101,11 @@ const DevicesWizardModal = ({
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      aria-labelledby="device-verification-title"
+    >
       <Paper
         sx={{
           position: 'absolute',
@@ -75,121 +120,153 @@ const DevicesWizardModal = ({
           borderRadius: 2,
         }}
       >
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: '3fr 2fr 1fr 1fr 2fr',
-            alignItems: 'center',
-            px: 1,
-            pb: 2,
-          }}
+        <Typography
+          id="device-verification-title"
+          variant="h6"
+          sx={{ fontWeight: 600, mb: 1 }}
         >
-          <Typography variant="subtitle2">Device Name</Typography>
-          <Typography variant="subtitle2">IP Address</Typography>
-          <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
-            Rows added in last 24 hours
-          </Typography>
-          <Typography variant="subtitle2" sx={{ textAlign: 'right' }}>
-            New Rows Added
-          </Typography>
-          <Typography variant="subtitle2" sx={{ textAlign: 'center' }}>
-            Status
-          </Typography>
-        </Box>
+          Verify Device IP Addresses
+        </Typography>
 
-        {devices?.map((device, i) => {
-          const newIp = ipChanges[device.id] ?? device.ipaddress
-          const dbCount = device.beforeWorkflowEventCount ?? 0
-          const downloadedCount = device.changeInEventCount ?? 0
+        <Alert severity="info" sx={{ mb: 3 }}>
+          The verification workflow attempts to download the previous 24 hours
+          of event data from each device. &quot;Existing Rows&quot; shows what
+          was already in ATSPM before the workflow ran, and &quot;Rows
+          Inserted&quot; shows what was downloaded during this check.
+        </Alert>
 
-          return (
-            <Box
-              key={i}
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '3fr 2fr 1fr 1fr 2fr',
-                alignItems: 'center',
-                gap: 2,
-                p: 1.5,
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                mb: 1,
-              }}
-            >
-              <Typography>{getDeviceName(device)}</Typography>
+        <TableContainer>
+          <Table size="small" sx={{ minWidth: 820 }}>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ width: '30%' }}>Device Name</TableCell>
+                <TableCell sx={{ width: '22%' }}>IP Address</TableCell>
+                <TableCell align="right" sx={{ width: '14%' }}>
+                  Existing Rows
+                </TableCell>
+                <TableCell align="right" sx={{ width: '14%' }}>
+                  Rows Inserted
+                </TableCell>
+                <TableCell sx={{ width: '20%', minWidth: 220 }}>
+                  Status
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {devices?.map((device) => {
+                const newIp = ipChanges[device.id] ?? device.ipaddress ?? ''
+                const existingRowCount = device.beforeWorkflowEventCount
+                const insertedRowCount = device.changeInEventCount
+                const verificationStatus = getVerificationStatus(device)
+                const hasPendingIpChange = device.ipaddress !== newIp
 
-              <Badge
-                color="error"
-                variant="dot"
-                invisible={device.ipaddress === newIp}
-              >
-                <TextField
-                  label="IP Address"
-                  size="small"
-                  value={newIp}
-                  onChange={(e) => handleIpChange(device.id, e.target.value)}
-                />
-              </Badge>
-
-              <Typography sx={{ textAlign: 'right' }}>
-                {isResyncing ? '' : dbCount.toLocaleString()}
-              </Typography>
-
-              <Typography sx={{ textAlign: 'right' }}>
-                {isResyncing ? '' : downloadedCount.toLocaleString()}
-              </Typography>
-
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {isResyncing ? (
-                  <Typography variant="body2" sx={{ ml: 1 }}>
-                    Loading...
-                  </Typography>
-                ) : dbCount > 0 ? (
-                  <>
-                    <CheckIcon color="success" />
-                    <Typography variant="body2" sx={{ ml: 1 }}>
-                      Data found
-                    </Typography>
-                  </>
-                ) : (
-                  <>
-                    <CloseIcon color="error" />
-                    <Typography variant="body2" sx={{ ml: 1 }}>
-                      No data found
-                    </Typography>
-                  </>
-                )}
-              </Box>
-            </Box>
-          )
-        })}
+                return (
+                  <TableRow key={device.id} hover>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {getDeviceName(device)}
+                      </Typography>
+                      {device.deviceIdentifier && (
+                        <Typography variant="caption" color="text.secondary">
+                          {device.deviceIdentifier}
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ minWidth: 220 }}>
+                        <TextField
+                          fullWidth
+                          label="IP Address"
+                          size="small"
+                          value={newIp}
+                          onChange={(e) =>
+                            handleIpChange(device.id, e.target.value)
+                          }
+                        />
+                        <Typography
+                          variant="caption"
+                          color={
+                            hasPendingIpChange
+                              ? 'warning.main'
+                              : 'text.secondary'
+                          }
+                          sx={{ display: 'block', mt: 0.5 }}
+                        >
+                          {hasPendingIpChange
+                            ? 'Pending change'
+                            : 'Saved value'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      {isResyncing ? '--' : formatCount(existingRowCount)}
+                    </TableCell>
+                    <TableCell align="right">
+                      {isResyncing ? '--' : formatCount(insertedRowCount)}
+                    </TableCell>
+                    <TableCell>
+                      {isResyncing ? (
+                        <Typography variant="body2" color="text.secondary">
+                          Checking...
+                        </Typography>
+                      ) : (
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: 1,
+                          }}
+                        >
+                          <Box sx={{ mt: 0.25 }}>{verificationStatus.icon}</Box>
+                          <Box>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {verificationStatus.label}
+                            </Typography>
+                            {verificationStatus.detail && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                              >
+                                {verificationStatus.detail}
+                              </Typography>
+                            )}
+                          </Box>
+                        </Box>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Box
           sx={{
             display: 'flex',
+            alignItems: 'flex-end',
             justifyContent: 'space-between',
             mt: 3,
             gap: 1,
+            flexWrap: 'wrap',
           }}
         >
-          <LoadingButton
-            startIcon={<LanIcon />}
-            loading={isResyncing}
-            loadingPosition="start"
-            variant="contained"
-            color="primary"
-            disabled={!hasDevices}
-            onClick={onResync}
-          >
-            Verify IP Addresses
-          </LoadingButton>
+          <Box>
+            <LoadingButton
+              startIcon={<LanIcon />}
+              loading={isResyncing}
+              loadingPosition="start"
+              variant="contained"
+              color="primary"
+              disabled={!hasDevices}
+              onClick={onResync}
+            >
+              Verify IP Addresses
+            </LoadingButton>
+          </Box>
 
           <Box>
             <Button onClick={onClose}>Close</Button>

@@ -1,8 +1,9 @@
+import type { Device } from '@/api/config'
 import {
   useGetLocationDevicesFromKey,
   usePatchDeviceFromKey,
 } from '@/api/config'
-import type { Device } from '@/api/config'
+import type { DeviceEventDownload } from '@/api/data'
 import { useGetLoggingSyncNewLocationEvents } from '@/api/data'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useDeleteDevice } from '@/features/devices/api/devices'
@@ -17,10 +18,7 @@ import LanIcon from '@mui/icons-material/Lan'
 import { Avatar, Box, Button, Modal, Typography, useTheme } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-interface CombinedDevice extends Device {
-  changeInEventCount?: number
-  ipModified?: boolean
-}
+interface CombinedDevice extends Device, Partial<DeviceEventDownload> {}
 
 const EditDevices = () => {
   const theme = useTheme()
@@ -66,17 +64,138 @@ const EditDevices = () => {
     { query: { enabled: false } }
   )
 
-    const handleResync = useCallback( async() => {
-      try {
-        setIsFetchingEvents(true)
+  const persistPendingIpChanges = useCallback(
+    async (notifyOnSuccess = false) => {
+      const invalidChanges = Object.entries(ipChanges).filter(
+        ([deviceId, newIp]) =>
+          devices.some((device) => device.id === Number(deviceId)) &&
+          newIp.trim().length === 0
+      )
 
-        fetchDeviceEventResults()
-      } catch (err) {
-        console.error('Failed to fetch device event data: ', err)
-      } finally {
-        setIsFetchingEvents(false)
+      if (invalidChanges.length > 0) {
+        addNotification({
+          title:
+            invalidChanges.length === 1
+              ? 'IP address is required before continuing'
+              : 'IP addresses are required before continuing',
+          type: 'error',
+        })
+
+        return { hasErrors: true }
       }
-    }, [fetchDeviceEventResults])
+
+      const pendingChanges = Object.entries(ipChanges)
+        .map(([deviceId, newIp]) => {
+          const matchingDevice = devices.find(
+            (device) => device.id === Number(deviceId)
+          )
+          const trimmedIp = newIp.trim()
+
+          if (
+            !matchingDevice ||
+            !trimmedIp ||
+            matchingDevice.ipaddress === trimmedIp
+          ) {
+            return null
+          }
+
+          return {
+            deviceId: matchingDevice.id,
+            ipaddress: trimmedIp,
+          }
+        })
+        .filter(
+          (
+            change
+          ): change is {
+            deviceId: number
+            ipaddress: string
+          } => change !== null
+        )
+
+      if (!pendingChanges.length) {
+        return { hasErrors: false }
+      }
+
+      const results = await Promise.allSettled(
+        pendingChanges.map(({ deviceId, ipaddress }) =>
+          updateDevice({
+            key: deviceId,
+            data: { ipaddress },
+          })
+        )
+      )
+
+      const savedIds: number[] = []
+      const failedIds: number[] = []
+
+      results.forEach((result, index) => {
+        const deviceId = pendingChanges[index].deviceId
+
+        if (result.status === 'fulfilled') {
+          savedIds.push(deviceId)
+          return
+        }
+
+        failedIds.push(deviceId)
+        console.error(
+          `Failed to update device IP for device ${deviceId}:`,
+          result.reason
+        )
+      })
+
+      if (savedIds.length > 0) {
+        await refetchDevices()
+        setIpChanges((prev) => {
+          const nextChanges = { ...prev }
+
+          savedIds.forEach((deviceId) => {
+            delete nextChanges[deviceId]
+          })
+
+          return nextChanges
+        })
+      }
+
+      if (notifyOnSuccess && savedIds.length > 0) {
+        addNotification({
+          title:
+            savedIds.length === 1
+              ? 'Device IP address saved'
+              : `${savedIds.length} device IP addresses saved`,
+          type: 'success',
+        })
+      }
+
+      if (failedIds.length > 0) {
+        addNotification({
+          title:
+            failedIds.length === 1
+              ? 'Failed to save 1 device IP address'
+              : `Failed to save ${failedIds.length} device IP addresses`,
+          type: 'error',
+        })
+      }
+
+      return { hasErrors: failedIds.length > 0 }
+    },
+    [addNotification, devices, ipChanges, refetchDevices, updateDevice]
+  )
+
+  const handleResync = useCallback(async () => {
+    try {
+      setIsFetchingEvents(true)
+
+      const { hasErrors } = await persistPendingIpChanges()
+      if (hasErrors) return
+
+      await fetchDeviceEventResults()
+    } catch (err) {
+      console.error('Failed to fetch device event data: ', err)
+    } finally {
+      setIsFetchingEvents(false)
+    }
+  }, [fetchDeviceEventResults, persistPendingIpChanges])
 
   // ------------------------------------------------
   // 1) If the wizard says "READY_TO_RUN", open modal & run check
@@ -96,7 +215,9 @@ const EditDevices = () => {
 
   const combinedDevices: CombinedDevice[] = useMemo(() => {
     if (!devices.length) return []
-    const finalEventData = deviceEventResults || []
+    const finalEventData = Array.isArray(deviceEventResults)
+      ? deviceEventResults
+      : []
     const allConfigs = deviceConfigurationsData?.value || []
 
     return devices.map((dev) => {
@@ -107,33 +228,16 @@ const EditDevices = () => {
       return {
         ...dev,
         ...matchedEvents,
-        // changeInEventCount: matchedEvents?.changeInEventCount,
-        ipModified: matchedEvents?.ipModified,
-        deviceConfiguration: matchedConfig,
+        deviceConfiguration: matchedConfig ?? dev.deviceConfiguration,
       }
     })
   }, [devices, deviceEventResults, deviceConfigurationsData])
 
   const handleSaveAndClose = async () => {
-    const entries = Object.entries(ipChanges)
-    for (const [devIdStr, newIp] of entries) {
-      const devId = Number(devIdStr)
-      if (!devId || !newIp) continue
+    const { hasErrors } = await persistPendingIpChanges(true)
+    if (hasErrors) return
 
-      try {
-        await updateDevice({ key: devId, data: { ipaddress: newIp } })
-        addNotification({
-          title: `Device ${devId} updated successfully`,
-          type: 'success',
-        })
-      } catch (err) {
-        console.error('Failed to update device IP:', err)
-      }
-    }
-
-    await refetchDevices()
     setIpChanges({})
-
     setShowSyncModal(false)
     setDeviceVerificationStatus('DONE')
   }
