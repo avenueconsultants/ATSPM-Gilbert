@@ -207,7 +207,7 @@ namespace DatabaseInstaller.Services
                 hourlyCompressedEvents.Add(new CompressedEventLogs<IndianaEvent>
                 {
                     LocationIdentifier = location.LocationIdentifier,
-                    ArchiveDate = DateOnly.FromDateTime(start),
+                    //ArchiveDate = DateOnly.FromDateTime(start),
                     DeviceId = deviceId.Value,
                     Start = start,
                     End = end,
@@ -239,7 +239,7 @@ namespace DatabaseInstaller.Services
                 hourlyCompressedEvents.Add(new CompressedEventLogs<EnhancedEventLog>
                 {
                     LocationIdentifier = location.LocationIdentifier,
-                    ArchiveDate = DateOnly.FromDateTime(start),
+                    //ArchiveDate = DateOnly.FromDateTime(start),
                     DeviceId = deviceId.Value,
                     Start = start,
                     End = end,
@@ -267,7 +267,7 @@ namespace DatabaseInstaller.Services
                 await context.SaveChangesAsync();
 
                 _logger.LogInformation("Inserted {Count} IndianaEvent hourly logs for {Date}",
-                    hourlyLogs.Count, hourlyLogs.FirstOrDefault()?.ArchiveDate);
+                    hourlyLogs.Count, hourlyLogs.FirstOrDefault()?.Start);
             });
         }
 
@@ -287,7 +287,7 @@ namespace DatabaseInstaller.Services
                 await context.SaveChangesAsync();
 
                 _logger.LogInformation("Inserted {Count} EnhancedEventLog hourly logs for {Date}",
-                    hourlyLogs.Count, hourlyLogs.FirstOrDefault()?.ArchiveDate);
+                    hourlyLogs.Count, hourlyLogs.FirstOrDefault()?.Start);
             });
         }
 
