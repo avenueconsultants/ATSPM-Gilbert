@@ -1,5 +1,5 @@
 // #region license
-// Copyright 2024 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for WebUI - transformers.ts
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,7 +75,14 @@ export default function transformTurningMovementCountsData(
   const directions = getAvailableTurningMovementDirections(
     response.data.table.map((row) => row.direction)
   )
-  const preferred = ['Left', 'Thru-Left', 'Thru', 'Thru-Right', 'Right']
+  const preferred = [
+    'Left',
+    'Thru-Left',
+    'Thru',
+    'Thru + Thru-Right',
+    'Thru-Right',
+    'Right',
+  ]
 
   const movementTypes = buildMovementTypeMap(tableData, preferred, directions)
   const labels = buildLabels(directions, movementTypes)
@@ -178,7 +185,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   const tooltip = createTooltip()
 
   const colorValues = Object.values(Color)
-
+  
   const series: SeriesOption[] = []
 
   if (lanes.length > 1) {
@@ -236,7 +243,14 @@ function formatTime(timestamp: string | Date) {
 }
 
 function compareMovementTypes(a: string, b: string) {
-  const movementOrder = ['Left', 'Thru-Left', 'Thru', 'Thru-Right', 'Right']
+  const movementOrder = [
+    'Left',
+    'Thru-Left',
+    'Thru',
+    'Thru + Thru-Right',
+    'Thru-Right',
+    'Right',
+  ]
   const orderA = movementOrder.indexOf(a)
   const orderB = movementOrder.indexOf(b)
 
@@ -307,7 +321,7 @@ function buildPeakHourRow(
     )?.peakHourVolume?.value ?? 0
 
   const start = new Date(peakHour.key)
-  const desc = `${formatTime(start)} – ${formatTime(addHours(start, 1))}`
+  const desc = `${formatTime(start)} - ${formatTime(addHours(start, 1))}`
 
   const row: TableRow = [desc]
   let binTotal = 0
