@@ -1,6 +1,8 @@
 import {
   useGetDeviceConfiguration,
   useGetLocationSyncLocationFromKey,
+  usePatchApproachFromKey,
+  usePatchLocationFromKey,
 } from '@/api/config'
 import { AddButton } from '@/components/addButton'
 import ApproachesInfo from '@/features/locations/components/ApproachesInfo/approachesInfo'
@@ -21,8 +23,14 @@ import { LoadingButton } from '@mui/lab'
 import {
   Box,
   Button,
+  Checkbox,
   Collapse,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
+  FormControlLabel,
   Grid,
   IconButton,
   Paper,
@@ -41,13 +49,45 @@ const headers: AxiosHeaders = new AxiosHeaders({
 })
 
 export function useGetZones() {
-  const mutation = usePostRequest({
+  return usePostRequest({
     url: '/Detector/retrieveDetectionData',
     configAxios,
     headers,
     notify: false,
   })
-  return mutation
+}
+
+const emptyCategories: LocationDiscrepancyReport = {
+  foundPhaseNumbers: [],
+  notFoundApproaches: [],
+  foundDetectorChannels: [],
+  notFoundDetectorChannels: [],
+}
+
+const getExternalServiceErrorMessage = (error: unknown) => {
+  if (typeof error === 'object' && error !== null) {
+    if ('response' in error) {
+      const response = error.response
+
+      if (
+        typeof response === 'object' &&
+        response !== null &&
+        'data' in response
+      ) {
+        const data = response.data
+
+        if (typeof data === 'string' && data.length > 0) {
+          return data
+        }
+      }
+    }
+
+    if ('message' in error && typeof error.message === 'string') {
+      return error.message
+    }
+  }
+
+  return 'Failed to retrieve data from the external service.'
 }
 
 const ApproachOptions = () => {
@@ -59,28 +99,58 @@ const ApproachOptions = () => {
   } = useLocationWizardStore()
   const { addNotification } = useNotificationStore()
 
-  const { approaches, location, addApproach } = useLocationStore()
-  const { mutateAsync, isLoading } = useGetLocationSyncLocationFromKey()
+  const location = useLocationStore((state) => state.location)
+  const setLocation = useLocationStore((state) => state.setLocation)
+  const approaches = useLocationStore((state) => state.approaches)
+  const addApproach = useLocationStore((state) => state.addApproach)
+  const updateSavedApproaches = useLocationStore(
+    (state) => state.updateSavedApproaches
+  )
+  const updateApproachesInStore = useLocationStore(
+    (state) => state.updateApproaches
+  )
+
+  const { mutateAsync: syncLocation, isLoading: isSyncingApproaches } =
+    useGetLocationSyncLocationFromKey()
+  const { mutateAsync: updateLocation } = usePatchLocationFromKey()
+  const { mutateAsync: updateApproach } = usePatchApproachFromKey()
   const { mutateAsync: getZones } = useGetZones()
-  const [zones, setZones] = useState<Record<string, string[]>>({})
-  const [showZones, setShowZones] = useState(false)
   const { data: deviceConfigurationsData } = useGetDeviceConfiguration()
 
-  const handleToggleZones = () => {
-    setShowZones((prev) => !prev)
-  }
-
   const [showSummary, setShowSummary] = useState(false)
-  const [categories, setCategories] = useState<LocationDiscrepancyReport>({
-    foundPhaseNumbers: [],
-    notFoundApproaches: [],
-    foundDetectorChannels: [],
-    notFoundDetectorChannels: [],
-  })
+  const [showZones, setShowZones] = useState(false)
+  const [showPedsAre1To1Dialog, setShowPedsAre1To1Dialog] = useState(false)
+  const [zones, setZones] = useState<Record<string, ZoneResult>>({})
+  const [categories, setCategories] =
+    useState<LocationDiscrepancyReport>(emptyCategories)
 
-  const handleGetZones = async () => {
+  const combinedLocation = useMemo(
+    () => (location ? { ...location, approaches } : location),
+    [location, approaches]
+  )
+
+  const detectorCount = useMemo(
+    () =>
+      approaches.reduce(
+        (acc, approach) => acc + (approach.detectors?.length || 0),
+        0
+      ),
+    [approaches]
+  )
+
+  const hasFirCameraDevice = useMemo(
+    () =>
+      combinedLocation?.devices?.some(
+        (device) => device?.deviceType === 'FIRCamera'
+      ) ?? false,
+    [combinedLocation?.devices]
+  )
+
+  const handleGetZones = useCallback(async () => {
     const firCameras =
-      location?.devices?.filter((d) => d?.deviceType === 'FIRCamera') ?? []
+      combinedLocation?.devices?.filter(
+        (device) => device?.deviceType === 'FIRCamera'
+      ) ?? []
 
     if (firCameras.length === 0) {
       addNotification({ title: 'No FIRCamera devices found', type: 'error' })
@@ -91,52 +161,50 @@ const ApproachOptions = () => {
 
     for (const device of firCameras) {
       const deviceConfig = deviceConfigurationsData?.value?.find(
-        (cfg) => cfg.id === device.deviceConfigurationId
+        (config) => config.id === device.deviceConfigurationId
       )
-      const label = `${device.deviceType} � ${device.deviceIdentifier}`
+      const label = `${device.deviceType} - ${
+        device.deviceIdentifier || `Device ${device.id}`
+      }`
 
       try {
-        const res = await getZones({
+        const response = await getZones({
           IpAddress: device.ipaddress,
           port: deviceConfig?.port?.toString(),
           detectionType: device.deviceType,
           deviceId: device.deviceIdentifier?.toString(),
         })
-        grouped[label] = { zones: res ?? [] }
-      } catch (err: any) {
-        console.log('error', err)
+        grouped[label] = { zones: response ?? [] }
+      } catch (error: unknown) {
         grouped[label] = {
           zones: [],
-          error:
-            err?.response?.data ??
-            err?.message ??
-            'Failed to retrieve data from the external service.',
+          error: getExternalServiceErrorMessage(error),
         }
       }
     }
 
     setZones(grouped)
     setShowZones(true)
-  }
+  }, [
+    addNotification,
+    combinedLocation?.devices,
+    deviceConfigurationsData,
+    getZones,
+  ])
 
   const handleSyncLocation = useCallback(async () => {
     if (!location?.id) return
 
     try {
-      const response = await mutateAsync({ key: location.id })
+      const response = await syncLocation({ key: location.id })
 
-      // Identify removed approaches
       const notFoundApproaches =
         response?.removedApproachIds
-          ?.map((id) => approaches.find((a) => a.id === id))
+          ?.map((id) => approaches.find((approach) => approach.id === id))
           .filter(Boolean) || []
 
-      if (response?.removedApproachIds) {
-        setBadApproaches(response.removedApproachIds)
-      }
-      if (response?.removedDetectors) {
-        setBadDetectors(response.removedDetectors)
-      }
+      setBadApproaches(response?.removedApproachIds ?? [])
+      setBadDetectors(response?.removedDetectors ?? [])
 
       const foundPhaseNumbers = Array.from(
         new Set<number>([
@@ -148,85 +216,164 @@ const ApproachOptions = () => {
       setCategories({
         foundPhaseNumbers,
         notFoundApproaches,
-        foundDetectorChannels: response?.loggedButUnusedDetectorChannels || [],
-        notFoundDetectorChannels: response?.removedDetectors || [],
+        foundDetectorChannels: response?.loggedButUnusedDetectorChannels ?? [],
+        notFoundDetectorChannels: response?.removedDetectors ?? [],
       })
     } catch (error) {
       console.error(error)
+    } finally {
+      setApproachVerificationStatus('DONE')
     }
-    setApproachVerificationStatus('DONE')
   }, [
-    mutateAsync,
-    location?.id,
     approaches,
+    location?.id,
+    setApproachVerificationStatus,
     setBadApproaches,
     setBadDetectors,
-    setApproachVerificationStatus,
+    syncLocation,
   ])
 
   useEffect(() => {
     async function handleSyncLocationOnMount() {
       if (approachVerificationStatus === 'READY_TO_RUN') {
         await handleSyncLocation()
-        setApproachVerificationStatus('DONE')
       }
     }
+
     handleSyncLocationOnMount()
+  }, [approachVerificationStatus, handleSyncLocation])
+
+  const applyPedestrianPhaseModeChange = useCallback(async () => {
+    if (!combinedLocation) return
+
+    const nextPedsAre1to1 = !combinedLocation.pedsAre1to1
+
+    setLocation({
+      ...combinedLocation,
+      pedsAre1to1: nextPedsAre1to1,
+    })
+
+    const updatedApproaches = combinedLocation.approaches.map((approach) => ({
+      ...approach,
+      pedestrianDetectors: nextPedsAre1to1
+        ? approach.protectedPhaseNumber?.toString()
+        : null,
+      pedestrianPhaseNumber: nextPedsAre1to1
+        ? approach.protectedPhaseNumber
+        : null,
+    }))
+
+    updateApproachesInStore(updatedApproaches)
+    updateSavedApproaches(updatedApproaches)
+    setShowPedsAre1To1Dialog(false)
+
+    try {
+      await updateLocation({
+        key: combinedLocation.id,
+        data: { pedsAre1to1: nextPedsAre1to1 },
+      })
+
+      await Promise.all(
+        updatedApproaches.map((approach) =>
+          updateApproach({
+            key: approach.id,
+            data: {
+              pedestrianDetectors: approach.pedestrianDetectors,
+              pedestrianPhaseNumber: approach.pedestrianPhaseNumber,
+            },
+          })
+        )
+      )
+
+      addNotification({
+        title: 'Location updated',
+        type: 'success',
+      })
+    } catch (error) {
+      addNotification({
+        title: 'Error updating location',
+        type: 'error',
+      })
+    }
   }, [
-    approachVerificationStatus,
-    handleSyncLocation,
-    setApproachVerificationStatus,
+    addNotification,
+    combinedLocation,
+    setLocation,
+    updateApproach,
+    updateApproachesInStore,
+    updateLocation,
+    updateSavedApproaches,
   ])
 
-  const approachesSynced = approachVerificationStatus === 'DONE'
-
-  const combinedLocation = { ...location, approaches }
-
-  const hasFirCameraDevice = useMemo(() => {
-    return combinedLocation?.devices?.some(
-      (device) => device?.deviceType === 'FIRCamera'
-    )
-  }, [combinedLocation?.devices])
+  if (!combinedLocation) return null
 
   return (
-    <Box>
-      <Box
+    <Box sx={{ minHeight: '400px', mt: 2 }}>
+      <Paper
+        variant="outlined"
         sx={{
           display: 'flex',
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2,
           mb: 1,
+          px: 2,
+          py: 1,
         }}
       >
-        <AddButton
-          label="New Approach"
-          onClick={() => addApproach()}
-          sx={{ mr: 1 }}
-        />
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <FormControlLabel
+            control={
+              <Checkbox onChange={() => setShowPedsAre1To1Dialog(true)} />
+            }
+            name="pedsAre1to1"
+            label="Pedestrian Phases 1:1"
+            checked={combinedLocation.pedsAre1to1}
+            sx={{ height: '30px' }}
+          />
+          <Typography variant="caption" color="text.secondary">
+            {combinedLocation.pedsAre1to1
+              ? 'Pedestrian phases are locked to their protected phases.'
+              : 'Pedestrian phases can be edited individually.'}
+          </Typography>
+        </Box>
 
-        <Button
-          variant="outlined"
-          onClick={() => setShowSummary((prev) => !prev)}
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+          }}
         >
-          {showSummary ? 'Hide Summary' : 'Summary'}
-        </Button>
+          <AddButton label="New Approach" onClick={() => addApproach()} />
 
-        <LoadingButton
-          startIcon={<SyncIcon />}
-          loading={isLoading}
-          loadingPosition="start"
-          variant="outlined"
-          onClick={handleSyncLocation}
-          sx={{ ml: 1 }}
-        >
-          Reconcile Approaches
-        </LoadingButton>
-        {hasFirCameraDevice && (
-          <Button variant="outlined" onClick={handleGetZones} sx={{ ml: 1 }}>
-            Get Zones
+          <Button
+            variant="outlined"
+            onClick={() => setShowSummary((prev) => !prev)}
+          >
+            {showSummary ? 'Hide Summary' : 'Summary'}
           </Button>
-        )}
-      </Box>
+
+          <LoadingButton
+            startIcon={<SyncIcon />}
+            loading={isSyncingApproaches}
+            loadingPosition="start"
+            variant="outlined"
+            onClick={handleSyncLocation}
+          >
+            Reconcile Approaches
+          </LoadingButton>
+
+          {hasFirCameraDevice && (
+            <Button variant="outlined" onClick={handleGetZones}>
+              Get Zones
+            </Button>
+          )}
+        </Box>
+      </Paper>
+
       {showZones && (
         <Paper sx={{ mb: 2 }}>
           <Box
@@ -238,9 +385,12 @@ const ApproachOptions = () => {
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              Found Zones:
+              Found Zones
             </Typography>
-            <IconButton size="small" onClick={handleToggleZones}>
+            <IconButton
+              size="small"
+              onClick={() => setShowZones((prev) => !prev)}
+            >
               {showZones ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </IconButton>
           </Box>
@@ -249,7 +399,7 @@ const ApproachOptions = () => {
             <Box sx={{ p: 2 }}>
               {Object.keys(zones).length > 0 ? (
                 <Grid container spacing={2}>
-                  {Object.entries(zones).map(([label, { zones: z, error }]) => (
+                  {Object.entries(zones).map(([label, result]) => (
                     <Grid item xs={12} sm={6} md={4} key={label}>
                       <Paper variant="outlined" sx={{ p: 2, height: '100%' }}>
                         <Typography
@@ -260,33 +410,30 @@ const ApproachOptions = () => {
                         </Typography>
                         <Divider sx={{ mb: 1 }} />
 
-                        {/* zones list */}
-                        {z.length > 0 && (
+                        {result.zones.length > 0 && (
                           <Box
                             sx={{
                               columnCount: 1,
                               '& p': { breakInside: 'avoid' },
                             }}
                           >
-                            {z.map((zone, i) => (
-                              <Typography key={i} variant="body2">
+                            {result.zones.map((zone, index) => (
+                              <Typography key={index} variant="body2">
                                 {zone}
                               </Typography>
                             ))}
                           </Box>
                         )}
 
-                        {/* no-zones message */}
-                        {z.length === 0 && !error && (
-                          <Typography variant="body2" color="textSecondary">
+                        {result.zones.length === 0 && !result.error && (
+                          <Typography variant="body2" color="text.secondary">
                             No zones
                           </Typography>
                         )}
 
-                        {/* error message */}
-                        {error && (
+                        {result.error && (
                           <Typography variant="body2" color="error">
-                            {error}
+                            {result.error}
                           </Typography>
                         )}
                       </Paper>
@@ -294,7 +441,7 @@ const ApproachOptions = () => {
                   ))}
                 </Grid>
               ) : (
-                <Typography variant="body1" color="textSecondary">
+                <Typography variant="body1" color="text.secondary">
                   No zones found
                 </Typography>
               )}
@@ -303,9 +450,10 @@ const ApproachOptions = () => {
         </Paper>
       )}
 
-      {approachesSynced && (
+      {approachVerificationStatus === 'DONE' && (
         <ApproachesReconcilationReport categories={categories} />
       )}
+
       {showSummary && (
         <Paper sx={{ mb: 2 }}>
           <Typography variant="h6" sx={{ p: 2, fontWeight: 'bold' }}>
@@ -321,6 +469,16 @@ const ApproachOptions = () => {
         </Paper>
       )}
 
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
+        <Typography variant="h6">Approaches</Typography>
+        <Typography variant="caption" color="text.secondary">
+          {approaches.length}{' '}
+          {approaches.length === 1 ? 'Approach' : 'Approaches'}
+          {' | '}
+          {detectorCount} {detectorCount === 1 ? 'Detector' : 'Detectors'}
+        </Typography>
+      </Box>
+
       {approaches.length > 0 ? (
         <NavigationProvider>
           {approaches.map((approach) => (
@@ -334,6 +492,37 @@ const ApproachOptions = () => {
           </Typography>
         </Box>
       )}
+
+      <Dialog
+        open={showPedsAre1To1Dialog}
+        onClose={() => setShowPedsAre1To1Dialog(false)}
+        sx={{ '& .MuiDialog-paper': { width: '400px' } }}
+      >
+        <DialogTitle variant="h4">
+          {combinedLocation.pedsAre1to1
+            ? 'Unlock individual pedestrian phase control?'
+            : 'Lock all pedestrian phases to protected phases?'}
+        </DialogTitle>
+
+        <DialogContent sx={{ fontSize: '0.9rem', color: 'text.secondary' }}>
+          {combinedLocation.pedsAre1to1
+            ? 'This will allow you to edit each pedestrian phase individually for every approach.'
+            : 'This will force every pedestrian phase to mirror its protected phase and disable individual edits.'}
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setShowPedsAre1To1Dialog(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={applyPedestrianPhaseModeChange}
+            color="primary"
+            variant="contained"
+          >
+            {combinedLocation.pedsAre1to1 ? 'Unlock' : 'Lock'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }
