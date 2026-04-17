@@ -128,3 +128,5 @@ Thumbs.db
 /Atspm/Data
 /Atspm/ftp_data
 /Atspm/.env
+*.rsp
+*.rsp
