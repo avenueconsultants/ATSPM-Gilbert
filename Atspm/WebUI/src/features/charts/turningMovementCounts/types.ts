@@ -1,5 +1,5 @@
 // #region license
-// Copyright 2024 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for WebUI - types.ts
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,10 +24,13 @@ import {
 
 export interface TurningMovementCountsChartOptions extends BaseChartOptions {
   binSize: number
+  combineThruRight?: boolean
 }
 
 export interface TurningMovementCountsChartOptionsDefaults {
   binSize: { id: number; value: string; option: string }
+  yAxisDefault: { id: number; value: string; option: string }
+  combineThruRight?: { id: number; value: string; option: string }
 }
 
 export type Plan = BasePlan
