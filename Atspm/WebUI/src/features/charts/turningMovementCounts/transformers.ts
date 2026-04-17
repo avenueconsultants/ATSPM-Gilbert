@@ -1,5 +1,5 @@
 // #region license
-// Copyright 2024 Utah Departement of Transportation
+// Copyright 2026 Utah Departement of Transportation
 // for WebUI - transformers.ts
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -75,13 +75,24 @@ export default function transformTurningMovementCountsData(
   const directions = getAvailableTurningMovementDirections(
     response.data.table.map((row) => row.direction)
   )
-  const preferred = ['Left', 'Thru-Left', 'Thru', 'Thru-Right', 'Right']
+  const preferred = [
+    'Left',
+    'Thru-Left',
+    'Thru',
+    'Thru + Thru-Right',
+    'Thru-Right',
+    'Right',
+  ]
 
-  const movementTypes = buildMovementTypeMap(tableData, preferred, directions)
+  const movementTypes = buildMovementTypeMap(
+    response.data.table,
+    preferred,
+    directions
+  )
   const labels = buildLabels(directions, movementTypes)
 
   const peakRow = buildPeakHourRow(
-    tableData,
+    response.data.table,
     response.data.peakHour,
     directions,
     movementTypes
@@ -178,7 +189,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   const tooltip = createTooltip()
 
   const colorValues = Object.values(Color)
-
+  
   const series: SeriesOption[] = []
 
   if (lanes.length > 1) {
@@ -199,7 +210,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     series.push(
       ...createSeries({
         name: `Lane ${lane.laneNumber}`,
-        data: transformSeriesData(lane.volume ?? []),
+        data: transformSeriesData(lane.volume),
         type: 'line',
         color: colorValues[i % colorValues.length],
         tooltip: {
@@ -236,7 +247,14 @@ function formatTime(timestamp: string | Date) {
 }
 
 function compareMovementTypes(a: string, b: string) {
-  const movementOrder = ['Left', 'Thru-Left', 'Thru', 'Thru-Right', 'Right']
+  const movementOrder = [
+    'Left',
+    'Thru-Left',
+    'Thru',
+    'Thru + Thru-Right',
+    'Thru-Right',
+    'Right',
+  ]
   const orderA = movementOrder.indexOf(a)
   const orderB = movementOrder.indexOf(b)
 
@@ -281,7 +299,7 @@ function buildLabels(
   directions.forEach((dir) => {
     columnGroups.push({
       title: dir,
-      columns: [...(movementTypes[dir] ?? []), 'Total'],
+      columns: [...movementTypes[dir], 'Total'],
     })
   })
 
@@ -298,7 +316,7 @@ function buildPeakHourRow(
   movementTypes: Record<string, string[]>
 ): TableRow | null {
   if (!peakHour?.key) return null
-  console.log('Building peak hour row for', rawTable)
+
   const valueAtPH = (dir: string, mt: string) =>
     rawTable.find(
       (r) =>
@@ -307,14 +325,14 @@ function buildPeakHourRow(
     )?.peakHourVolume?.value ?? 0
 
   const start = new Date(peakHour.key)
-  const desc = `${formatTime(start)} – ${formatTime(addHours(start, 1))}`
+  const desc = `${formatTime(start)} - ${formatTime(addHours(start, 1))}`
 
   const row: TableRow = [desc]
   let binTotal = 0
 
   directions.forEach((dir) => {
     let dirSum = 0
-    ;(movementTypes[dir] ?? []).forEach((mt) => {
+    movementTypes[dir].forEach((mt) => {
       const v = valueAtPH(dir, mt)
       row.push(v)
       dirSum += v
