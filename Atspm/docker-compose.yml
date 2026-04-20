@@ -102,7 +102,7 @@ services:
       <<: *default-environment
       ASPNETCORE_URLS: "https://+:5000"
     volumes:
-      - ${CERT_LOCATION}
+      - ${CERT_LOCATION:-./nginx/certs:/root/.aspnet/https:ro}
     user: root
     depends_on:
       database-installer:
@@ -120,7 +120,7 @@ services:
       <<: *default-environment
       ASPNETCORE_URLS: "https://+:5001"
     volumes:
-      - ${CERT_LOCATION}
+      - ${CERT_LOCATION:-./nginx/certs:/root/.aspnet/https:ro}
     depends_on:
       database-installer:
         condition: service_completed_successfully
@@ -137,7 +137,7 @@ services:
       <<: *default-environment
       ASPNETCORE_URLS: "https://+:5002"
     volumes:
-      - ${CERT_LOCATION}
+      - ${CERT_LOCATION:-./nginx/certs:/root/.aspnet/https:ro}
     depends_on:
       database-installer:
         condition: service_completed_successfully
@@ -160,7 +160,7 @@ services:
       EmailConfiguration__SmtpEmailService__Password: "${EmailConfiguration__Password}"
       EmailConfiguration__SmtpEmailService__EnableSsl: "${EmailConfiguration__EnableSsl}"
     volumes:      
-      - ${CERT_LOCATION}
+      - ${CERT_LOCATION:-./nginx/certs:/root/.aspnet/https:ro}
     depends_on:
       database-installer:
         condition: service_completed_successfully
