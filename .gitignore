@@ -53,6 +53,7 @@ dkms.conf
 # Build artifacts
 **/bin/
 **/obj/
+.dotnet/
 
 # Visual Studio files
 .vs/
@@ -70,6 +71,8 @@ dkms.conf
 appsettings.Development.json
 appsettings.Local.json
 appsettings.*.json
+.dotnet_home/
+.dotnet-home/
 
 # Publish profiles
 **/Properties/PublishProfiles/*.pubxml
@@ -92,6 +95,7 @@ secrets.json
 *.log
 logs/
 *.cache
+*.lscache
 *.tmp
 
 # IDE and tooling files
@@ -121,12 +125,5 @@ Thumbs.db
 **/.sonarqube/
 
 **/nuget.config
-/Atspm/.env
-/Atspm/docker-compose.override.yml
-
-/Atspm/settings.env
-/Atspm/Data
-/Atspm/ftp_data
-/Atspm/.env
 *.rsp
 *.rsp
