@@ -25,6 +25,7 @@ using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Utah.Udot.Atspm.DataApi.CustomOperations;
 using Utah.Udot.Atspm.Infrastructure.Common;
+using Utah.Udot.Atspm.Infrastructure.Extensions;
 
 //git 2
 
@@ -76,6 +77,10 @@ builder.Host
         s.AddAtspmEFConfigRepositories();
         s.AddAtspmEFEventLogRepositories();
         s.AddAtspmEFAggregationRepositories();
+        s.AddDownloaderClients();
+        s.AddDeviceDownloaders(h);
+        s.AddEventLogDecoders();
+        s.AddEventLogImporters(h);
         s.AddPathBaseFilter(h);
         s.AddAtspmIdentity(h);
         s.AddHealthChecks();

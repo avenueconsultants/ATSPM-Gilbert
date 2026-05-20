@@ -1512,22 +1512,37 @@
         }
       }
     },
-    "/api/v1/Logging/log": {
-      "get": {
+    "/api/v1/Logging/SyncDeviceEvents": {
+      "post": {
         "tags": [
           "Logging"
         ],
-        "summary": "This will kick off the workflow to pull events.",
-        "operationId": "GetLoggingSyncNewLocationEvents",
-        "parameters": [
-          {
-            "name": "deviceIds",
-            "in": "query",
-            "schema": {
-              "type": "string"
+        "summary": "Synchronizes event logs for the requested devices.",
+        "operationId": "GetLoggingSyncDeviceEvents",
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncDeviceEventsRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncDeviceEventsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncDeviceEventsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncDeviceEventsRequest"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "406": {
             "description": "Not Acceptable",
@@ -1561,6 +1576,21 @@
                   "items": {
                     "$ref": "#/components/schemas/DeviceEventDownload"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             }
@@ -3839,6 +3869,20 @@
           },
           "value": {
             "$ref": "#/components/schemas/LayoutKind"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SyncDeviceEventsRequest": {
+        "type": "object",
+        "properties": {
+          "deviceIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
