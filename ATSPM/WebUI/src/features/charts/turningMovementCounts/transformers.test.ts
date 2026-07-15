@@ -28,7 +28,9 @@ type ChartWithDisplayProps = {
 }
 
 type ChartWithTitle = {
-  title?: { text?: string }[]
+  title?:
+    | { text?: string; subtext?: string }
+    | { text?: string; subtext?: string }[]
 }
 
 const buildChart = (
@@ -154,13 +156,22 @@ describe('transformTurningMovementCountsData', () => {
       response
     ) as TransformedTurningMovementCountsResponse
     const chart = result.data.charts[0].chart as ChartWithTitle
-    const infoText = chart.title?.find((title) =>
-      title.text?.includes('Total Volume')
-    )?.text
+    const titles = Array.isArray(chart.title)
+      ? chart.title
+      : chart.title
+        ? [chart.title]
+        : []
+    const infoText = titles.find((title) =>
+      title.subtext?.includes('Total Volume')
+    )?.subtext
 
-    expect(infoText).toContain('Peak Hour:  {values|N/A}')
-    expect(infoText).toContain('Peak Hour Volume:  {values|N/A}')
-    expect(infoText).toContain('Peak Hour Factor:  {values|N/A}')
-    expect(infoText).toContain('fLU:  {values|N/A}')
+    expect(infoText).toContain('{description|Peak Hour: } {values|N/A}')
+    expect(infoText).toContain(
+      '{description|Peak Hour Volume: } {values|N/A}'
+    )
+    expect(infoText).toContain(
+      '{description|Peak Hour Factor: } {values|N/A}'
+    )
+    expect(infoText).toContain('{description|fLU: } {values|N/A}')
   })
 })

@@ -16,7 +16,7 @@
 // #endregion
 import { ChartType } from '@/features/charts/common/types'
 import type { DataZoomComponentOption } from 'echarts'
-import transformPurduePhaseTerminationData from './purduePhaseTermination.transformer'
+import transformPurduePhaseTerminationData from './transformers'
 import type { RawPurduePhaseTerminationResponse } from './types'
 
 describe('transformPurduePhaseTerminationData', () => {
