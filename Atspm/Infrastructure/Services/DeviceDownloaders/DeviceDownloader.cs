@@ -255,6 +255,10 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
                             logMessages.OperationCancelledException(deviceIdentifier, ipaddress, e);
                         }
                     }
+                    else
+                    {
+                        logMessages.NotConnectedToHostException(deviceIdentifier, ipaddress);
+                    }
                 }
             }
             else

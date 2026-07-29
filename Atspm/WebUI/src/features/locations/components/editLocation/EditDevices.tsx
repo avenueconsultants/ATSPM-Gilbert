@@ -4,7 +4,7 @@ import {
   usePatchDeviceFromKey,
 } from '@/api/config'
 import type { DeviceEventDownload } from '@/api/data'
-import { useGetLoggingSyncNewLocationEvents } from '@/api/data'
+import { useGetLoggingSyncDeviceEvents } from '@/api/data'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useDeleteDevice } from '@/features/devices/api/devices'
 import DeviceCard from '@/features/locations/components/editLocation/DeviceCard'
@@ -19,6 +19,24 @@ import { Avatar, Box, Button, Modal, Typography, useTheme } from '@mui/material'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface CombinedDevice extends Device, Partial<DeviceEventDownload> {}
+type DevicesResponse = { value?: Device[] }
+type VerificationStage = 'idle' | 'saving' | 'checking'
+
+function getDeviceEventDownloads(result: unknown): DeviceEventDownload[] {
+  if (Array.isArray(result)) {
+    return result as DeviceEventDownload[]
+  }
+
+  if (
+    result &&
+    typeof result === 'object' &&
+    Array.isArray((result as { data?: unknown }).data)
+  ) {
+    return (result as { data: DeviceEventDownload[] }).data
+  }
+
+  return []
+}
 
 const EditDevices = () => {
   const theme = useTheme()
@@ -31,13 +49,15 @@ const EditDevices = () => {
   const [isModalOpen, setModalOpen] = useState(false)
   const [currentDevice, setCurrentDevice] = useState<Device | null>(null)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
-  const [deleteDeviceId, setDeleteDeviceId] = useState<string | null>(null)
+  const [deleteDeviceId, setDeleteDeviceId] = useState<number | null>(null)
 
   const [showSyncModal, setShowSyncModal] = useState(false)
 
   const [ipChanges, setIpChanges] = useState<Record<number, string>>({})
 
   const [isFetchingEvents, setIsFetchingEvents] = useState(false)
+  const [verificationStage, setVerificationStage] =
+    useState<VerificationStage>('idle')
 
   const {
     data: devicesData,
@@ -47,22 +67,31 @@ const EditDevices = () => {
     expand: 'DeviceConfiguration',
   })
 
-  const devices = useMemo(() => devicesData?.value || [], [devicesData])
+  const devices = useMemo(
+    () => (devicesData as DevicesResponse | undefined)?.value || [],
+    [devicesData]
+  )
+  const hasLoadedDevices = Boolean(
+    (devicesData as DevicesResponse | undefined)?.value
+  )
   const hasDevices = devices.length > 0
 
   const { data: deviceConfigurationsData } = useGetDeviceConfigurations()
   const { mutate: deleteDevice } = useDeleteDevice()
   const { mutateAsync: updateDevice } = usePatchDeviceFromKey()
 
-  const deviceIdsString = devices.map((d) => d.id).join(',')
+  const deviceIds = useMemo(
+    () =>
+      devices
+        .map((device) => Number(device.id))
+        .filter((deviceId) => Number.isInteger(deviceId) && deviceId > 0),
+    [devices]
+  )
   const {
     data: deviceEventResults,
-    refetch: fetchDeviceEventResults,
-    isFetching: isEventDataLoading,
-  } = useGetLoggingSyncNewLocationEvents(
-    { deviceIds: deviceIdsString },
-    { query: { enabled: false } }
-  )
+    mutateAsync: syncDeviceEvents,
+    isLoading: isEventDataLoading,
+  } = useGetLoggingSyncDeviceEvents()
 
   const persistPendingIpChanges = useCallback(
     async (notifyOnSuccess = false) => {
@@ -185,24 +214,29 @@ const EditDevices = () => {
   const handleResync = useCallback(async () => {
     try {
       setIsFetchingEvents(true)
+      setVerificationStage('saving')
 
       const { hasErrors } = await persistPendingIpChanges()
       if (hasErrors) return
 
-      await fetchDeviceEventResults()
+      if (deviceIds.length === 0) return
+
+      setVerificationStage('checking')
+      await syncDeviceEvents({ data: { deviceIds } })
     } catch (err) {
       console.error('Failed to fetch device event data: ', err)
     } finally {
+      setVerificationStage('idle')
       setIsFetchingEvents(false)
     }
-  }, [fetchDeviceEventResults, persistPendingIpChanges])
+  }, [deviceIds, persistPendingIpChanges, syncDeviceEvents])
 
   // ------------------------------------------------
   // 1) If the wizard says "READY_TO_RUN", open modal & run check
   // ------------------------------------------------
   useEffect(() => {
     if (deviceVerificationStatus !== 'READY_TO_RUN') return
-    if (deviceIdsString.length === 0) return
+    if (deviceIds.length === 0) return
     setShowSyncModal(true)
     handleResync()
     setDeviceVerificationStatus('DONE')
@@ -210,14 +244,12 @@ const EditDevices = () => {
     deviceVerificationStatus,
     setDeviceVerificationStatus,
     handleResync,
-    deviceIdsString,
+    deviceIds,
   ])
 
   const combinedDevices: CombinedDevice[] = useMemo(() => {
     if (!devices.length) return []
-    const finalEventData = Array.isArray(deviceEventResults)
-      ? deviceEventResults
-      : []
+    const finalEventData = getDeviceEventDownloads(deviceEventResults)
     const allConfigs = deviceConfigurationsData?.value || []
 
     return devices.map((dev) => {
@@ -229,24 +261,32 @@ const EditDevices = () => {
         ...dev,
         ...matchedEvents,
         deviceConfiguration: matchedConfig ?? dev.deviceConfiguration,
-      }
+      } as CombinedDevice
     })
   }, [devices, deviceEventResults, deviceConfigurationsData])
 
   const handleSaveAndClose = async () => {
-    const { hasErrors } = await persistPendingIpChanges(true)
-    if (hasErrors) return
+    try {
+      setIsFetchingEvents(true)
+      setVerificationStage('saving')
 
-    setIpChanges({})
-    setShowSyncModal(false)
-    setDeviceVerificationStatus('DONE')
+      const { hasErrors } = await persistPendingIpChanges(true)
+      if (hasErrors) return
+
+      setIpChanges({})
+      setShowSyncModal(false)
+      setDeviceVerificationStatus('DONE')
+    } finally {
+      setVerificationStage('idle')
+      setIsFetchingEvents(false)
+    }
   }
 
   const handleModalClose = () => {
     setShowSyncModal(false)
   }
 
-  if (!deviceConfigurationsData?.value || !devicesData?.value) {
+  if (!deviceConfigurationsData?.value || !hasLoadedDevices) {
     return <Typography variant="h6">Loading...</Typography>
   }
 
@@ -276,6 +316,7 @@ const EditDevices = () => {
         isResyncing={
           isEventDataLoading || isRefetchingDevices || isFetchingEvents
         }
+        verificationStage={verificationStage}
         ipChanges={ipChanges}
         setIpChanges={setIpChanges}
       />
@@ -298,7 +339,7 @@ const EditDevices = () => {
               setModalOpen(true)
             }}
             onDelete={() => {
-              setDeleteDeviceId(device.id)
+              setDeleteDeviceId(device.id ?? null)
               setOpenDeleteModal(true)
             }}
           />
@@ -336,7 +377,7 @@ const EditDevices = () => {
         <DeviceModal
           onClose={() => setModalOpen(false)}
           device={currentDevice}
-          locationId={location?.id}
+          locationId={String(location?.id ?? '')}
           refetchDevices={refetchDevices}
         />
       )}
@@ -373,7 +414,11 @@ const EditDevices = () => {
             <Button
               onClick={() => {
                 if (deleteDeviceId) {
-                  deleteDevice(deleteDeviceId, { onSuccess: refetchDevices })
+                  deleteDevice(deleteDeviceId, {
+                    onSuccess: () => {
+                      void refetchDevices()
+                    },
+                  })
                 }
                 setOpenDeleteModal(false)
               }}

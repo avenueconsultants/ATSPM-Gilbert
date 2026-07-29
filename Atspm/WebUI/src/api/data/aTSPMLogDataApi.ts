@@ -1,28 +1,33 @@
-import { useQuery, UseQueryOptions, UseQueryResult } from 'react-query'
+import { useMutation, UseMutationOptions, UseMutationResult } from 'react-query'
 
-export interface LoggingSyncNewLocationEvent {
+export interface LoggingSyncDeviceEvent {
   deviceId: number
   changeInEventCount?: number
   ipModified?: boolean
 }
 
-interface GetLoggingSyncNewLocationEventsParams {
-  deviceIds?: string
+interface SyncDeviceEventsRequest {
+  deviceIds?: number[] | null
 }
 
-export function useGetLoggingSyncNewLocationEvents<
-  TData = LoggingSyncNewLocationEvent[],
->(
-  params?: GetLoggingSyncNewLocationEventsParams,
+export function usePostLoggingSyncDeviceEvents(
   options?: {
-    query?: UseQueryOptions<LoggingSyncNewLocationEvent[], unknown, TData>
+    mutation?: UseMutationOptions<
+      LoggingSyncDeviceEvent[],
+      unknown,
+      { data: SyncDeviceEventsRequest }
+    >
   }
-): UseQueryResult<TData, unknown> {
-  const { query: queryOptions } = options ?? {}
+): UseMutationResult<
+  LoggingSyncDeviceEvent[],
+  unknown,
+  { data: SyncDeviceEventsRequest }
+> {
+  const { mutation: mutationOptions } = options ?? {}
 
-  return useQuery<LoggingSyncNewLocationEvent[], unknown, TData>({
-    queryKey: ['logging-sync-new-location-events', params?.deviceIds ?? ''],
-    queryFn: async () => [],
-    ...queryOptions,
+  return useMutation<LoggingSyncDeviceEvent[], unknown, { data: SyncDeviceEventsRequest }>({
+    mutationKey: ['Logging', 'SyncDeviceEvents'],
+    mutationFn: async () => [],
+    ...mutationOptions,
   })
 }
