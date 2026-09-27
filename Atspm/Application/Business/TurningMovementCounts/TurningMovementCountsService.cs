@@ -56,7 +56,9 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 return Task.FromResult<TurningMovementCountsLanesResult>(null);
 
             var resolvedMovementTypeLabel = GetMovementTypeLabel(tmcDetectors, movementTypeLabel, options.CombineThruRight);
-            var eventsByChannel = detectorEvents.Where(e => e.EventCode == 82).ToLookup(e => (int)e.EventParam);
+            var eventsByChannel = detectorEvents
+                .Where(e => e.EventCode == 82 && e.Timestamp >= options.Start && e.Timestamp < options.End)
+                .ToLookup(e => (int)e.EventParam);
             var channelVolumes = tmcDetectors.GroupBy(d => d.DetectorChannel).Select(group =>
             {
                 // A channel is one count source. Conflicting assignments cannot identify a physical lane.
@@ -78,7 +80,7 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 LaneNumber = lane.LaneNumber,
                 MovementType = resolvedMovementTypeLabel,
                 LaneType = laneType,
-                Volume = lane.Volume.Items.Select(i => new DataPointForInt(i.StartTime, i.HourlyVolume)).ToList()
+                Volume = lane.Volume.Items.Select(i => new DataPointForInt(i.StartTime, GetHourlyVolume(i, options.End))).ToList()
             }).ToList();
 
             var totalDetectorCounts = allLanesMovementVolumes.TotalDetectorCounts;
@@ -87,10 +89,17 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 ? totalDetectorCounts / (laneVolumes.Count * (double)highestLaneCount)
                 : null;
 
+            // Keep one-minute counts for peak-hour statistics regardless of the display bin size.
             var channels = tmcDetectors.Select(d => d.DetectorChannel).ToHashSet();
-            var minuteVolumes = new VolumeCollection(options.Start, options.End,
-                detectorEvents.Where(e => e.EventCode == 82 && channels.Contains(e.EventParam)).ToList(), 1)
-                .Items.Select(i => new DataPointForInt(i.StartTime, i.DetectorCount)).ToList();
+            var countsByMinute = detectorEvents
+                .Where(e => e.EventCode == 82 && channels.Contains(e.EventParam) &&
+                    e.Timestamp >= options.Start && e.Timestamp < options.End)
+                .GroupBy(e => (e.Timestamp - options.Start).Ticks / TimeSpan.TicksPerMinute)
+                .ToDictionary(g => g.Key, g => g.Count());
+            var minuteVolumes = new List<DataPointForInt>();
+            for (var minute = options.Start; minute < options.End; minute = minute.AddMinutes(1))
+                minuteVolumes.Add(new DataPointForInt(minute,
+                    countsByMinute.GetValueOrDefault((minute - options.Start).Ticks / TimeSpan.TicksPerMinute)));
             var statistics = TurningMovementCountsStatistics.Calculate(minuteVolumes, options.Start, options.End, options.BinSize);
 
             string peakHourLabel = null;
@@ -112,7 +121,7 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 resolvedMovementTypeLabel,
                 plans,
                 lanes,
-                allLanesMovementVolumes.Items.Select(i => new DataPointForInt(i.StartTime, i.HourlyVolume)).ToList(),
+                allLanesMovementVolumes.Items.Select(i => new DataPointForInt(i.StartTime, GetHourlyVolume(i, options.End))).ToList(),
                 allLanesMovementVolumes.Items.Select(i => new DataPointForInt(i.StartTime, i.DetectorCount)).ToList(),
                 totalDetectorCounts,
                 peakHourLabel,
@@ -123,6 +132,14 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 MinuteVolumes = minuteVolumes
             };
             return Task.FromResult(result);
+        }
+
+        private static int GetHourlyVolume(Utah.Udot.Atspm.Business.Common.Volume volume, DateTime reportEnd)
+        {
+            // Normalize the final display bin using only the observed part of that bin.
+            var end = volume.EndTime < reportEnd ? volume.EndTime : reportEnd;
+            return (int)Math.Round(volume.DetectorCount / (end - volume.StartTime).TotalHours,
+                MidpointRounding.AwayFromZero);
         }
 
         private static string GetMovementTypeLabel(

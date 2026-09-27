@@ -72,3 +72,37 @@ describe('TurningMovementCountsChartOptions', () => {
     ).toBeInTheDocument()
   })
 })
+
+it.each(['TRUE', 'true', 'True'])(
+  'synchronizes displayed options when hydrated with combine=%s',
+  (combineValue) => {
+    const onUpdate = jest.fn()
+    const { rerender } = render(
+      <TurningMovementCountsChartOptions
+        chartDefaults={chartDefaults}
+        handleChartOptionsUpdate={onUpdate}
+      />
+    )
+    rerender(
+      <TurningMovementCountsChartOptions
+        chartDefaults={{
+          binSize: { ...chartDefaults.binSize, value: '5' },
+          yAxisDefault: { ...chartDefaults.yAxisDefault, value: '450' },
+          combineThruRight: {
+            ...chartDefaults.combineThruRight,
+            value: combineValue,
+          },
+        }}
+        handleChartOptionsUpdate={onUpdate}
+      />
+    )
+
+    expect(screen.getByRole('combobox')).toHaveTextContent('5')
+    expect(screen.getByRole('spinbutton', { name: 'YAxis Max' })).toHaveValue(
+      450
+    )
+    expect(screen.getByRole('checkbox')).toBeChecked()
+    expect(setYAxisMaxStore).toHaveBeenLastCalledWith('450')
+    expect(onUpdate).not.toHaveBeenCalled()
+  }
+)

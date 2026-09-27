@@ -15,6 +15,7 @@ import { dateToTimestamp } from '@/utils/dateTime'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { LoadingButton } from '@mui/lab'
 import { Alert, Box } from '@mui/material'
+import { AxiosError } from 'axios'
 import { differenceInMinutes } from 'date-fns'
 import { usePathname, useRouter } from 'next/navigation'
 import { RefObject, createRef, useEffect, useRef, useState } from 'react'
@@ -172,7 +173,7 @@ export default function ChartsContainer({
   })
 
   const displayCharts = () => {
-    if (!chartData || chartData.data.charts.length === 0) return null
+    if (!chartData) return null
 
     if (showConfig) {
       return <LocationsConfigContainer locationIdentifier={location} />
@@ -194,6 +195,7 @@ export default function ChartsContainer({
           />
         )
       case ChartType.TurningMovementCounts:
+        if (chartData.data.charts.length === 0) return null
         return (
           <>
             <TurningMovementCountsTable chartData={chartData} />
@@ -244,7 +246,11 @@ export default function ChartsContainer({
 
         {isError && (
           <Alert severity="error" sx={{ marginLeft: 1 }}>
-            {getChartErrorMessage(error)}
+            {chartType === ChartType.TurningMovementCounts
+              ? getChartErrorMessage(error)
+              : error instanceof AxiosError
+                ? error.response?.data
+                : (error as Error).message}
           </Alert>
         )}
 
@@ -256,7 +262,7 @@ export default function ChartsContainer({
 
         {chartData && chartData.data.charts.length == 0 && (
           <Alert severity="warning" sx={{ marginLeft: 1 }}>
-            No data available for the selected time range.
+            No Data Avaliable
           </Alert>
         )}
       </Box>

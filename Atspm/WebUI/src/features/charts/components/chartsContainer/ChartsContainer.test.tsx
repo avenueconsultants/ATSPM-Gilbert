@@ -69,11 +69,11 @@ function setQuery(state: Partial<ReturnType<typeof useCharts>>) {
   } as ReturnType<typeof useCharts>)
 }
 
-function renderCharts() {
+function renderCharts(chartType = ChartType.TurningMovementCounts) {
   return render(
     <ChartsContainer
       location="1001"
-      chartType={ChartType.TurningMovementCounts}
+      chartType={chartType}
       startDateTime={new Date('2026-04-01T08:00:00')}
       endDateTime={new Date('2026-04-01T09:00:00')}
       options={{ binSize: 0 }}
@@ -159,8 +159,18 @@ it('shows the no-data message without a zero-filled results table', () => {
     },
   })
   renderCharts()
-  expect(screen.getByRole('alert')).toHaveTextContent(
-    'No data available for the selected time range.'
-  )
+  expect(screen.getByRole('alert')).toHaveTextContent('No Data Avaliable')
   expect(TurningMovementCountsTable).not.toHaveBeenCalled()
+})
+
+it('preserves non-TMC server error messages without TMC formatting', () => {
+  setQuery({
+    isError: true,
+    error: responseError(['No controller event logs were found.']),
+  })
+  renderCharts(ChartType.ApproachVolume)
+  expect(screen.getByRole('alert')).toHaveTextContent(
+    'No controller event logs were found.'
+  )
+  expect(screen.getByRole('button', { name: 'Generate Charts' })).toBeEnabled()
 })

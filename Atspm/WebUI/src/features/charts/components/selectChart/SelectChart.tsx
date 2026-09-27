@@ -30,7 +30,7 @@ import {
   Typography,
 } from '@mui/material'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
-import { useEffect, useMemo } from 'react'
+import { Dispatch, SetStateAction, useEffect, useMemo } from 'react'
 import { RampMeteringChartOptions } from '../../rampMetering/components/RampMeteringChartOptions'
 
 export const chartComponents = {
@@ -78,7 +78,7 @@ const abbreviationToChartType = {
 interface SelectChartProps {
   chartType: ChartType | null
   setChartType: (chart: ChartType | null) => void
-  setChartOptions: (options: Partial<ChartOptions>) => void
+  setChartOptions: Dispatch<SetStateAction<Partial<ChartOptions> | undefined>>
   chartOptions?: Partial<ChartOptions>
   location: Location | null
 }
@@ -125,13 +125,13 @@ const SelectChart = ({
     return merged as unknown as Default[]
   }, [chartDefaultsRaw, chartOptions])
 
-  const simplifyChartDefaults = (chartDefaults: Default[]) => {
-    return chartDefaults
-      ? Object.entries(chartDefaults).reduce((acc, [key, { value }]) => {
-          acc[key] = value
-          return acc
-        }, {} as ChartOptions)
-      : {}
+  const simplifyChartDefaults = (
+    chartDefaults: Default[]
+  ): Partial<ChartOptions> => {
+    const values = Object.fromEntries(
+      Object.entries(chartDefaults).map(([key, { value }]) => [key, value])
+    )
+    return values as Partial<ChartOptions>
   }
 
   const availableCharts = useMemo(() => {
@@ -174,15 +174,35 @@ const SelectChart = ({
   useEffect(() => {
     if (!isLoading && chartDefaultsRaw) {
       const simplifiedDefaults = simplifyChartDefaults(chartDefaultsRaw)
-      setChartOptions(simplifiedDefaults)
+      if (chartType !== ChartType.TurningMovementCounts) {
+        setChartOptions(simplifiedDefaults)
+        return
+      }
+      // Preserve TMC URL options and edits made while its defaults load.
+      setChartOptions((previous) => {
+        const options: Partial<ChartOptions> = {}
+        Object.assign(options, simplifiedDefaults, previous)
+        return options
+      })
     }
   }, [chartType, chartDefaultsRaw, isLoading, setChartOptions])
 
   const handleChartTypeChange = (event: SelectChangeEvent<string>) => {
-    setChartType(event.target.value as ChartType)
+    const nextChartType = event.target.value as ChartType
+    if (
+      nextChartType !== chartType &&
+      nextChartType === ChartType.TurningMovementCounts
+    ) {
+      setChartOptions({})
+    }
+    setChartType(nextChartType)
   }
 
   useEffect(() => {
+    // Do not reject a saved TMC selection before its availability is known.
+    if (chartType === ChartType.TurningMovementCounts && !measureTypesData)
+      return
+
     if (location && !isChartTypeAvailable) {
       setChartType(null)
     } else if (
@@ -192,7 +212,14 @@ const SelectChart = ({
     ) {
       setChartType(ChartType.PurduePhaseTermination)
     }
-  }, [location, chartType, availableCharts, setChartType, isChartTypeAvailable])
+  }, [
+    location,
+    measureTypesData,
+    chartType,
+    availableCharts,
+    setChartType,
+    isChartTypeAvailable,
+  ])
 
   const handleChartOptionsUpdate = (update: {
     option: string

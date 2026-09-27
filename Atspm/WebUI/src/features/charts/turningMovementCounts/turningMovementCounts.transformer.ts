@@ -30,7 +30,7 @@ import {
   formatExportFileName,
   transformSeriesData,
 } from '@/features/charts/common/transformers'
-import { ChartType } from '@/features/charts/common/types'
+import { ChartType, type DataPoint } from '@/features/charts/common/types'
 import {
   ColumnGroup,
   Labels,
@@ -232,7 +232,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     series.push(
       ...createSeries({
         name: `Total Volume`,
-        data: transformSeriesData(totalHourlyVolumes),
+        data: transformVolumeSeries(totalHourlyVolumes, data.end),
         type: 'line',
         binStepLineToggle: true,
         color: Color.Red,
@@ -250,7 +250,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
           lane.laneNumber == null
             ? 'Unassigned lane'
             : `Lane ${lane.laneNumber}`,
-        data: transformSeriesData(lane.volume),
+        data: transformVolumeSeries(lane.volume, data.end),
         type: 'line',
         binStepLineToggle: true,
         color: colorValues[i % colorValues.length],
@@ -283,10 +283,14 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   return chartOptions
 }
 
-function formatNullableNumber(
-  value: number | null | undefined,
-  decimals?: number
-) {
+function transformVolumeSeries(volumes: DataPoint[], end: string) {
+  const series = transformSeriesData(volumes)
+  // A single bin needs an end point to remain visible when point symbols and step lines are disabled.
+  if (series.length === 1) series.push([end, series[0][1]])
+  return series
+}
+
+function formatNullableNumber(value: number | null | undefined, decimals?: number) {
   if (value == null) {
     return 'N/A'
   }

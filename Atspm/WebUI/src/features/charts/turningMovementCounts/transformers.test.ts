@@ -169,4 +169,84 @@ describe('transformTurningMovementCountsData', () => {
     expect(infoText).toContain('Peak Hour Factor:  {values|N/A}')
     expect(infoText).toContain('fLU:  {values|N/A}')
   })
+
+  it.each([1, 2])(
+    'keeps all volume lines visible for a single-bin report with %i lanes',
+    (laneCount) => {
+      const rawChart = buildChart('Thru', {
+        lanes: Array.from({ length: laneCount }, (_, index) => ({
+          laneNumber: index + 1,
+          laneType: 1,
+          movementType: 'Thru',
+          volume: [{ timestamp: '2026-04-01T08:00:00', value: 12 }],
+        })),
+        totalHourlyVolumes: [
+          { timestamp: '2026-04-01T08:00:00', value: 12 * laneCount },
+        ],
+      })
+      const result = transformTurningMovementCountsData({
+        type: ChartType.TurningMovementCounts,
+        data: {
+          charts: [rawChart],
+          table: [],
+          peakHour: null,
+          peakHourFactor: null,
+        },
+      }) as TransformedTurningMovementCountsResponse
+      const series = result.data.charts[0].chart.series as {
+        name: string
+        type: string
+        data: (string | number)[][]
+      }[]
+      const volumeLines = series.filter((item) => item.type === 'line')
+
+      expect(volumeLines).toHaveLength(laneCount === 1 ? 1 : laneCount + 1)
+      for (const line of volumeLines) {
+        const rate = line.name === 'Total Volume' ? 12 * laneCount : 12
+        expect(line.data).toEqual([
+          [rawChart.start, rate.toFixed(2)],
+          [rawChart.end, rate.toFixed(2)],
+        ])
+      }
+      // Plotting the extent must not introduce extra API counts or mutate its bins.
+      expect(rawChart.lanes[0].volume).toHaveLength(1)
+      expect(rawChart.totalHourlyVolumes).toHaveLength(1)
+    }
+  )
+
+  it('preserves the original timestamps for reports with multiple bins', () => {
+    const volume = [
+      { timestamp: '2026-04-01T08:00:00', value: 12 },
+      { timestamp: '2026-04-01T08:30:00', value: 20 },
+    ]
+    const rawChart = buildChart('Thru', {
+      lanes: [
+        { laneNumber: 1, laneType: 1, movementType: 'Thru', volume },
+        { laneNumber: 2, laneType: 1, movementType: 'Thru', volume },
+      ],
+      totalHourlyVolumes: volume.map((point) => ({
+        ...point,
+        value: point.value * 2,
+      })),
+    })
+    const result = transformTurningMovementCountsData({
+      type: ChartType.TurningMovementCounts,
+      data: {
+        charts: [rawChart],
+        table: [],
+        peakHour: null,
+        peakHourFactor: null,
+      },
+    }) as TransformedTurningMovementCountsResponse
+    const series = result.data.charts[0].chart.series as {
+      type: string
+      data: (string | number)[][]
+    }[]
+
+    for (const line of series.filter((item) => item.type === 'line')) {
+      expect(line.data.map((point) => point[0])).toEqual(
+        volume.map((point) => point.timestamp)
+      )
+    }
+  })
 })

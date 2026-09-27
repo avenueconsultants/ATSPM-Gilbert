@@ -3,7 +3,13 @@ import { YAxisDefaultInput } from '@/features/charts/components/selectChart/YAxi
 import { TurningMovementCountsChartOptionsDefaults } from '@/features/charts/turningMovementCounts/types'
 import { Default } from '@/features/charts/types'
 import { useChartsStore } from '@/stores/charts'
-import { Alert, Box, Checkbox, SelectChangeEvent, Typography } from '@mui/material'
+import {
+  Alert,
+  Box,
+  Checkbox,
+  SelectChangeEvent,
+  Typography,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 
 interface TurningMovementCountsChartOptionsProps {
@@ -19,7 +25,7 @@ export const TurningMovementCountsChartOptions = ({
 }: TurningMovementCountsChartOptionsProps) => {
   const [binSize, setBinSize] = useState(chartDefaults.binSize?.value)
   const [combineThruRight, setCombineThruRight] = useState(
-    chartDefaults.combineThruRight?.value === 'TRUE'
+    String(chartDefaults.combineThruRight?.value).toLowerCase() === 'true'
   )
 
   const { setYAxisMaxStore } = useChartsStore()
@@ -29,11 +35,17 @@ export const TurningMovementCountsChartOptions = ({
   )
 
   useEffect(() => {
+    setBinSize(chartDefaults.binSize?.value)
+  }, [chartDefaults.binSize?.value])
+
+  useEffect(() => {
+    setYAxisMax(chartDefaults.yAxisDefault?.value)
     setYAxisMaxStore(chartDefaults.yAxisDefault?.value)
   }, [chartDefaults.yAxisDefault?.value, setYAxisMaxStore])
 
   useEffect(() => {
-    const defaultCombineThruRight = chartDefaults.combineThruRight?.value === 'TRUE'
+    const defaultCombineThruRight =
+      String(chartDefaults.combineThruRight?.value).toLowerCase() === 'true'
     setCombineThruRight(defaultCombineThruRight)
   }, [chartDefaults.combineThruRight?.value])
 
