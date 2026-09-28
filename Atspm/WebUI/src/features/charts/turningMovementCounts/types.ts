@@ -36,7 +36,9 @@ export interface TurningMovementCountsChartOptionsDefaults {
 export type Plan = BasePlan
 
 interface Lane {
-  laneNumber: number
+  approachId?: number | null
+  approachDescription?: string | null
+  laneNumber: number | null
   movementType: string
   volume: DataPoint[]
   laneType: number
@@ -70,6 +72,6 @@ export interface RawTurningMovementCountTableRow {
   direction: string
   movementType: string
   laneType: string
-  volume: { value: number; timestamp: string }[]
+  volumes: { value: number; timestamp: string }[]
   peakHourVolume?: { value: number } | null
 }

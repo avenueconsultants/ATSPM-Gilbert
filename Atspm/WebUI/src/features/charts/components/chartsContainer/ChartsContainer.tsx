@@ -20,6 +20,8 @@ import { differenceInMinutes } from 'date-fns'
 import { usePathname, useRouter } from 'next/navigation'
 import { RefObject, createRef, useEffect, useRef, useState } from 'react'
 
+import { getChartErrorMessage } from './getChartErrorMessage'
+
 interface ChartsContainerProps {
   location: string
   chartType: ChartType
@@ -193,6 +195,7 @@ export default function ChartsContainer({
           />
         )
       case ChartType.TurningMovementCounts:
+        if (chartData.data.charts.length === 0) return null
         return (
           <>
             <TurningMovementCountsTable chartData={chartData} />
@@ -243,9 +246,11 @@ export default function ChartsContainer({
 
         {isError && (
           <Alert severity="error" sx={{ marginLeft: 1 }}>
-            {error instanceof AxiosError
-              ? error.response?.data
-              : (error as Error).message}
+            {chartType === ChartType.TurningMovementCounts
+              ? getChartErrorMessage(error)
+              : error instanceof AxiosError
+                ? error.response?.data
+                : (error as Error).message}
           </Alert>
         )}
 

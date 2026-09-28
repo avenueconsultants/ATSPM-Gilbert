@@ -22,6 +22,8 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
 {
     public class Lane
     {
+        public int? ApproachId { get; set; }
+        public string ApproachDescription { get; set; }
         public int? LaneNumber { get; set; }
         public string MovementType { get; set; }
         public List<DataPointForInt> Volume { get; set; }

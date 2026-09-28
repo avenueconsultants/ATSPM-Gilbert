@@ -15,6 +15,7 @@
 // limitations under the License.
 // #endregion
 import { ChartType } from '@/features/charts/common/types'
+import { init, type EChartsOption, type LineSeriesOption } from 'echarts'
 import type { TransformedTurningMovementCountsResponse } from '../types'
 import transformTurningMovementCountsData from './turningMovementCounts.transformer'
 import {
@@ -62,6 +63,172 @@ const buildChart = (
 })
 
 describe('transformTurningMovementCountsData', () => {
+  it.each([
+    {
+      description: 'combined movements that both use lane 1',
+      movementType: 'Thru + Thru-Right',
+      lanes: [
+        { movementType: 'Thru', laneNumber: 1, approachId: 10 },
+        { movementType: 'Thru-Right', laneNumber: 1, approachId: 10 },
+      ],
+      expected: ['Thru - Lane 1', 'Thru-Right - Lane 1'],
+    },
+    {
+      description: 'the same movement and lane number on different approaches',
+      movementType: 'Thru',
+      lanes: [
+        {
+          movementType: 'Thru',
+          laneNumber: 1,
+          approachId: 10,
+          approachDescription: 'NB Main St',
+        },
+        {
+          movementType: 'Thru',
+          laneNumber: 1,
+          approachId: 20,
+          approachDescription: 'NB Frontage Rd',
+        },
+        {
+          movementType: 'Thru',
+          laneNumber: 2,
+          approachId: 10,
+          approachDescription: 'NB Main St',
+        },
+      ],
+      expected: ['Lane 1 (NB Main St)', 'Lane 1 (NB Frontage Rd)', 'Lane 2'],
+    },
+    {
+      description: 'duplicate lanes on approaches without a description',
+      movementType: 'Thru',
+      lanes: [
+        {
+          movementType: 'Thru',
+          laneNumber: 1,
+          approachId: 10,
+          approachDescription: null,
+        },
+        {
+          movementType: 'Thru',
+          laneNumber: 1,
+          approachId: 20,
+          approachDescription: ' ',
+        },
+      ],
+      expected: ['Lane 1 (Approach 10)', 'Lane 1 (Approach 20)'],
+    },
+    {
+      description:
+        'multiple unassigned lanes with and without approach identity',
+      movementType: 'Thru',
+      lanes: [
+        { movementType: 'Thru', laneNumber: null },
+        { movementType: 'Thru', laneNumber: null, approachId: null },
+        {
+          movementType: 'Thru',
+          laneNumber: null,
+          approachId: 10,
+          approachDescription: 'NB Main St',
+        },
+        { movementType: 'Thru', laneNumber: null, approachId: 20 },
+      ],
+      expected: [
+        'Unassigned lane (1)',
+        'Unassigned lane (2)',
+        'Unassigned lane (NB Main St)',
+        'Unassigned lane (Approach 20)',
+      ],
+    },
+    {
+      description: 'duplicate legacy lane labels without approach identity',
+      movementType: 'Thru',
+      lanes: [
+        { movementType: 'Thru', laneNumber: 1 },
+        { movementType: 'Thru', laneNumber: 1 },
+      ],
+      expected: ['Lane 1 (1)', 'Lane 1 (2)'],
+    },
+    {
+      description: 'ordinary single-movement lanes from older responses',
+      movementType: 'Thru',
+      lanes: [
+        { movementType: 'Thru', laneNumber: 1 },
+        { movementType: 'Thru', laneNumber: 2 },
+      ],
+      expected: ['Lane 1', 'Lane 2'],
+    },
+  ])(
+    'keeps $description independently selectable',
+    ({ movementType, lanes, expected }) => {
+      const rawChart = buildChart(movementType, {
+        lanes: lanes.map((lane, index) => ({
+          ...lane,
+          laneType: 1,
+          volume: [
+            { timestamp: '2026-04-01T08:00:00', value: 12 * (index + 1) },
+          ],
+        })),
+      })
+      const result = transformTurningMovementCountsData({
+        type: ChartType.TurningMovementCounts,
+        data: {
+          charts: [rawChart],
+          table: [],
+          peakHour: null,
+          peakHourFactor: null,
+        },
+      }) as TransformedTurningMovementCountsResponse
+      const option = result.data.charts[0].chart as EChartsOption
+      const lines = (option.series as LineSeriesOption[]).filter(
+        (series) => series.type === 'line'
+      )
+      const names = ['Total Volume', ...expected]
+      expect(lines.map((series) => series.name)).toEqual(names)
+      expect(new Set(names).size).toBe(names.length)
+      expect(option.legend).toEqual(
+        expect.objectContaining({
+          data: names.map((name) => expect.objectContaining({ name })),
+        })
+      )
+      expected.forEach((name, index) => {
+        expect(lines.find((line) => line.name === name)?.data).toEqual([
+          [rawChart.start, (12 * (index + 1)).toFixed(2)],
+          [rawChart.end, (12 * (index + 1)).toFixed(2)],
+        ])
+      })
+
+      // Exercise ECharts' name-based legend selection with the generated series.
+      const chart = init(null, undefined, {
+        renderer: 'svg',
+        ssr: true,
+        width: 400,
+        height: 200,
+      })
+      try {
+        chart.setOption({
+          animation: false,
+          legend: { show: false, data: names },
+          xAxis: { type: 'time', show: false },
+          yAxis: { show: false },
+          series: lines,
+        })
+        for (const name of expected) {
+          chart.dispatchAction({ type: 'legendToggleSelect', name })
+          const legend = (
+            chart.getOption().legend as { selected: Record<string, boolean> }[]
+          )[0]
+          expect(legend.selected[name]).toBe(false)
+          for (const other of names.filter((candidate) => candidate !== name)) {
+            expect(legend.selected[other]).toBe(true)
+          }
+          chart.dispatchAction({ type: 'legendToggleSelect', name })
+        }
+      } finally {
+        chart.dispose()
+      }
+    }
+  )
+
   it('sorts combined movements correctly and builds labels and peak hour rows', () => {
     const response: RawTurningMovementCountsResponse = {
       type: ChartType.TurningMovementCounts,
@@ -76,21 +243,21 @@ describe('transformTurningMovementCountsData', () => {
             direction: 'Northbound',
             movementType: 'Right',
             laneType: 'Vehicle',
-            volume: [],
+            volumes: [],
             peakHourVolume: { value: 30 },
           },
           {
             direction: 'Northbound',
             movementType: 'Thru + Thru-Right',
             laneType: 'Vehicle',
-            volume: [],
+            volumes: [],
             peakHourVolume: { value: 20 },
           },
           {
             direction: 'Northbound',
             movementType: 'Thru',
             laneType: 'Vehicle',
-            volume: [],
+            volumes: [],
             peakHourVolume: { value: 10 },
           },
         ],
@@ -147,7 +314,7 @@ describe('transformTurningMovementCountsData', () => {
             direction: 'Northbound',
             movementType: 'Thru',
             laneType: 'Vehicle',
-            volume: [],
+            volumes: [],
             peakHourVolume: null,
           },
         ],
@@ -168,5 +335,85 @@ describe('transformTurningMovementCountsData', () => {
     expect(infoText).toContain('Peak Hour Volume:  {values|N/A}')
     expect(infoText).toContain('Peak Hour Factor:  {values|N/A}')
     expect(infoText).toContain('fLU:  {values|N/A}')
+  })
+
+  it.each([1, 2])(
+    'keeps all volume lines visible for a single-bin report with %i lanes',
+    (laneCount) => {
+      const rawChart = buildChart('Thru', {
+        lanes: Array.from({ length: laneCount }, (_, index) => ({
+          laneNumber: index + 1,
+          laneType: 1,
+          movementType: 'Thru',
+          volume: [{ timestamp: '2026-04-01T08:00:00', value: 12 }],
+        })),
+        totalHourlyVolumes: [
+          { timestamp: '2026-04-01T08:00:00', value: 12 * laneCount },
+        ],
+      })
+      const result = transformTurningMovementCountsData({
+        type: ChartType.TurningMovementCounts,
+        data: {
+          charts: [rawChart],
+          table: [],
+          peakHour: null,
+          peakHourFactor: null,
+        },
+      }) as TransformedTurningMovementCountsResponse
+      const series = result.data.charts[0].chart.series as {
+        name: string
+        type: string
+        data: (string | number)[][]
+      }[]
+      const volumeLines = series.filter((item) => item.type === 'line')
+
+      expect(volumeLines).toHaveLength(laneCount === 1 ? 1 : laneCount + 1)
+      for (const line of volumeLines) {
+        const rate = line.name === 'Total Volume' ? 12 * laneCount : 12
+        expect(line.data).toEqual([
+          [rawChart.start, rate.toFixed(2)],
+          [rawChart.end, rate.toFixed(2)],
+        ])
+      }
+      // Plotting the extent must not introduce extra API counts or mutate its bins.
+      expect(rawChart.lanes[0].volume).toHaveLength(1)
+      expect(rawChart.totalHourlyVolumes).toHaveLength(1)
+    }
+  )
+
+  it('preserves the original timestamps for reports with multiple bins', () => {
+    const volume = [
+      { timestamp: '2026-04-01T08:00:00', value: 12 },
+      { timestamp: '2026-04-01T08:30:00', value: 20 },
+    ]
+    const rawChart = buildChart('Thru', {
+      lanes: [
+        { laneNumber: 1, laneType: 1, movementType: 'Thru', volume },
+        { laneNumber: 2, laneType: 1, movementType: 'Thru', volume },
+      ],
+      totalHourlyVolumes: volume.map((point) => ({
+        ...point,
+        value: point.value * 2,
+      })),
+    })
+    const result = transformTurningMovementCountsData({
+      type: ChartType.TurningMovementCounts,
+      data: {
+        charts: [rawChart],
+        table: [],
+        peakHour: null,
+        peakHourFactor: null,
+      },
+    }) as TransformedTurningMovementCountsResponse
+    const series = result.data.charts[0].chart.series as {
+      type: string
+      data: (string | number)[][]
+    }[]
+
+    for (const line of series.filter((item) => item.type === 'line')) {
+      expect(line.data.map((point) => point[0])).toEqual(
+        volume.map((point) => point.timestamp)
+      )
+    }
   })
 })

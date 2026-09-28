@@ -633,6 +633,10 @@ export const LaneTypes = {
 
 export interface Lane {
   /** @nullable */
+  approachId?: number | null;
+  /** @nullable */
+  approachDescription?: string | null;
+  /** @nullable */
   laneNumber?: number | null;
   /** @nullable */
   movementType?: string | null;

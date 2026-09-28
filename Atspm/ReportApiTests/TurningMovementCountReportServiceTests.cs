@@ -1,0 +1,794 @@
+#region license
+// Copyright 2026 Utah Departement of Transportation
+// for ReportApiTests - ReportApiTests/TurningMovementCountReportServiceTests.cs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+#endregion
+
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using Moq;
+using Utah.Udot.Atspm.Business.Common;
+using Utah.Udot.Atspm.Business.TurningMovementCounts;
+using Utah.Udot.Atspm.Data.Enums;
+using Utah.Udot.Atspm.Data.Models;
+using Utah.Udot.Atspm.Data.Models.EventLogModels;
+using Utah.Udot.Atspm.Data.Models.MeasureOptions;
+using Utah.Udot.Atspm.Repositories.ConfigurationRepositories;
+using Utah.Udot.Atspm.Repositories.EventLogRepositories;
+using Utah.Udot.Atspm.ReportApi.ReportServices;
+
+namespace ReportApiTests;
+
+public class TurningMovementCountReportServiceTests
+{
+    private static readonly DateTime Start = new(2026, 4, 1, 8, 0, 0);
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(7)]
+    [InlineData(61)]
+    public async Task InvalidBinSize_IsRejectedBeforeReadingData(int binSize)
+    {
+        var service = new TurningMovementCountReportService(
+            new Mock<IIndianaEventLogRepository>(MockBehavior.Strict).Object,
+            new TurningMovementCountsService(),
+            new Mock<ILocationRepository>(MockBehavior.Strict).Object,
+            new PlanService());
+
+        await Assert.ThrowsAsync<ValidationException>(() => service.ExecuteAsync(
+            new TurningMovementCountsOptions { Start = Start, End = Start.AddHours(1), BinSize = binSize }, null, default));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task InvalidTimeRange_IsRejectedBeforeReadingData(int duration)
+    {
+        var service = new TurningMovementCountReportService(
+            new Mock<IIndianaEventLogRepository>(MockBehavior.Strict).Object,
+            new TurningMovementCountsService(),
+            new Mock<ILocationRepository>(MockBehavior.Strict).Object,
+            new PlanService());
+
+        await Assert.ThrowsAsync<ValidationException>(() => service.ExecuteAsync(
+            new TurningMovementCountsOptions { Start = Start, End = Start.AddMinutes(duration), BinSize = 15 }, null, default));
+    }
+
+    [Theory]
+    [InlineData(5, 30, 1.0)]
+    [InlineData(15, 30, 1.0)]
+    [InlineData(60, 30, 1.0)]
+    [InlineData(5, 90, 0.5)]
+    [InlineData(15, 90, 0.5)]
+    [InlineData(60, 90, 0.5)]
+    public async Task ChartAndTable_UseFifteenMinutePhfRegardlessOfDisplayBin(int binSize, int firstQuarter, double expectedFactor)
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, firstQuarter, 30, 30, 30), binSize);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(firstQuarter + 90, result.PeakHour!.Value.Value);
+        Assert.Equal(expectedFactor, result.PeakHourFactor);
+        Assert.Equal(expectedFactor, chart.PeakHourFactor);
+        Assert.Equal(result.PeakHour.Value.Value, chart.PeakHourVolume);
+        Assert.Equal(result.PeakHour.Value.Value, Assert.Single(result.Table).PeakHourVolume.Value);
+    }
+
+    [Fact]
+    public async Task MissingLaneNumber_PreservesCountsAndOtherMovements()
+    {
+        var unassigned = Detector(2, null, MovementTypes.R);
+        var result = await Run(new[] { Detector(1), unassigned },
+            Events(1, 10, 10, 10, 10).Concat(Events(2, 1, 1, 1, 1)).ToList());
+
+        Assert.Equal(2, result.Charts.Count);
+        Assert.Equal(44, result.PeakHour!.Value.Value);
+        var chart = Assert.Single(result.Charts.Where(c => c.MovementType == "Right"));
+        Assert.Equal(4, chart.TotalVolume);
+        Assert.Null(Assert.Single(chart.Lanes).LaneNumber);
+        Assert.Null(chart.LaneUtilizationFactor);
+    }
+
+    [Fact]
+    public async Task MultipleDetectorsInOneLane_DoNotReduceLaneUtilization()
+    {
+        var result = await Run(new[] { Detector(1), Detector(2) },
+            Events(1, 10, 10, 10, 10).Concat(Events(2, 10, 10, 10, 10)).ToList());
+        var chart = Assert.Single(result.Charts);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(101, lane.ApproachId);
+        Assert.Equal(1, lane.LaneNumber);
+        Assert.Equal("Thru", lane.MovementType);
+        Assert.Equal(80, chart.TotalVolume);
+        Assert.All(lane.Volume, volume => Assert.Equal(80, volume.Value));
+        Assert.Equal(1, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SharedChannel_IsCountedOnceWithinMovement(bool combine)
+    {
+        var result = await Run(new[] { Detector(1), Detector(1, 2) },
+            Events(1, 10, 10, 10, 10), combine: combine);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(40, chart.TotalVolume);
+        Assert.Equal(40, result.PeakHour!.Value.Value);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(chart.LaneUtilizationFactor);
+        Assert.Equal("Thru", chart.MovementType);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DuplicateChannelWithSameLaneIdentity_CountsSourceOnce(bool combine)
+    {
+        var result = await Run(new[] { Detector(1), Detector(1) },
+            Events(1, 10, 10, 10, 10), binSize: 60, combine: combine);
+
+        var chart = Assert.Single(result.Charts);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(40, chart.TotalVolume);
+        Assert.Equal(40, Assert.Single(lane.Volume).Value);
+        Assert.Equal(40, result.PeakHour!.Value.Value);
+        Assert.Equal(101, lane.ApproachId);
+        Assert.Equal(1, lane.LaneNumber);
+        Assert.Equal("Thru", lane.MovementType);
+        Assert.Equal(1, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(17, 27, 44.0 / 54.0)]
+    [InlineData(40, 20, 0.75)]
+    [InlineData(40, 0, 0.5)]
+    public async Task CombinedMovementsWithSameLaneNumber_KeepOriginalLaneIdentities(
+        int thruCount, int thruRightCount, double expectedUtilization)
+    {
+        var result = await Run(new[] { Detector(1), Detector(2, 1, MovementTypes.TR) },
+            Events(1, thruCount).Concat(Events(2, thruRightCount)).ToList(), binSize: 60, combine: true);
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal("Thru + Thru-Right", chart.MovementType);
+        Assert.Equal(thruCount + thruRightCount, chart.TotalVolume);
+        Assert.Equal(thruCount + thruRightCount, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Equal(thruCount + thruRightCount, result.PeakHour!.Value.Value);
+        Assert.Equal(2, chart.Lanes.Count);
+        Assert.All(chart.Lanes, lane =>
+        {
+            Assert.Equal(101, lane.ApproachId);
+            Assert.Equal(1, lane.LaneNumber);
+        });
+        var thru = Assert.Single(chart.Lanes.Where(lane => lane.MovementType == "Thru"));
+        var thruRight = Assert.Single(chart.Lanes.Where(lane => lane.MovementType == "Thru-Right"));
+        Assert.Equal(thruCount, Assert.Single(thru.Volume).Value);
+        Assert.Equal(thruRightCount, Assert.Single(thruRight.Volume).Value);
+        Assert.Equal(expectedUtilization, chart.LaneUtilizationFactor!.Value, 12);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SameMovementAndLaneNumberInDifferentApproaches_KeepSeparateLanes(bool combine)
+    {
+        var first = Detector(1);
+        var second = Detector(2);
+        var result = await Run(new[] { first, second },
+            Events(1, 40).Concat(Events(2, 20)).ToList(), binSize: 60, combine: combine,
+            configureLocation: location =>
+            {
+                location.Approaches.Single().Description = "NB Main St";
+                MoveToNewApproach(location, second, 102);
+                second.Approach.Description = "NB Frontage Rd";
+            });
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(60, chart.TotalVolume);
+        Assert.Equal(60, result.PeakHour!.Value.Value);
+        Assert.Equal(2, chart.Lanes.Count);
+        Assert.All(chart.Lanes, lane =>
+        {
+            Assert.Equal(1, lane.LaneNumber);
+            Assert.Equal("Thru", lane.MovementType);
+        });
+        var firstLane = Assert.Single(chart.Lanes.Where(lane => lane.ApproachId == 101));
+        var secondLane = Assert.Single(chart.Lanes.Where(lane => lane.ApproachId == 102));
+        Assert.Equal("NB Main St", firstLane.ApproachDescription);
+        Assert.Equal("NB Frontage Rd", secondLane.ApproachDescription);
+        Assert.Equal(40, Assert.Single(firstLane.Volume).Value);
+        Assert.Equal(20, Assert.Single(secondLane.Volume).Value);
+        Assert.Equal(0.75, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task SharedChannelAcrossApproaches_PreservesCountsWithUnassignedLane(bool overlap, bool combine)
+    {
+        var first = Detector(1);
+        first.DateDisabled = Start.AddMinutes(overlap ? 40 : 30);
+        var second = Detector(1);
+        second.DateAdded = Start.AddMinutes(overlap ? 20 : 30);
+        var result = await Run(new[] { first, second }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMinutes(10)),
+            Event(1, Start.AddMinutes(30)),
+            Event(1, Start.AddMinutes(50))
+        }, binSize: 60, combine: combine,
+            configureLocation: location => MoveToNewApproach(location, second, 102));
+
+        var chart = Assert.Single(result.Charts);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(3, chart.TotalVolume);
+        Assert.Equal(3, Assert.Single(lane.Volume).Value);
+        Assert.Equal(3, result.PeakHour!.Value.Value);
+        Assert.Equal(3, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(lane.ApproachDescription);
+        Assert.Equal("Thru", lane.MovementType);
+        Assert.Null(chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(60)]
+    [InlineData(61)]
+    public async Task LatencyCorrection_FiltersUsingCorrectedTimestamps(int duration)
+    {
+        var detector = Detector(1);
+        detector.LatencyCorrection = 1;
+        var end = Start.AddMinutes(duration);
+        var result = await Run(new[] { detector }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMilliseconds(500)),
+            Event(1, Start.AddMilliseconds(1500)),
+            Event(1, end.AddMilliseconds(500)),
+            Event(1, end.AddMilliseconds(1500))
+        }, duration: duration);
+
+        Assert.Equal(2, Assert.Single(result.Charts).TotalVolume);
+        Assert.Equal(2, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+    }
+
+    [Fact]
+    public async Task ForwardCorrection_DoesNotCountPastPartialFinalBin()
+    {
+        var detector = Detector(1);
+        detector.LatencyCorrection = -1;
+        var result = await Run(new[] { detector }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMilliseconds(-500)),
+            Event(1, Start.AddMinutes(61).AddMilliseconds(-500))
+        }, duration: 61);
+
+        Assert.Equal(1, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    [Theory]
+    [InlineData(30, 10)]
+    [InlineData(60, 0)]
+    public async Task ShortOrZeroTrafficReport_HasNoPeakHour(int duration, int count)
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, count), duration: duration);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(count, chart.TotalVolume);
+        Assert.Null(result.PeakHour);
+        Assert.Null(result.PeakHourFactor);
+        Assert.Null(chart.PeakHour);
+        Assert.Null(chart.PeakHourVolume);
+        Assert.Null(chart.PeakHourFactor);
+        Assert.Null(Assert.Single(result.Table).PeakHourVolume);
+    }
+
+    [Fact]
+    public async Task PartialFinalHour_IsNotAValidPeakWindow()
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, 0, 10, 10, 10, 100), duration: 61);
+        Assert.Equal(Start, result.PeakHour!.Value.Key);
+        Assert.Equal(30, result.PeakHour.Value.Value);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(130, chart.TotalVolume);
+        Assert.Equal("08:00 - 09:00", chart.PeakHour);
+        Assert.Equal(30, chart.PeakHourVolume);
+        Assert.Equal(0.75, chart.PeakHourFactor);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LeftThruRightMovement_IsIncluded(bool combine)
+    {
+        var result = await Run(new[] { Detector(1, 1, MovementTypes.LTR) }, Events(1, 10, 10, 10, 10), combine: combine);
+        Assert.Equal("left-thru-right", Assert.Single(result.Charts).MovementType);
+        Assert.Equal(40, Assert.Single(result.Table).PeakHourVolume.Value);
+    }
+
+    [Fact]
+    public async Task VehiclePeak_ExcludesOtherLaneTypes()
+    {
+        var bike = Detector(2, 1, MovementTypes.R);
+        bike.LaneType = LaneTypes.Bike;
+        var result = await Run(new[] { Detector(1), bike },
+            Events(1, 25, 25, 25, 25).Concat(Events(2, 100, 100, 100, 100)).ToList());
+        Assert.Equal(100, result.PeakHour!.Value.Value);
+        Assert.Equal(100, Assert.Single(result.Table.Where(r => r.LaneType == "Vehicle")).PeakHourVolume.Value);
+    }
+
+    [Fact]
+    public async Task ZeroVehicleTrafficWithBikeTraffic_DoesNotInventYearOnePeak()
+    {
+        var bike = Detector(2);
+        bike.LaneType = LaneTypes.Bike;
+        var result = await Run(new[] { Detector(1), bike }, Events(2, 1, 1, 1, 1));
+        Assert.Null(result.PeakHour);
+        Assert.Null(Assert.Single(result.Charts.Where(c => c.LaneType == "Vehicle")).PeakHour);
+        Assert.NotNull(Assert.Single(result.Charts.Where(c => c.LaneType == "Bike")).PeakHour);
+    }
+
+    [Fact]
+    public async Task MultiDayPeak_IdentifiesItsDateAndKeepsMinuteCountsOffTheWire()
+    {
+        var result = await Run(new[] { Detector(1) }, new List<IndianaEvent> { Event(1, Start.AddDays(1)) }, 60, 1500);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal("2026-04-02 08:00 - 2026-04-02 09:00", chart.PeakHour);
+        Assert.DoesNotContain("MinuteVolumes", JsonSerializer.Serialize(result));
+    }
+
+    [Theory]
+    [InlineData(-60)]
+    [InlineData(60)]
+    [InlineData(120)]
+    public async Task LogsOnlyOutsideRequestedInterval_ReturnNoData(int eventMinute)
+    {
+        var result = await Run(new[] { Detector(1) }, new List<IndianaEvent>
+        {
+            new() { LocationIdentifier = "1001", EventCode = 131, EventParam = 1, Timestamp = Start.AddHours(-2) },
+            Event(1, Start.AddMinutes(eventMinute))
+        }, includePlanEvent: false);
+
+        Assert.Empty(result.Charts);
+        Assert.Empty(result.Table);
+        Assert.Null(result.PeakHour);
+        Assert.Null(result.PeakHourFactor);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(30)]
+    public async Task ControllerActivityWithoutDetectorCounts_PreservesZeroTraffic(int eventMinute)
+    {
+        var result = await Run(new[] { Detector(1) }, new List<IndianaEvent>
+        {
+            new() { LocationIdentifier = "1001", EventCode = 1, EventParam = 1, Timestamp = Start.AddMinutes(eventMinute) }
+        }, includePlanEvent: false);
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(0, chart.TotalVolume);
+        Assert.All(chart.TotalVolumes, volume => Assert.Equal(0, volume.Value));
+        Assert.All(Assert.Single(result.Table).Volumes, volume => Assert.Equal(0, volume.Value));
+        Assert.Null(result.PeakHour);
+        Assert.Null(result.PeakHourFactor);
+    }
+
+    [Theory]
+    [InlineData(-1, -0.5)]
+    [InlineData(1, 3600.5)]
+    public async Task CorrectedBoundaryCountsWithoutRawEventsInRange_ArePreserved(double latency, double eventSecond)
+    {
+        var detector = Detector(1);
+        detector.LatencyCorrection = latency;
+        var result = await Run(new[] { detector }, new List<IndianaEvent>
+        {
+            new() { LocationIdentifier = "1001", EventCode = 131, EventParam = 1, Timestamp = Start.AddHours(-2) },
+            Event(1, Start.AddSeconds(eventSecond))
+        }, includePlanEvent: false);
+
+        Assert.Equal(1, Assert.Single(result.Charts).TotalVolume);
+        Assert.Equal(1, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Equal(1, result.PeakHour!.Value.Value);
+    }
+
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ConflictingMovementAssignments_AreRejectedRegardlessOfCombine(bool combine)
+    {
+        var error = await Assert.ThrowsAsync<ValidationException>(() => Run(
+            new[] { Detector(1), Detector(1, 2, MovementTypes.TR) },
+            Events(1, 10, 10, 10, 10), combine: combine));
+
+        Assert.Contains("Detector channel 1", error.Message);
+        Assert.Contains("conflicting assignments", error.Message);
+    }
+
+    [Theory]
+    [InlineData("lane type")]
+    [InlineData("latency")]
+    [InlineData("offset")]
+    [InlineData("direction")]
+    public async Task ConflictingChannelAssignments_AreRejected(string conflict)
+    {
+        var first = Detector(1);
+        var second = Detector(1);
+        if (conflict == "lane type")
+            second.LaneType = LaneTypes.Bike;
+        if (conflict == "latency")
+            second.LatencyCorrection = 1;
+        if (conflict == "offset")
+            second.DistanceFromStopBar = 100;
+
+        var error = await Assert.ThrowsAsync<ValidationException>(() => Run(
+            new[] { first, second }, Events(1, 10), configureLocation: location =>
+            {
+                location.Approaches.First().Mph = 35;
+                first.DistanceFromStopBar = 0;
+                if (conflict == "direction")
+                {
+                    location.Approaches.First().Detectors.Remove(second);
+                    var opposing = new Approach
+                    {
+                        Location = location, DirectionTypeId = DirectionTypes.SB,
+                        Detectors = new List<Detector> { second }
+                    };
+                    second.Approach = opposing;
+                    location.Approaches.Add(opposing);
+                }
+            }));
+
+        Assert.Contains("Detector channel 1", error.Message);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DistinctChannels_PreserveTotalsWhenMovementsAreCombined(bool combine)
+    {
+        var result = await Run(new[] { Detector(1), Detector(2, 2, MovementTypes.TR) },
+            Events(1, 10, 10, 10, 10).Concat(Events(2, 5, 5, 5, 5)).ToList(), combine: combine);
+
+        Assert.Equal(60, result.Charts.Sum(c => c.TotalVolume));
+        Assert.Equal(60, result.PeakHour!.Value.Value);
+        Assert.Equal(combine ? 1 : 2, result.Charts.Count);
+        if (combine)
+            Assert.Equal("Thru + Thru-Right", Assert.Single(result.Charts).MovementType);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InactiveDetector_DoesNotProduceTrafficOrZeroFilledCharts(bool notYetInstalled)
+    {
+        var detector = Detector(1);
+        if (notYetInstalled)
+            detector.DateAdded = Start.AddDays(1);
+        else
+            detector.DateDisabled = Start.AddDays(-1);
+
+        var result = await Run(new[] { detector }, Events(1, 10));
+
+        Assert.Empty(result.Charts);
+        Assert.Empty(result.Table);
+        Assert.Null(result.PeakHour);
+    }
+
+    [Fact]
+    public async Task InactiveLane_DoesNotReduceLaneUtilization()
+    {
+        var inactive = Detector(2, 2);
+        inactive.DateDisabled = Start;
+        var result = await Run(new[] { Detector(1), inactive }, Events(1, 10).Concat(Events(2, 20)).ToList());
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(10, chart.TotalVolume);
+        Assert.Single(chart.Lanes);
+        Assert.Equal(1, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    [InlineData(1)]
+    public async Task ActiveDates_FilterRawEventsBeforeApplyingCorrection(double latency)
+    {
+        var detector = Detector(1);
+        detector.DateAdded = Start.AddMinutes(15);
+        detector.DateDisabled = Start.AddMinutes(45);
+        detector.LatencyCorrection = latency;
+        var events = new List<IndianaEvent>
+        {
+            Event(1, detector.DateAdded.AddMilliseconds(-500)),
+            Event(1, detector.DateAdded),
+            Event(1, detector.DateDisabled.Value.AddMilliseconds(-500)),
+            Event(1, detector.DateDisabled.Value)
+        };
+
+        var result = await Run(new[] { detector }, events);
+
+        Assert.Equal(2, Assert.Single(result.Charts).TotalVolume);
+        Assert.Equal(2, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Equal(detector.DateAdded, events[1].Timestamp);
+    }
+
+    [Fact]
+    public async Task RetiredDetector_CanSupplyAnActiveRawEventCorrectedIntoTheReport()
+    {
+        var detector = Detector(1);
+        detector.DateDisabled = Start;
+        detector.LatencyCorrection = -1;
+        var result = await Run(new[] { detector }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMilliseconds(-500)),
+            Event(1, Start)
+        });
+
+        Assert.Equal(1, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReassignedChannel_UsesDisjointActiveDatesWithoutDoubleCounting(bool combine)
+    {
+        var first = Detector(1);
+        first.DateDisabled = Start.AddMinutes(30);
+        var second = Detector(1, 1, MovementTypes.TR);
+        second.DateAdded = Start.AddMinutes(30);
+
+        var result = await Run(new[] { first, second }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMinutes(29)),
+            Event(1, Start.AddMinutes(30))
+        }, combine: combine);
+
+        Assert.Equal(2, result.Charts.Sum(c => c.TotalVolume));
+        Assert.Equal(2, result.PeakHour!.Value.Value);
+        Assert.Equal(2, result.Table.Sum(row => row.Volumes.Sum(v => v.Value)));
+        if (combine)
+        {
+            var chart = Assert.Single(result.Charts);
+            var lane = Assert.Single(chart.Lanes);
+            Assert.Equal("Thru + Thru-Right", chart.MovementType);
+            Assert.Equal(2, chart.TotalVolume);
+            Assert.Null(lane.LaneNumber);
+            Assert.Null(lane.ApproachId);
+            Assert.Null(chart.LaneUtilizationFactor);
+            Assert.Equal(new[] { 0, 4, 4, 0 }, lane.Volume.Select(v => v.Value));
+        }
+        else
+        {
+            Assert.Equal(2, result.Charts.Count);
+            foreach (var movement in new[] { "Thru", "Thru-Right" })
+            {
+                var chart = Assert.Single(result.Charts.Where(c => c.MovementType == movement));
+                var lane = Assert.Single(chart.Lanes);
+                Assert.Equal(1, chart.TotalVolume);
+                Assert.Equal(101, lane.ApproachId);
+                Assert.Equal(1, lane.LaneNumber);
+                Assert.Equal(movement, lane.MovementType);
+                Assert.Equal(1, chart.LaneUtilizationFactor);
+                Assert.Equal(movement == "Thru" ? new[] { 0, 1, 0, 0 } : new[] { 0, 0, 1, 0 },
+                    chart.TotalVolumes.Select(v => v.Value));
+            }
+        }
+    }
+
+    [Fact]
+    public async Task EquivalentChannelAssignments_UseUnionOfActiveDatesAndCountOverlapOnce()
+    {
+        var first = Detector(1);
+        first.DateDisabled = Start.AddMinutes(40);
+        var second = Detector(1, 2);
+        second.DateAdded = Start.AddMinutes(20);
+
+        var result = await Run(new[] { first, second }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMinutes(10)),
+            Event(1, Start.AddMinutes(30)),
+            Event(1, Start.AddMinutes(50))
+        });
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(3, chart.TotalVolume);
+        Assert.Equal(3, result.PeakHour!.Value.Value);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(chart.LaneUtilizationFactor);
+    }
+
+    [Fact]
+    public async Task ConfigurationChangeInsideRange_RequestsSplitAtFirstChange()
+    {
+        var error = await Assert.ThrowsAsync<ValidationException>(() => Run(
+            new[] { Detector(1) }, Events(1, 10), versions: new[]
+            {
+                new Location { LocationIdentifier = "1001", Start = Start.AddMinutes(30) },
+                new Location { LocationIdentifier = "1001", Start = Start.AddMinutes(15) }
+            }));
+
+        Assert.Contains("2026-04-01 08:15:00", error.Message);
+        Assert.Contains("separate reports", error.Message);
+    }
+
+    [Theory]
+    [InlineData(-60)]
+    [InlineData(0)]
+    [InlineData(60)]
+    [InlineData(120)]
+    public async Task ConfigurationChangesOutsideHalfOpenRange_AreAllowed(int changeMinute)
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, 10), versions: new[]
+        {
+            new Location { LocationIdentifier = "1001", Start = Start.AddMinutes(changeMinute) }
+        });
+
+        Assert.Equal(10, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    [Fact]
+    public async Task DeletedAndOtherLocationVersions_DoNotRejectReport()
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, 10), versions: new[]
+        {
+            new Location { LocationIdentifier = "1001", Start = Start.AddMinutes(15), VersionAction = LocationVersionActions.Delete },
+            new Location { LocationIdentifier = "9999", Start = Start.AddMinutes(30) }
+        });
+
+        Assert.Equal(10, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    [Fact]
+    public async Task PartialFinalBin_UsesObservedDurationForChartRateAndRawCountsForTable()
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, 0, 10), duration: 16);
+        var chart = Assert.Single(result.Charts);
+
+        Assert.Equal(600, chart.TotalHourlyVolumes.Last().Value);
+        Assert.Equal(600, Assert.Single(chart.Lanes).Volume.Last().Value);
+        Assert.Equal(10, Assert.Single(result.Table).Volumes.Last().Value);
+        Assert.Equal(10, chart.TotalVolume);
+    }
+
+
+    [Fact]
+    public async Task ForwardCorrectionAcrossStartingConfiguration_RequiresLaterStart()
+    {
+        var detector = Detector(1);
+        detector.LatencyCorrection = -1;
+        var error = await Assert.ThrowsAsync<ValidationException>(() => Run(
+            new[] { detector }, Events(1, 10), configureLocation: l => l.Start = Start));
+
+        Assert.Contains("timing correction", error.Message);
+        Assert.Contains("later report start", error.Message);
+    }
+
+    [Fact]
+    public async Task BackwardCorrectionAcrossEndingConfiguration_RequiresEarlierEnd()
+    {
+        var detector = Detector(1);
+        detector.LatencyCorrection = 1;
+        var error = await Assert.ThrowsAsync<ValidationException>(() => Run(
+            new[] { detector }, Events(1, 10), versions: new[]
+            {
+                new Location { LocationIdentifier = "1001", Start = Start.AddHours(1) }
+            }));
+
+        Assert.Contains("timing correction", error.Message);
+        Assert.Contains("earlier report end", error.Message);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(1)]
+    public async Task DetectorActiveDatesCanKeepCorrectedWindowInsideConfiguration(double latency)
+    {
+        var detector = Detector(1);
+        detector.DateAdded = Start;
+        detector.DateDisabled = Start.AddHours(1);
+        detector.LatencyCorrection = latency;
+        var result = await Run(new[] { detector }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMinutes(10))
+        }, versions: new[]
+        {
+            new Location { LocationIdentifier = "1001", Start = Start.AddHours(1) }
+        }, configureLocation: l => l.Start = Start);
+
+        Assert.Equal(1, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    [Fact]
+    public async Task ZeroCorrection_AllowsExactConfigurationBoundaries()
+    {
+        var result = await Run(new[] { Detector(1) }, Events(1, 10),
+            versions: new[] { new Location { LocationIdentifier = "1001", Start = Start.AddHours(1) } },
+            configureLocation: l => l.Start = Start);
+
+        Assert.Equal(10, Assert.Single(result.Charts).TotalVolume);
+    }
+
+    private static void MoveToNewApproach(Location location, Detector detector, int approachId)
+    {
+        var original = location.Approaches.Single();
+        original.Detectors.Remove(detector);
+        var approach = new Approach
+        {
+            Id = approachId, Location = location, DirectionTypeId = original.DirectionTypeId,
+            Detectors = new List<Detector> { detector }
+        };
+        detector.Approach = approach;
+        detector.ApproachId = approachId;
+        location.Approaches.Add(approach);
+    }
+
+    private static Detector Detector(int channel, int? lane = 1, MovementTypes movement = MovementTypes.T) => new()
+    {
+        Id = channel,
+        DetectorChannel = channel,
+        LaneNumber = lane,
+        MovementType = movement,
+        LaneType = LaneTypes.V,
+        DetectionTypes = new List<DetectionType>
+        {
+            new() { Id = DetectionTypes.LLC, MeasureTypes = new List<MeasureType> { new() { Id = 5 } } }
+        }
+    };
+
+    private static IndianaEvent Event(short channel, DateTime timestamp) => new()
+    {
+        LocationIdentifier = "1001", EventCode = 82, EventParam = channel, Timestamp = timestamp
+    };
+
+    private static List<IndianaEvent> Events(short channel, params int[] quarters) =>
+        quarters.SelectMany((count, quarter) => Enumerable.Range(0, count)
+            .Select(i => Event(channel, Start.AddMinutes(quarter * 15).AddMilliseconds(i + 1)))).ToList();
+
+    private static Task<TurningMovementCountsResult> Run(
+        IEnumerable<Detector> detectors, List<IndianaEvent> events, int binSize = 15, int duration = 60, bool combine = false, bool includePlanEvent = true,
+        IEnumerable<Location>? versions = null, Action<Location>? configureLocation = null)
+    {
+        var location = new Location { LocationIdentifier = "1001", PrimaryName = "Main", SecondaryName = "State" };
+        var approach = new Approach { Id = 101, Location = location, DirectionTypeId = DirectionTypes.NB, Detectors = detectors.ToList() };
+        foreach (var detector in approach.Detectors)
+        {
+            detector.Approach = approach;
+            detector.ApproachId = approach.Id;
+        }
+        location.Approaches = new List<Approach> { approach };
+        configureLocation?.Invoke(location);
+        var locations = new Mock<ILocationRepository>();
+        locations.Setup(r => r.GetLatestVersionOfLocation("1001", Start)).Returns(location);
+        locations.Setup(r => r.GetList()).Returns((versions ?? new[] { location }).AsQueryable());
+        var allEvents = events.ToList();
+        if (includePlanEvent)
+            allEvents.Add(new IndianaEvent
+            {
+                LocationIdentifier = "1001", EventCode = 131, EventParam = 1, Timestamp = Start
+            });
+        var repository = new Mock<IIndianaEventLogRepository>();
+        repository.Setup(r => r.GetEventsBetweenDates("1001", It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Returns((string id, DateTime start, DateTime end) => allEvents.Where(e => e.Timestamp >= start && e.Timestamp < end).ToList());
+
+        return new TurningMovementCountReportService(repository.Object, new TurningMovementCountsService(),
+            locations.Object, new PlanService()).ExecuteAsync(new TurningMovementCountsOptions
+            {
+                LocationIdentifier = "1001", Start = Start, End = Start.AddMinutes(duration),
+                BinSize = binSize, CombineThruRight = combine
+            }, null, default);
+    }
+}

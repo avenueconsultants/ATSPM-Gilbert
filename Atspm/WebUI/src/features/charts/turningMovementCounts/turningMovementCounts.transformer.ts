@@ -30,7 +30,7 @@ import {
   formatExportFileName,
   transformSeriesData,
 } from '@/features/charts/common/transformers'
-import { ChartType } from '@/features/charts/common/types'
+import { ChartType, type DataPoint } from '@/features/charts/common/types'
 import {
   ColumnGroup,
   Labels,
@@ -42,7 +42,7 @@ import {
   SolidLineSeriesSymbol,
   formatChartDateTimeRange,
 } from '@/features/charts/utils'
-import { addHours, format } from 'date-fns'
+import { addHours, format, isSameDay } from 'date-fns'
 import { EChartsOption, SeriesOption } from 'echarts'
 import {
   compareTurningMovementDirections,
@@ -72,8 +72,19 @@ export default function transformTurningMovementCountsData(
       chart: transformData(data),
     }))
 
+  // The peak-hour summary describes vehicles, independently of the other table tabs.
+  const vehicleTable = response.data.table.filter(
+    (row) => row.laneType === 'Vehicle'
+  )
+  const includeDates = response.data.charts.some(
+    (chart) =>
+      !isSameDay(
+        new Date(chart.start),
+        new Date(new Date(chart.end).getTime() - 1)
+      )
+  )
   const directions = getAvailableTurningMovementDirections(
-    response.data.table.map((row) => row.direction)
+    vehicleTable.map((row) => row.direction)
   )
   const preferred = [
     'Left',
@@ -85,17 +96,18 @@ export default function transformTurningMovementCountsData(
   ]
 
   const movementTypes = buildMovementTypeMap(
-    response.data.table,
+    vehicleTable,
     preferred,
     directions
   )
-  const labels = buildLabels(directions, movementTypes)
+  const labels = buildLabels(directions, movementTypes, includeDates)
 
   const peakRow = buildPeakHourRow(
-    response.data.table,
+    vehicleTable,
     response.data.peakHour,
     directions,
-    movementTypes
+    movementTypes,
+    includeDates
   )
   const displayProps = createTableDisplayProps(response.data.charts)
 
@@ -174,14 +186,11 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     right: 190,
   })
 
-  const legendData = [] as { name: string; icon: string }[]
-
-  lanes.forEach((lane) => {
-    legendData.push({
-      name: `Lane ${lane.laneNumber}`,
-      icon: SolidLineSeriesSymbol,
-    })
-  })
+  const laneNames = buildLaneNames(data)
+  const legendData = laneNames.map((name) => ({
+    name,
+    icon: SolidLineSeriesSymbol,
+  }))
 
   const legend = createLegend({
     top: grid.top,
@@ -219,7 +228,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     series.push(
       ...createSeries({
         name: `Total Volume`,
-        data: transformSeriesData(totalHourlyVolumes),
+        data: transformVolumeSeries(totalHourlyVolumes, data.end),
         type: 'line',
         binStepLineToggle: true,
         color: Color.Red,
@@ -233,8 +242,8 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   lanes.forEach((lane, i) => {
     series.push(
       ...createSeries({
-        name: `Lane ${lane.laneNumber}`,
-        data: transformSeriesData(lane.volume),
+        name: laneNames[i],
+        data: transformVolumeSeries(lane.volume, data.end),
         type: 'line',
         binStepLineToggle: true,
         color: colorValues[i % colorValues.length],
@@ -267,7 +276,43 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   return chartOptions
 }
 
-function formatNullableNumber(value: number | null | undefined, decimals?: number) {
+function buildLaneNames(data: RawTurningMovementCountsData): string[] {
+  const includeMovement = data.lanes.some(
+    (lane) => lane.movementType !== data.movementType
+  )
+  const baseNames = data.lanes.map((lane) => {
+    const laneName =
+      lane.laneNumber == null ? 'Unassigned lane' : `Lane ${lane.laneNumber}`
+    return includeMovement ? `${lane.movementType} - ${laneName}` : laneName
+  })
+  const names = baseNames.map((name, index) => {
+    const { approachId, approachDescription } = data.lanes[index]
+    const duplicate = baseNames.indexOf(name) !== baseNames.lastIndexOf(name)
+    if (!duplicate || approachId == null) return name
+    return `${name} (${approachDescription?.trim() || `Approach ${approachId}`})`
+  })
+  const occurrences = new Map<string, number>()
+  return names.map((name) => {
+    // Older responses or unknown assignments may lack a distinct lane identity.
+    // Keep those series independently selectable without inventing a lane number.
+    if (names.indexOf(name) === names.lastIndexOf(name)) return name
+    const occurrence = (occurrences.get(name) ?? 0) + 1
+    occurrences.set(name, occurrence)
+    return `${name} (${occurrence})`
+  })
+}
+
+function transformVolumeSeries(volumes: DataPoint[], end: string) {
+  const series = transformSeriesData(volumes)
+  // A single bin needs an end point to remain visible when point symbols and step lines are disabled.
+  if (series.length === 1) series.push([end, series[0][1]])
+  return series
+}
+
+function formatNullableNumber(
+  value: number | null | undefined,
+  decimals?: number
+) {
   if (value == null) {
     return 'N/A'
   }
@@ -275,8 +320,11 @@ function formatNullableNumber(value: number | null | undefined, decimals?: numbe
   return decimals == null ? value.toLocaleString() : value.toFixed(decimals)
 }
 
-function formatTime(timestamp: string | Date) {
-  return format(new Date(timestamp), 'HH:mm')
+function formatTime(timestamp: string | Date, includeDates = false) {
+  return format(
+    new Date(timestamp),
+    includeDates ? 'yyyy-MM-dd HH:mm' : 'HH:mm'
+  )
 }
 
 function compareMovementTypes(a: string, b: string) {
@@ -325,9 +373,12 @@ function buildMovementTypeMap(
 
 function buildLabels(
   directions: string[],
-  movementTypes: Record<string, string[]>
+  movementTypes: Record<string, string[]>,
+  includeDates: boolean
 ): Labels {
-  const columnGroups: ColumnGroup[] = [{ title: null, columns: ['Hour'] }]
+  const columnGroups: ColumnGroup[] = [
+    { title: null, columns: [includeDates ? 'Date / Time' : 'Hour'] },
+  ]
 
   directions.forEach((dir) => {
     columnGroups.push({
@@ -346,19 +397,22 @@ function buildPeakHourRow(
   rawTable: RawTurningMovementCountsResponse['data']['table'],
   peakHour: { key: string; value: number } | null,
   directions: string[],
-  movementTypes: Record<string, string[]>
+  movementTypes: Record<string, string[]>,
+  includeDates: boolean
 ): TableRow | null {
   if (!peakHour?.key) return null
 
   const valueAtPH = (dir: string, mt: string) =>
-    rawTable.find(
-      (r) =>
-        normalizeTurningMovementDirection(r.direction) === dir &&
-        r.movementType === mt
-    )?.peakHourVolume?.value ?? 0
+    rawTable
+      .filter(
+        (r) =>
+          normalizeTurningMovementDirection(r.direction) === dir &&
+          r.movementType === mt
+      )
+      .reduce((sum, r) => sum + (r.peakHourVolume?.value ?? 0), 0)
 
   const start = new Date(peakHour.key)
-  const desc = `${formatTime(start)} - ${formatTime(addHours(start, 1))}`
+  const desc = `${formatTime(start, includeDates)} - ${formatTime(addHours(start, 1), includeDates)}`
 
   const row: TableRow = [desc]
   let binTotal = 0
