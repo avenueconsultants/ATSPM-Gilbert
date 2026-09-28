@@ -186,15 +186,11 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     right: 190,
   })
 
-  const legendData = [] as { name: string; icon: string }[]
-
-  lanes.forEach((lane) => {
-    legendData.push({
-      name:
-        lane.laneNumber == null ? 'Unassigned lane' : `Lane ${lane.laneNumber}`,
-      icon: SolidLineSeriesSymbol,
-    })
-  })
+  const laneNames = buildLaneNames(data)
+  const legendData = laneNames.map((name) => ({
+    name,
+    icon: SolidLineSeriesSymbol,
+  }))
 
   const legend = createLegend({
     top: grid.top,
@@ -246,10 +242,7 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   lanes.forEach((lane, i) => {
     series.push(
       ...createSeries({
-        name:
-          lane.laneNumber == null
-            ? 'Unassigned lane'
-            : `Lane ${lane.laneNumber}`,
+        name: laneNames[i],
         data: transformVolumeSeries(lane.volume, data.end),
         type: 'line',
         binStepLineToggle: true,
@@ -283,6 +276,32 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
   return chartOptions
 }
 
+function buildLaneNames(data: RawTurningMovementCountsData): string[] {
+  const includeMovement = data.lanes.some(
+    (lane) => lane.movementType !== data.movementType
+  )
+  const baseNames = data.lanes.map((lane) => {
+    const laneName =
+      lane.laneNumber == null ? 'Unassigned lane' : `Lane ${lane.laneNumber}`
+    return includeMovement ? `${lane.movementType} - ${laneName}` : laneName
+  })
+  const names = baseNames.map((name, index) => {
+    const { approachId, approachDescription } = data.lanes[index]
+    const duplicate = baseNames.indexOf(name) !== baseNames.lastIndexOf(name)
+    if (!duplicate || approachId == null) return name
+    return `${name} (${approachDescription?.trim() || `Approach ${approachId}`})`
+  })
+  const occurrences = new Map<string, number>()
+  return names.map((name) => {
+    // Older responses or unknown assignments may lack a distinct lane identity.
+    // Keep those series independently selectable without inventing a lane number.
+    if (names.indexOf(name) === names.lastIndexOf(name)) return name
+    const occurrence = (occurrences.get(name) ?? 0) + 1
+    occurrences.set(name, occurrence)
+    return `${name} (${occurrence})`
+  })
+}
+
 function transformVolumeSeries(volumes: DataPoint[], end: string) {
   const series = transformSeriesData(volumes)
   // A single bin needs an end point to remain visible when point symbols and step lines are disabled.
@@ -290,7 +309,10 @@ function transformVolumeSeries(volumes: DataPoint[], end: string) {
   return series
 }
 
-function formatNullableNumber(value: number | null | undefined, decimals?: number) {
+function formatNullableNumber(
+  value: number | null | undefined,
+  decimals?: number
+) {
   if (value == null) {
     return 'N/A'
   }

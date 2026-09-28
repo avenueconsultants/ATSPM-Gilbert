@@ -36,6 +36,8 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
     {
         private const string CombinedThruRightMovementType = "Thru + Thru-Right";
 
+        private readonly record struct LaneIdentity(int ApproachId, MovementTypes MovementType, int? LaneNumber);
+
         public Task<TurningMovementCountsLanesResult> GetChartData(
             List<Detector> detectorsByMovementType,
             LaneTypes laneType,
@@ -61,31 +63,45 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
                 .ToLookup(e => (int)e.EventParam);
             var channelVolumes = tmcDetectors.GroupBy(d => d.DetectorChannel).Select(group =>
             {
-                // A channel is one count source. Conflicting assignments cannot identify a physical lane.
-                var laneNumbers = group.Select(d => d.LaneNumber).Distinct().ToList();
+                // Deduplicate the count source independently of lane identity. Lane numbers are
+                // scoped to an approach and movement, even when movement totals are combined.
+                var identities = group.Select(d => new LaneIdentity(
+                    d.Approach?.Id ?? d.ApproachId, d.MovementType, d.LaneNumber)).Distinct().ToList();
                 return new
                 {
-                    LaneNumber = laneNumbers.Count == 1 ? laneNumbers[0] : null,
+                    // Reassigned or conflicting channels retain their counts without inventing
+                    // a lane assignment for events whose original assignment is no longer known.
+                    Identity = identities.Count == 1 ? (LaneIdentity?)identities[0] : null,
                     Volume = new VolumeCollection(options.Start, options.End, eventsByChannel[group.Key].ToList(), options.BinSize)
                 };
             }).ToList();
             var allLanesMovementVolumes = new VolumeCollection(channelVolumes.Select(c => c.Volume).ToList(), options.BinSize);
-            var laneVolumes = channelVolumes.GroupBy(c => c.LaneNumber).Select(group => new
+            var laneVolumes = channelVolumes.GroupBy(c => c.Identity).Select(group => new
             {
-                LaneNumber = group.Key,
+                Identity = group.Key,
                 Volume = new VolumeCollection(group.Select(c => c.Volume).ToList(), options.BinSize)
             }).ToList();
+            var approachDescriptions = tmcDetectors
+                .GroupBy(d => d.Approach?.Id ?? d.ApproachId)
+                .ToDictionary(g => g.Key, g => g.Select(d => d.Approach?.Description)
+                    .FirstOrDefault(description => !string.IsNullOrWhiteSpace(description)));
             var lanes = laneVolumes.Select(lane => new Lane
             {
-                LaneNumber = lane.LaneNumber,
-                MovementType = resolvedMovementTypeLabel,
+                ApproachId = lane.Identity?.ApproachId,
+                ApproachDescription = lane.Identity.HasValue
+                    ? approachDescriptions.GetValueOrDefault(lane.Identity.Value.ApproachId)
+                    : null,
+                LaneNumber = lane.Identity?.LaneNumber,
+                MovementType = lane.Identity.HasValue
+                    ? lane.Identity.Value.MovementType.GetAttributeOfType<DisplayAttribute>().Name
+                    : resolvedMovementTypeLabel,
                 LaneType = laneType,
                 Volume = lane.Volume.Items.Select(i => new DataPointForInt(i.StartTime, GetHourlyVolume(i, options.End))).ToList()
             }).ToList();
 
             var totalDetectorCounts = allLanesMovementVolumes.TotalDetectorCounts;
             var highestLaneCount = laneVolumes.Max(l => l.Volume.TotalDetectorCounts);
-            double? laneUtilizationFactor = laneVolumes.All(l => l.LaneNumber.HasValue) && highestLaneCount > 0
+            double? laneUtilizationFactor = laneVolumes.All(l => l.Identity.HasValue && l.Identity.Value.LaneNumber.HasValue) && highestLaneCount > 0
                 ? totalDetectorCounts / (laneVolumes.Count * (double)highestLaneCount)
                 : null;
 

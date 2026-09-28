@@ -36,6 +36,8 @@ export interface TurningMovementCountsChartOptionsDefaults {
 export type Plan = BasePlan
 
 interface Lane {
+  approachId?: number | null
+  approachDescription?: string | null
   laneNumber: number | null
   movementType: string
   volume: DataPoint[]

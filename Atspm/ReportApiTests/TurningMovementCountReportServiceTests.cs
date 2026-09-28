@@ -105,8 +105,12 @@ public class TurningMovementCountReportServiceTests
         var result = await Run(new[] { Detector(1), Detector(2) },
             Events(1, 10, 10, 10, 10).Concat(Events(2, 10, 10, 10, 10)).ToList());
         var chart = Assert.Single(result.Charts);
-        Assert.Single(chart.Lanes);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(101, lane.ApproachId);
+        Assert.Equal(1, lane.LaneNumber);
+        Assert.Equal("Thru", lane.MovementType);
         Assert.Equal(80, chart.TotalVolume);
+        Assert.All(lane.Volume, volume => Assert.Equal(80, volume.Value));
         Assert.Equal(1, chart.LaneUtilizationFactor);
     }
 
@@ -120,8 +124,124 @@ public class TurningMovementCountReportServiceTests
         var chart = Assert.Single(result.Charts);
         Assert.Equal(40, chart.TotalVolume);
         Assert.Equal(40, result.PeakHour!.Value.Value);
-        Assert.Null(Assert.Single(chart.Lanes).LaneNumber);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(chart.LaneUtilizationFactor);
         Assert.Equal("Thru", chart.MovementType);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DuplicateChannelWithSameLaneIdentity_CountsSourceOnce(bool combine)
+    {
+        var result = await Run(new[] { Detector(1), Detector(1) },
+            Events(1, 10, 10, 10, 10), binSize: 60, combine: combine);
+
+        var chart = Assert.Single(result.Charts);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(40, chart.TotalVolume);
+        Assert.Equal(40, Assert.Single(lane.Volume).Value);
+        Assert.Equal(40, result.PeakHour!.Value.Value);
+        Assert.Equal(101, lane.ApproachId);
+        Assert.Equal(1, lane.LaneNumber);
+        Assert.Equal("Thru", lane.MovementType);
+        Assert.Equal(1, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(17, 27, 44.0 / 54.0)]
+    [InlineData(40, 20, 0.75)]
+    [InlineData(40, 0, 0.5)]
+    public async Task CombinedMovementsWithSameLaneNumber_KeepOriginalLaneIdentities(
+        int thruCount, int thruRightCount, double expectedUtilization)
+    {
+        var result = await Run(new[] { Detector(1), Detector(2, 1, MovementTypes.TR) },
+            Events(1, thruCount).Concat(Events(2, thruRightCount)).ToList(), binSize: 60, combine: true);
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal("Thru + Thru-Right", chart.MovementType);
+        Assert.Equal(thruCount + thruRightCount, chart.TotalVolume);
+        Assert.Equal(thruCount + thruRightCount, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Equal(thruCount + thruRightCount, result.PeakHour!.Value.Value);
+        Assert.Equal(2, chart.Lanes.Count);
+        Assert.All(chart.Lanes, lane =>
+        {
+            Assert.Equal(101, lane.ApproachId);
+            Assert.Equal(1, lane.LaneNumber);
+        });
+        var thru = Assert.Single(chart.Lanes.Where(lane => lane.MovementType == "Thru"));
+        var thruRight = Assert.Single(chart.Lanes.Where(lane => lane.MovementType == "Thru-Right"));
+        Assert.Equal(thruCount, Assert.Single(thru.Volume).Value);
+        Assert.Equal(thruRightCount, Assert.Single(thruRight.Volume).Value);
+        Assert.Equal(expectedUtilization, chart.LaneUtilizationFactor!.Value, 12);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SameMovementAndLaneNumberInDifferentApproaches_KeepSeparateLanes(bool combine)
+    {
+        var first = Detector(1);
+        var second = Detector(2);
+        var result = await Run(new[] { first, second },
+            Events(1, 40).Concat(Events(2, 20)).ToList(), binSize: 60, combine: combine,
+            configureLocation: location =>
+            {
+                location.Approaches.Single().Description = "NB Main St";
+                MoveToNewApproach(location, second, 102);
+                second.Approach.Description = "NB Frontage Rd";
+            });
+
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(60, chart.TotalVolume);
+        Assert.Equal(60, result.PeakHour!.Value.Value);
+        Assert.Equal(2, chart.Lanes.Count);
+        Assert.All(chart.Lanes, lane =>
+        {
+            Assert.Equal(1, lane.LaneNumber);
+            Assert.Equal("Thru", lane.MovementType);
+        });
+        var firstLane = Assert.Single(chart.Lanes.Where(lane => lane.ApproachId == 101));
+        var secondLane = Assert.Single(chart.Lanes.Where(lane => lane.ApproachId == 102));
+        Assert.Equal("NB Main St", firstLane.ApproachDescription);
+        Assert.Equal("NB Frontage Rd", secondLane.ApproachDescription);
+        Assert.Equal(40, Assert.Single(firstLane.Volume).Value);
+        Assert.Equal(20, Assert.Single(secondLane.Volume).Value);
+        Assert.Equal(0.75, chart.LaneUtilizationFactor);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task SharedChannelAcrossApproaches_PreservesCountsWithUnassignedLane(bool overlap, bool combine)
+    {
+        var first = Detector(1);
+        first.DateDisabled = Start.AddMinutes(overlap ? 40 : 30);
+        var second = Detector(1);
+        second.DateAdded = Start.AddMinutes(overlap ? 20 : 30);
+        var result = await Run(new[] { first, second }, new List<IndianaEvent>
+        {
+            Event(1, Start.AddMinutes(10)),
+            Event(1, Start.AddMinutes(30)),
+            Event(1, Start.AddMinutes(50))
+        }, binSize: 60, combine: combine,
+            configureLocation: location => MoveToNewApproach(location, second, 102));
+
+        var chart = Assert.Single(result.Charts);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Equal(3, chart.TotalVolume);
+        Assert.Equal(3, Assert.Single(lane.Volume).Value);
+        Assert.Equal(3, result.PeakHour!.Value.Value);
+        Assert.Equal(3, Assert.Single(result.Table).Volumes.Sum(v => v.Value));
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(lane.ApproachDescription);
+        Assert.Equal("Thru", lane.MovementType);
+        Assert.Null(chart.LaneUtilizationFactor);
     }
 
     [Theory]
@@ -426,7 +546,7 @@ public class TurningMovementCountReportServiceTests
     {
         var first = Detector(1);
         first.DateDisabled = Start.AddMinutes(30);
-        var second = Detector(1, 2, MovementTypes.TR);
+        var second = Detector(1, 1, MovementTypes.TR);
         second.DateAdded = Start.AddMinutes(30);
 
         var result = await Run(new[] { first, second }, new List<IndianaEvent>
@@ -438,6 +558,33 @@ public class TurningMovementCountReportServiceTests
         Assert.Equal(2, result.Charts.Sum(c => c.TotalVolume));
         Assert.Equal(2, result.PeakHour!.Value.Value);
         Assert.Equal(2, result.Table.Sum(row => row.Volumes.Sum(v => v.Value)));
+        if (combine)
+        {
+            var chart = Assert.Single(result.Charts);
+            var lane = Assert.Single(chart.Lanes);
+            Assert.Equal("Thru + Thru-Right", chart.MovementType);
+            Assert.Equal(2, chart.TotalVolume);
+            Assert.Null(lane.LaneNumber);
+            Assert.Null(lane.ApproachId);
+            Assert.Null(chart.LaneUtilizationFactor);
+            Assert.Equal(new[] { 0, 4, 4, 0 }, lane.Volume.Select(v => v.Value));
+        }
+        else
+        {
+            Assert.Equal(2, result.Charts.Count);
+            foreach (var movement in new[] { "Thru", "Thru-Right" })
+            {
+                var chart = Assert.Single(result.Charts.Where(c => c.MovementType == movement));
+                var lane = Assert.Single(chart.Lanes);
+                Assert.Equal(1, chart.TotalVolume);
+                Assert.Equal(101, lane.ApproachId);
+                Assert.Equal(1, lane.LaneNumber);
+                Assert.Equal(movement, lane.MovementType);
+                Assert.Equal(1, chart.LaneUtilizationFactor);
+                Assert.Equal(movement == "Thru" ? new[] { 0, 1, 0, 0 } : new[] { 0, 0, 1, 0 },
+                    chart.TotalVolumes.Select(v => v.Value));
+            }
+        }
     }
 
     [Fact]
@@ -455,8 +602,13 @@ public class TurningMovementCountReportServiceTests
             Event(1, Start.AddMinutes(50))
         });
 
-        Assert.Equal(3, Assert.Single(result.Charts).TotalVolume);
+        var chart = Assert.Single(result.Charts);
+        Assert.Equal(3, chart.TotalVolume);
         Assert.Equal(3, result.PeakHour!.Value.Value);
+        var lane = Assert.Single(chart.Lanes);
+        Assert.Null(lane.LaneNumber);
+        Assert.Null(lane.ApproachId);
+        Assert.Null(chart.LaneUtilizationFactor);
     }
 
     [Fact]
@@ -570,6 +722,20 @@ public class TurningMovementCountReportServiceTests
         Assert.Equal(10, Assert.Single(result.Charts).TotalVolume);
     }
 
+    private static void MoveToNewApproach(Location location, Detector detector, int approachId)
+    {
+        var original = location.Approaches.Single();
+        original.Detectors.Remove(detector);
+        var approach = new Approach
+        {
+            Id = approachId, Location = location, DirectionTypeId = original.DirectionTypeId,
+            Detectors = new List<Detector> { detector }
+        };
+        detector.Approach = approach;
+        detector.ApproachId = approachId;
+        location.Approaches.Add(approach);
+    }
+
     private static Detector Detector(int channel, int? lane = 1, MovementTypes movement = MovementTypes.T) => new()
     {
         Id = channel,
@@ -597,9 +763,12 @@ public class TurningMovementCountReportServiceTests
         IEnumerable<Location>? versions = null, Action<Location>? configureLocation = null)
     {
         var location = new Location { LocationIdentifier = "1001", PrimaryName = "Main", SecondaryName = "State" };
-        var approach = new Approach { Location = location, DirectionTypeId = DirectionTypes.NB, Detectors = detectors.ToList() };
+        var approach = new Approach { Id = 101, Location = location, DirectionTypeId = DirectionTypes.NB, Detectors = detectors.ToList() };
         foreach (var detector in approach.Detectors)
+        {
             detector.Approach = approach;
+            detector.ApproachId = approach.Id;
+        }
         location.Approaches = new List<Approach> { approach };
         configureLocation?.Invoke(location);
         var locations = new Mock<ILocationRepository>();
