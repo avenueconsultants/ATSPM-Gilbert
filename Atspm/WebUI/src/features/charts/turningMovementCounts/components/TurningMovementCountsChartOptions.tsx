@@ -1,3 +1,5 @@
+import type { Location } from '@/api/config'
+import { TmcSourceOptions } from './TmcSourceOptions'
 import { BinSizeDropdown } from '@/features/charts/components/selectChart/BinSizeDropdown'
 import { YAxisDefaultInput } from '@/features/charts/components/selectChart/YAxisDefaultInput'
 import { TurningMovementCountsChartOptionsDefaults } from '@/features/charts/turningMovementCounts/types'
@@ -7,12 +9,17 @@ import { Alert, Box, Checkbox, SelectChangeEvent, Typography } from '@mui/materi
 import { useEffect, useState } from 'react'
 
 interface TurningMovementCountsChartOptionsProps {
+  location?: Location | null
+  source?: string
+  deviceIds?: number[] | string
+  decoder?: string
   chartDefaults: TurningMovementCountsChartOptionsDefaults
   handleChartOptionsUpdate: (update: Default) => void
   isMeasureDefaultView?: boolean
 }
 
 export const TurningMovementCountsChartOptions = ({
+  location, source, deviceIds, decoder,
   chartDefaults,
   handleChartOptionsUpdate,
   isMeasureDefaultView = false,
@@ -37,12 +44,12 @@ export const TurningMovementCountsChartOptions = ({
     setCombineThruRight(defaultCombineThruRight)
   }, [chartDefaults.combineThruRight?.value])
 
-  const updateYAxisDefault = (newYAxis: string) => {
+  const updateYAxisDefault = (newYAxis: string | null) => {
     setYAxisMax(newYAxis)
 
     if (isMeasureDefaultView) {
       handleChartOptionsUpdate({
-        value: newYAxis,
+        value: newYAxis ?? '',
         option: chartDefaults.yAxisDefault.option,
         id: chartDefaults.yAxisDefault.id,
       })
@@ -114,6 +121,11 @@ export const TurningMovementCountsChartOptions = ({
         id="turning-movement-counts"
       />
       {!isMeasureDefaultView ? combineThruRightControl : null}
+      {!isMeasureDefaultView && location && <TmcSourceOptions location={location} source={source} deviceIds={deviceIds} decoder={decoder} onChange={(source, ids, decoder) => {
+        handleChartOptionsUpdate({ id: -1, option: 'source', value: source })
+        handleChartOptionsUpdate({ id: -1, option: 'deviceIds', value: ids.join(',') })
+        handleChartOptionsUpdate({ id: -1, option: 'decoder', value: decoder ?? '' })
+      }} />}
       <YAxisDefaultInput
         value={yAxisMax}
         handleChange={updateYAxisDefault}

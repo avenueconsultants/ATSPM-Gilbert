@@ -14,7 +14,7 @@ import LocationsConfigContainer from '@/features/locations/components/locationCo
 import { dateToTimestamp } from '@/utils/dateTime'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { LoadingButton } from '@mui/lab'
-import { Alert, Box } from '@mui/material'
+import { Alert, Box, Chip } from '@mui/material'
 import { AxiosError } from 'axios'
 import { differenceInMinutes } from 'date-fns'
 import { usePathname, useRouter } from 'next/navigation'
@@ -195,6 +195,8 @@ export default function ChartsContainer({
       case ChartType.TurningMovementCounts:
         return (
           <>
+            {'source' in chartData.data && <Chip label={`Source: ${chartData.data.source}`} sx={{ mb: 1 }} />}
+            {'warnings' in chartData.data && chartData.data.warnings?.map(message => <Alert key={message} severity="warning">{message}</Alert>)}
             <TurningMovementCountsTable chartData={chartData} />
             <DefaultChartResults
               refs={chartRefs.current}

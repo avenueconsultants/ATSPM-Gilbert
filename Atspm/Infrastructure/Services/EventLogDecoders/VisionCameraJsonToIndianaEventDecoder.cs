@@ -18,6 +18,7 @@
 using Utah.Udot.Atspm.Data.Enums;
 using Utah.Udot.Atspm.Data.Models.EventLogModels;
 using Utah.Udot.Atspm.Infrastructure.Services.EventLogDecoders;
+using Utah.Udot.Atspm.Infrastructure.Extensions;
 
 
 namespace Utah.Udot.ATSPM.Infrastructure.Services.EventLogDecoders
@@ -29,6 +30,7 @@ namespace Utah.Udot.ATSPM.Infrastructure.Services.EventLogDecoders
             var memoryStream = (MemoryStream)stream;
             var rootStats = memoryStream.ToArray().FromEncodedJson<Root>().detections;
             List<Detector> detectors = device.Location.Approaches.SelectMany(x => x.Detectors).ToList();
+            TimeZoneInfo deviceTimeZone = null;
 
             var response = rootStats
                 .SelectMany(visionCameraDetection =>
@@ -45,6 +47,17 @@ namespace Utah.Udot.ATSPM.Infrastructure.Services.EventLogDecoders
                     }
 
                     var timestamp = visionCameraDetection.time;
+                    // Indiana events are stored as device-local wall time. Preserve timestamps
+                    // already lacking a timezone; convert UTC/offset timestamps using the site's
+                    // coordinates, independently of the machine running EventLogUtility.
+                    if (timestamp.Kind != DateTimeKind.Unspecified)
+                    {
+                        deviceTimeZone ??= device.GetTimeZoneFromLocation()
+                            ?? throw new InvalidOperationException($"Device {device.Id}: valid location coordinates are required to convert Vision Indiana timestamps to device-local time.");
+                        timestamp = DateTime.SpecifyKind(
+                            TimeZoneInfo.ConvertTimeFromUtc(timestamp.ToUniversalTime(), deviceTimeZone),
+                            DateTimeKind.Unspecified);
+                    }
                     short eventCode = 82; // TODO: Confirm this code
 
                     return matchingDetectors.Select(detector => new IndianaEvent

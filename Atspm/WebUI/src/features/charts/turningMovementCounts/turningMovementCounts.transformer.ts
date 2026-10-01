@@ -102,6 +102,8 @@ export default function transformTurningMovementCountsData(
   return {
     type: ChartType.TurningMovementCounts,
     data: {
+      source: response.data.source ?? 'ATSPM',
+      warnings: response.data.warnings ?? [],
       displayProps,
       labels,
       table: response.data.table,

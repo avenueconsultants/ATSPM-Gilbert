@@ -1,4 +1,4 @@
-﻿#region license
+#region license
 // Copyright 2026 Utah Departement of Transportation
 // for Data - Utah.Udot.Atspm.Data.Models.MeasureOptions/MeasureOptionsBase.cs
 // 
@@ -308,6 +308,10 @@ namespace Utah.Udot.Atspm.Data.Models.MeasureOptions
 
     public class TurningMovementCountsOptions : MeasureOptionsBase, IBinSize
     {
+        public string Source { get; set; } = "atspm";
+        public int[] DeviceIds { get; set; } = Array.Empty<int>();
+        /// <summary>Selected TMC decoder; required when the selected devices share multiple configured decoders.</summary>
+        public string? Decoder { get; set; }
         public int BinSize { get; set; }
         public bool CombineThruRight { get; set; }
         public int MetricTypeId { get; internal set; } = 5;

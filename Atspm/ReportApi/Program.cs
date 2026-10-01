@@ -132,6 +132,7 @@ builder.Host
         s.AddScoped<IReportService<TransitSignalPriorityOptions, List<TransitSignalPriorityResult>>, TransitSignalPriorityReportService>();
         s.AddScoped<IReportService<TimingAndActuationsOptions, IEnumerable<TimingAndActuationsForPhaseResult>>, TimingAndActuactionReportService>();
         s.AddScoped<IReportService<TurningMovementCountsOptions, TurningMovementCountsResult>, TurningMovementCountReportService>();
+        s.AddTmcCountSources();
         s.AddScoped<IReportService<YellowRedActivationsOptions, IEnumerable<YellowRedActivationsResult>>, YellowRedActivationsReportService>();
         s.AddScoped<IReportService<WaitTimeOptions, IEnumerable<WaitTimeResult>>, WaitTimeReportService>();
         s.AddScoped<IReportService<WatchDogOptions, WatchDogResult>, WatchDogReportService>();
@@ -171,7 +172,6 @@ builder.Host
         s.AddScoped<PriorityDetailsReportService>();
         s.AddScoped<TimeSpaceDiagramReportService>();
         s.AddScoped<TransitSignalPriorityService>();
-        s.AddScoped<TurningMovementCountsService>();
         s.AddScoped<WaitTimeService>();
         s.AddScoped<YellowRedActivationsService>();
         s.AddScoped<WatchDogReportService>();
@@ -193,6 +193,7 @@ builder.Host
 
         //Common Services
         s.AddScoped<PlanService>();
+        s.AddScoped<TmcCountSourceResolver>();
         s.AddScoped<PedActuationService>();
         s.AddScoped<LocationPhaseService>();
         s.AddScoped<CycleService>();
@@ -211,6 +212,11 @@ builder.Host
         s.AddScoped<WatchDogIgnoreEventService>();
         s.AddScoped<RampMeteringService>();
         s.AddScoped<DetectionService>();
+
+        // TurningMovementCountsService is no longer registered: the TMC report now uses
+        // TmcCountSourceResolver and the sources/shared TmcResultBuilder registered by
+        // AddTmcCountSources() above. Indiana and device sources share report assembly and
+        // peak calculations; the legacy service remains only for compatibility and regression tests.
 
         s.AddPathBaseFilter(h);
 
