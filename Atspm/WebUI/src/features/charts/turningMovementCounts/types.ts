@@ -25,6 +25,8 @@ import {
 export interface TurningMovementCountsChartOptions extends BaseChartOptions {
   binSize: number
   combineThruRight?: boolean
+  source?: 'atspm' | 'devices'
+  deviceIds?: number[]
 }
 
 export interface TurningMovementCountsChartOptionsDefaults {
@@ -59,6 +61,8 @@ export interface RawTurningMovementCountsData extends BaseChartData {
 export interface RawTurningMovementCountsResponse {
   type: ChartType.TurningMovementCounts
   data: {
+    source?: string
+    warnings?: string[]
     charts: RawTurningMovementCountsData[]
     table: RawTurningMovementCountTableRow[]
     peakHourFactor: number | null

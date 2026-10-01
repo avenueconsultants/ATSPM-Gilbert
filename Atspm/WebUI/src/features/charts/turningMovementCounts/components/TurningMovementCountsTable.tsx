@@ -37,6 +37,7 @@ type NewLaneSeries = {
 
 export interface TurningMovementCountsTableChartData {
   data: {
+    source?: string
     displayProps?: TurningMovementCountsTableDisplayProps
     labels: Labels
     table: NewLaneSeries[]
@@ -52,6 +53,12 @@ interface TurningMovementCountsTableProps {
 }
 
 type SelectionMode = 'combine' | 'split'
+
+export function buildTurningMovementCountsCsvFilename(
+  base: string = 'Turning_Movement_Counts', laneType: string, directionMode: string, movementMode: string
+) {
+  return `${base}_${laneType}_${directionMode}_${movementMode}.csv`
+}
 
 function formatTime(ts: string) {
   return format(new Date(ts), 'HH:mm')
@@ -513,10 +520,10 @@ export default function TurningMovementCountsTable({
     })
 
     const lines: string[] = []
-    lines.push(header.map(csvEscape).join(','))
+    lines.push(['Source', ...header].map(csvEscape).join(','))
 
     rows.forEach((row) => {
-      lines.push(row.map(csvEscape).join(','))
+      lines.push([chartData.data.source ?? 'ATSPM', ...row].map(csvEscape).join(','))
     })
 
     return lines.join('\n')
@@ -524,7 +531,7 @@ export default function TurningMovementCountsTable({
 
   const handleDownloadCsv = () => {
     const csv = buildCsv()
-    const filename = `${displayProps?.exportFileName}.csv`
+    const filename = buildTurningMovementCountsCsvFilename(displayProps?.exportFileName, resolvedActiveLaneType, directionMode, movementMode)
 
     downloadTextFile(filename, csv)
   }

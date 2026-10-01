@@ -62,6 +62,17 @@ const buildChart = (
 })
 
 describe('transformTurningMovementCountsData', () => {
+  it('uses numbered lane labels and preserves source and warnings', () => {
+    const chart = buildChart('Thru')
+    const result = transformTurningMovementCountsData({
+      type: ChartType.TurningMovementCounts,
+      data: { charts: [chart], table: [], peakHour: null, peakHourFactor: null,
+        source: 'Econolite Vision (1 camera)', warnings: ['Camera 2 unavailable'] },
+    }) as TransformedTurningMovementCountsResponse
+    expect(result.data.source).toBe('Econolite Vision (1 camera)')
+    expect(result.data.warnings).toEqual(['Camera 2 unavailable'])
+    expect(JSON.stringify(result.data.charts[0].chart)).toContain('Lane 1')
+  })
   it('sorts combined movements correctly and builds labels and peak hour rows', () => {
     const response: RawTurningMovementCountsResponse = {
       type: ChartType.TurningMovementCounts,

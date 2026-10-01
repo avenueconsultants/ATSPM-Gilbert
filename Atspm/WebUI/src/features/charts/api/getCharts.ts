@@ -40,7 +40,6 @@ export const TypeApiMap: Record<ChartType, string> = {
   [ChartType.PurduePhaseTermination]:
     '/api/v1/PurduePhaseTermination/GetReportData',
   [ChartType.PreemptionDetails]: '/api/v1/PreemptDetail/GetReportData',
-    [ChartType.PrioritySummary]: '/api/v1/PrioritySummary/GetReportData',
   [ChartType.PurdueSplitFailure]: '/api/v1/SplitFail/GetReportData',
   [ChartType.SplitMonitor]: '/api/v1/SplitMonitor/GetReportData',
   [ChartType.TimingAndActuation]: '/api/v1/TimingAndActuation/GetReportData',
@@ -54,7 +53,7 @@ export const TypeApiMap: Record<ChartType, string> = {
     [ChartType.RampMetering]: '/api/v1/RampMetering/GetReportData',
 }
 
-type StringBooleanMap = Record<string, boolean | string | Date>
+type StringBooleanMap = Record<string, boolean | string | Date | number | number[] | undefined>
 
 const mapStringBooleansToBoolean = (obj: ChartOptions) => {
   return Object.entries(obj).reduce<StringBooleanMap>((acc, [key, value]) => {
@@ -85,6 +84,14 @@ export const getCharts = async (
   transformedOptions.start = dateToTimestamp(transformedOptions.start as Date)
   transformedOptions.end = dateToTimestamp(transformedOptions.end as Date)
 
+  if (type === ChartType.TurningMovementCounts) {
+    const tmcOptions = options as { source?: string; deviceIds?: number[] | string; decoder?: string }
+    transformedOptions.source = tmcOptions.source ?? 'atspm'
+    transformedOptions.decoder = transformedOptions.source === 'devices' ? tmcOptions.decoder : undefined
+    const ids = tmcOptions.deviceIds
+    transformedOptions.deviceIds = transformedOptions.source === 'devices'
+      ? (Array.isArray(ids) ? ids : String(ids ?? '').split(',')).map(Number).filter(n => Number.isInteger(n) && n > 0) : []
+  }
   const response = await reportsAxios.post(endpoint, transformedOptions)
   return transformChartData({
     type,

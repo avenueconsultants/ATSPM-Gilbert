@@ -22,6 +22,8 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
     /// </summary>
     public class TurningMovementCountsResult
     {
+        public string Source { get; set; } = "ATSPM";
+        public IReadOnlyList<string> Warnings { get; set; } = Array.Empty<string>();
         public List<TurningMovementCountsLanesResult> Charts { get; set; }
         public List<TurningMovementCountData> Table { get; set; }
         public KeyValuePair<DateTime, int>? PeakHour { get; set; }

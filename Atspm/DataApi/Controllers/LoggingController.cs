@@ -41,15 +41,25 @@ namespace Utah.Udot.Atspm.DataApi.Controllers
         private readonly IDeviceRepository _repository;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _log;
+        private readonly IConfiguration _configuration;
         private const string DownloadWindowDateTimeFormat = "yyyy-MM-dd'T'HH:mm:sszzz";
 
         /// <inheritdoc/>
-        public LoggingController(IDeviceRepository deviceRepository, IServiceScopeFactory serviceScopeFactory, ILogger<LoggingController> log)
+        public LoggingController(IDeviceRepository deviceRepository, IServiceScopeFactory serviceScopeFactory, ILogger<LoggingController> log, IConfiguration configuration)
         {
             _repository = deviceRepository;
             _serviceScopeFactory = serviceScopeFactory;
             _log = log;
+            _configuration = configuration;
         }
+
+        /// <summary>
+        /// Enables manual device test downloads through standard configuration providers:
+        /// Features:DeviceTestDownload, or Features__DeviceTestDownload in the environment.
+        /// Defaults to false when absent. Scheduled EventLogUtility logging is unaffected.
+        /// </summary>
+        [HttpGet("testDownloadEnabled")]
+        public bool TestDownloadEnabled() => _configuration.GetValue<bool>("Features:DeviceTestDownload");
 
         /// <summary>
         /// Synchronizes event logs for the requested devices.
@@ -58,8 +68,13 @@ namespace Utah.Udot.Atspm.DataApi.Controllers
         [AuthorizePermission(AtspmAuthorization.Permissions.LocationConfigurationsEdit)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<List<DeviceEventDownload>>> SyncDeviceEventsAsync([FromBody] SyncDeviceEventsRequest request, CancellationToken cancellationToken)
         {
+            // Enforce the same flag server-side so a direct request cannot bypass the hidden UI.
+            if (!TestDownloadEnabled())
+                return StatusCode(StatusCodes.Status403Forbidden, "Device test downloads are disabled.");
+
             var (deviceIdList, validationError) = ValidateDeviceIds(request);
             if (validationError != null)
             {

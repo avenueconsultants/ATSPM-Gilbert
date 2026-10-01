@@ -1,3 +1,4 @@
+import { useDeviceTestDownloadEnabled } from '@/features/devices/api/useDeviceTestDownloadEnabled'
 import { useLocationWizardStore } from '@/features/locations/components/LocationSetupWizard/locationSetupWizardStore'
 import { useNotificationStore } from '@/stores/notifications'
 import CloseIcon from '@mui/icons-material/Close'
@@ -37,6 +38,7 @@ export default function LocationSetupWizard({
   open = true,
   onClose,
 }: LocationSetupWizardProps) {
+  const testDownloadEnabled = useDeviceTestDownloadEnabled()
   const { addNotification } = useNotificationStore()
   const {
     activeStep,
@@ -80,6 +82,7 @@ export default function LocationSetupWizard({
   }
 
   const handleVerifyDevices = () => {
+    if (!testDownloadEnabled) return
     setActiveStep(0)
     setDeviceVerificationStatus('READY_TO_RUN')
   }
@@ -134,83 +137,91 @@ export default function LocationSetupWizard({
       </Box>
 
       {!isMinimized && (
-        <Stepper activeStep={activeStep} orientation="vertical">
-          {steps.map((step, index) => (
-            <Step key={step.label} completed={activeStep > index}>
-              <StepLabel>{step.label}</StepLabel>
-              <StepContent>
-                <Typography
-                  variant="body2"
-                  sx={{ fontSize: '.85rem' }}
-                  color="text.secondary"
-                >
-                  {step.description}
-                </Typography>
+        <Stepper
+          activeStep={testDownloadEnabled ? activeStep : 0}
+          orientation="vertical"
+        >
+          {steps.map(
+            (step, index) =>
+              (index !== 0 || testDownloadEnabled) && (
+                <Step key={step.label} completed={activeStep > index}>
+                  <StepLabel>{step.label}</StepLabel>
+                  <StepContent>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: '.85rem' }}
+                      color="text.secondary"
+                    >
+                      {step.description}
+                    </Typography>
 
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  {index === 0 && (
-                    <>
-                      <Button
-                        variant="contained"
-                        onClick={handleVerifyDevices}
-                        sx={{
-                          textTransform: 'none',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        Run Verification
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={handleNextStep}
-                        sx={{
-                          textTransform: 'none',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        Next
-                      </Button>
-                    </>
-                  )}
+                    <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                      {index === 0 && (
+                        <>
+                          <Button
+                            variant="contained"
+                            onClick={handleVerifyDevices}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Run Verification
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={handleNextStep}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Next
+                          </Button>
+                        </>
+                      )}
 
-                  {index === 1 && (
-                    <>
-                      <Button
-                        variant="outlined"
-                        onClick={handlePrevStep}
-                        sx={{
-                          textTransform: 'none',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        Back
-                      </Button>
-                      <Button
-                        variant="contained"
-                        onClick={handleReconcileApproaches}
-                        sx={{
-                          textTransform: 'none',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        Run Reconciliation
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={handleFinish}
-                        sx={{
-                          textTransform: 'none',
-                          fontSize: '0.8rem',
-                        }}
-                      >
-                        Finish
-                      </Button>
-                    </>
-                  )}
-                </Box>
-              </StepContent>
-            </Step>
-          ))}
+                      {index === 1 && (
+                        <>
+                          {testDownloadEnabled && (
+                            <Button
+                              variant="outlined"
+                              onClick={handlePrevStep}
+                              sx={{
+                                textTransform: 'none',
+                                fontSize: '0.8rem',
+                              }}
+                            >
+                              Back
+                            </Button>
+                          )}
+                          <Button
+                            variant="contained"
+                            onClick={handleReconcileApproaches}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Run Reconciliation
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            onClick={handleFinish}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            Finish
+                          </Button>
+                        </>
+                      )}
+                    </Box>
+                  </StepContent>
+                </Step>
+              )
+          )}
         </Stepper>
       )}
     </Box>
