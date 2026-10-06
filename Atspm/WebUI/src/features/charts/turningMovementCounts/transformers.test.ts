@@ -73,6 +73,25 @@ describe('transformTurningMovementCountsData', () => {
     expect(result.data.warnings).toEqual(['Camera 2 unavailable'])
     expect(JSON.stringify(result.data.charts[0].chart)).toContain('Lane 1')
   })
+
+  it('names the source in the chart info only when the report has one', () => {
+    const transform = (source?: string) => {
+      const result = transformTurningMovementCountsData({
+        type: ChartType.TurningMovementCounts,
+        data: { charts: [buildChart('Thru')], table: [], peakHour: null, peakHourFactor: null, source },
+      }) as TransformedTurningMovementCountsResponse
+      const info = (result.data.charts[0].chart as ChartWithTitle).title?.find((title) =>
+        title.text?.includes('Total Volume'))?.text
+      return { source: result.data.source, info }
+    }
+
+    expect(transform('Vision Camera API (3 of 4 cameras)').info).toContain(
+      'Source:  {values|Vision Camera API (3 of 4 cameras)}'
+    )
+    const hidden = transform(undefined)
+    expect(hidden.source).toBeUndefined()
+    expect(hidden.info).not.toContain('Source')
+  })
   it('sorts combined movements correctly and builds labels and peak hour rows', () => {
     const response: RawTurningMovementCountsResponse = {
       type: ChartType.TurningMovementCounts,

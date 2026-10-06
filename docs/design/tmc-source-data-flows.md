@@ -1,14 +1,14 @@
 # Turning movement counts: source data flows and limitations
 
-Updated September 30, 2026. The diagrams describe the implemented configuration boundary: only Indiana events use ATSPM approach/detector configuration for interpreting counts. Camera sources retain location grouping and location-based timezone resolution. Solid arrows carry data; dotted arrows supply configuration.
+Updated October 6, 2026. The diagrams describe the implemented configuration boundary: only Indiana events use ATSPM approach/detector configuration for interpreting counts. Camera sources retain location grouping and location-based timezone resolution. Solid arrows carry data; dotted arrows supply configuration.
 
 ## What configuration does each source use?
 
-**Indiana events (ATSPM)** use configured approaches and detectors to interpret counts. **Vision Camera API** and **Vision Bin Statistics Stored** must not use approach/detector data for direction, movement or lane interpretation. They use camera zone names and camera movement-count fields instead.
+**Indiana Events (ATSPM)** use configured approaches and detectors to interpret counts. **Vision Camera API** and **Vision Bin Statistics Stored** must not use approach/detector data for direction, movement or lane interpretation. They use camera zone names and camera movement-count fields instead.
 
 The selected ATSPM location remains the grouping mechanism for cameras. Camera/device identity, connection settings and archive keys can remain in the existing configuration/storage model. Camera report timezone is derived from the selected location's latitude/longitude. Keep this behavior; no separate camera timezone setting is needed. This distinction does not require replacing the location selector or migrating archive identities.
 
-| Dependency | Indiana events (ATSPM) | Vision Camera API: target | Vision Bin Statistics Stored: target |
+| Dependency | Indiana Events (ATSPM) | Vision Camera API: target | Vision Bin Statistics Stored: target |
 |---|---|---|---|
 | Count data read when generating report | Indiana event database | Camera `/bin-statistics` API | Statistics archive database |
 | ATSPM location | Required | Groups cameras and identifies the report | Groups cameras and identifies existing archives |
@@ -22,7 +22,7 @@ The selected ATSPM location remains the grouping mechanism for cameras. Camera/d
 
 **Timezone decision:** retain the current implementation. Both statistics decoders interpret selected dates in the location's timezone, convert the query range to UTC, and convert returned UTC timestamps back to local report time. Legacy stored timestamps without a kind are treated as local. The Vision Indiana decoder converts timezone-aware detections using the device location's coordinates and leaves unspecified timestamps unchanged. Valid coordinates are required for conversion; no logger-timezone fallback is used. The statistics availability offset delays collection and is not a timezone adjustment.
 
-The `TmcDecoder` device property accepts a single class name or a comma-separated list, for example `VisionCameraAPI,VisionBinStatisticsStored`. Spaces, empty entries, and duplicate names are ignored. The source radio buttons group the selected location's active devices by each configured decoder. Each choice sends `source=devices`, `deviceIds`, and the selected `decoder`; the API verifies that decoder is configured on every selected device. Older requests without `decoder` still work when there is exactly one common decoder. Multiple choices use the same device ID without mixing their counts. Logging paths and logging decoders remain separate configuration; this does not combine the detections and statistics download endpoints. Labels add spaces to that name and show the distinct camera count. There is no Live/Stored mode setting. Indiana is registered as the default `atspm` count source. All sources use the same report builder and peak calculations.
+The `TmcDecoder` device property accepts a single class name or a comma-separated list, for example `VisionCameraAPI,VisionBinStatisticsStored`. Spaces, empty entries, and duplicate names are ignored. The source radio buttons group the selected location's active devices by each configured decoder. Each choice sends `source=devices`, `deviceIds`, and the selected `decoder`; the API verifies that decoder is configured on every selected device. Older requests without `decoder` still work when there is exactly one common decoder. Multiple choices use the same device ID without mixing their counts. Logging paths and logging decoders remain separate configuration; this does not combine the detections and statistics download endpoints. Labels add spaces to that name and show the distinct camera count. The WebUI shows the report's source label (beside the table heading, on each chart's info line and as the CSV `Source` column) only while device sources are enabled. There is no Live/Stored mode setting. Indiana is registered as the default `atspm` count source. All sources use the same report builder and peak calculations.
 
 ## Shared report pipeline and future sources
 
@@ -46,7 +46,7 @@ For a new device family, implement `ITurningMovementCountDecoder` in an assembly
 
 For a non-device source, implement `ITurningMovementCountSource` and register `AddTmcCountSource<YourSource>("source-key")`. API requests can select that registered key without modifying the report service or peak calculations. A new non-device radio choice still needs UI exposure; non-device registrations are not automatically discovered by the current device-based UI. Sources must return counts in local report time and provide stable lane/contributor identities where needed. Registration does not automatically supply collection, timezone conversion or completeness guarantees.
 
-## 1. Indiana events (ATSPM)
+## 1. Indiana Events (ATSPM)
 
 This diagram shows the Vision-camera collection path used in this test installation. Existing controller Indiana events can enter the same database/report path without the Vision import step.
 
@@ -117,7 +117,9 @@ Read-only verification on September 30, 2026: GCP `atspm-clone`, database `ATSPM
 - Requires an active FIR/AI camera device with manufacturer Econolite and a model containing Vision, a valid IP/port, and a numeric camera identifier (an optional `-bins` suffix is removed).
 - The application accepts report bins from 1 to 1,440 minutes and up to 31 days per request; the camera must also support the requested interval/range. Application acceptance does not guarantee camera support.
 - Depends on camera connectivity, retention and statistics availability. Recently completed bins may not yet be available. The report path does not apply the logger's availability offset automatically.
-- Requests have a 30-second timeout and at most four concurrent HTTP requests per configured IP/port. Partial failures can return partial counts with warnings; if no selected camera responds, the report fails.
+- Requests have a 30-second timeout and at most four concurrent HTTP requests per configured IP/port. Partial failures can return partial counts with warnings, and the source label then counts only the cameras that responded (`Vision Camera API (3 of 4 cameras)`). If no selected camera responds, the report fails with one line per camera.
+- A camera that times out, refuses the connection or has an unknown host name is not asked for its remaining days in that report; a warning lists the skipped dates. Other camera errors (rejected request, rejected login, server error) are warned per day, and the remaining days are still requested. Nothing is remembered between reports.
+- When the device configuration has a user name, the report sends it and the password as HTTP Basic credentials, for communications managers with login turned on.
 - Query start is aligned down to a camera bin boundary. Output discards bins before the selected start; choose aligned start/end boundaries for fair comparisons.
 - A successfully returned empty/partial response cannot establish that traffic was zero. Missing intervals are represented as zeros within an otherwise populated series; completeness is not independently proven.
 

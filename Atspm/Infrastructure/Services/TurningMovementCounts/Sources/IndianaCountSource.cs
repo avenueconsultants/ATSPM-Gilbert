@@ -31,6 +31,6 @@ public sealed class IndianaCountSource(IIndianaEventLogRepository repository, Pl
                 detector.LaneType, detector.LaneNumber, bin.StartTime, options.BinSize, bin.DetectorCount) {
                 ExplicitLane = true, ContributorId = $"detector:{detector.Id}" }));
         }
-        return Task.FromResult(new TmcCountSourceResult("ATSPM", counts, Array.Empty<string>()) { Plans = plans, BinOrigin = options.Start });
+        return Task.FromResult(new TmcCountSourceResult("Indiana Events (ATSPM)", counts, Array.Empty<string>()) { Plans = plans, BinOrigin = options.Start });
     }
 }

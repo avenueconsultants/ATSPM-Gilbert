@@ -104,11 +104,13 @@ This is wrapped in `useTmcSources(location)`. It returns ATSPM first, then one e
 
 A **Count source** radio group sits in the TMC chart options (`TurningMovementCountsChartOptions.tsx`), under bin size and Combine Thru + Right. **Generate Charts** stays the only run button.
 
-- **Options:** one radio per entry from `useTmcSources(location)`. ATSPM is always first; each device group shows its name and decoder (for example "Econolite Vision (4 cameras)").
+- **Options:** one radio per entry from `useTmcSources(location)`. "Indiana Events (ATSPM)" is always first; each device group shows its name and decoder (for example "Econolite Vision (4 cameras)").
 - **Default:** ATSPM. If the location has no device sources, the Count source group is not rendered at all, and TMC looks and runs exactly as it does today.
 - **One source per run:** a radio group, where a source is ATSPM or one device group. All cameras in the group run together, so a four-camera intersection produces a complete TMC in one run. Counts from ATSPM and cameras are never mixed.
 - **Run flow:** chart options get `source: "atspm" | "devices"` and, for devices, `deviceIds: number[]`. `getCharts` posts to the same `TurningMovementCounts/GetReportData` endpoint, and the transformer, table and filters are unchanged.
-- **Source label:** a chip above the chart names the source (for example "Source: Econolite Vision (4 cameras)"). CSV export adds a `Source` column.
+- **Source label:** shown only while `Features:TmcDeviceSources` is on. It sits beside the **Table View** heading and on each chart's info line (for example "Source: Vision Camera API (4 cameras)"), and CSV export adds a `Source` column. When some cameras didn't respond, it reads "Vision Camera API (3 of 4 cameras)". With the flag off, none of the three appear.
+- **Missing-day marks:** the calendar's X marks come from ATSPM controller events, so they're hidden while a device source is selected.
+- **Errors and warnings:** shown below the Generate Charts button and the chart toolbox, with space between. A report that fails lists one line per camera.
 - **URL state:** `source` is included in the shareable query string. If the device no longer qualifies, the page falls back to ATSPM.
 
 The only admin UI change is the `TmcDecoder` value suggestions in the device properties editor.
@@ -363,8 +365,11 @@ Live mode talks to field hardware, so ReportApi makes every call server-side wit
 
 | Case | Behavior |
 | --- | --- |
-| Camera unreachable or times out (Live) | 200 with the other cameras' counts and a warning naming the camera; 503 if none respond |
-| Camera returns 400 (e.g. bad date) (Live) | 502 with the camera's error text |
+| Camera refuses the connection, has an unknown host name, or times out (Live) | 200 with the other cameras' counts. The camera's warning names the failed day, and a second warning lists the days skipped after it ("Camera 2: unreachable; skipped 2026-04-15 to 2026-04-20."); that camera isn't asked again in this report. The source label reads "(3 of 4 cameras)" |
+| Camera returns 400 (e.g. bad date) (Live) | 200; that camera's warning quotes the camera's error text, and the other cameras still report |
+| Camera returns 401 (login required) (Live) | 200; that camera's warning says the login was rejected and to check the user name and password on the device configuration |
+| Camera returns another error, e.g. 500 (Live) | That day's warning; the camera's remaining days are still requested |
+| No camera returns any day (Live) | 503: "None of the selected devices responded." followed by one line per camera with its first failure |
 | Truncated or invalid JSON (Live) | Retry that day once as two half-days, then warn |
 | `TmcDecoder` missing, unknown, or `CanDecode` fails | 400 naming the device and decoder |
 | No bins in range | 200 with empty `Charts`/`Table` and a warning naming the cameras |
@@ -382,6 +387,8 @@ Live mode talks to field hardware, so ReportApi makes every call server-side wit
 **Performance**
 
 - Live: one request per camera per day, at most 4 concurrent per comm manager, with a 30 s timeout. The test unit answered a 1-day, 15-minute request in 0.4 to 0.6 s over the LAN. A 4-camera, 1-day TMC is 4 requests.
+- A camera that times out or can't be reached costs one timeout per report, not one per day: a week report with one silent camera returns in about 30 s instead of 3.5 minutes.
+- Nothing is remembered between reports. Each Generate Charts click tries every selected camera again, and the WebUI doesn't retry a failed report on its own.
 - Stored: one `GetData` read per camera, run in parallel.
 - Keep the ATSPM TMC's maximum date range for both modes.
 
@@ -399,7 +406,7 @@ The key tests are that the ATSPM path doesn't regress and that each decoder prod
   - direction resolution (`TmcZoneMap` > through letter > phase via camera names > `Phase n` label)
   - zone-name lane labels
   - the same output in Live and Stored mode for the same hour
-- **WebUI (Jest):** `useTmcSources` from page data or the ConfigApi; the group is hidden with no device sources; ATSPM is the default; `source` and `deviceIds` reach the request.
+- **WebUI (Jest):** `useTmcSources` from page data or the ConfigApi; the group is hidden with no device sources; ATSPM is the default; `source` and `deviceIds` reach the request. The source label (table heading, chart info line, CSV column) follows the feature flag; missing-day marks are hidden for device sources; errors and warnings sit below Generate Charts, one line per camera; a failed report is requested once.
 - **Field check:** at one Gilbert intersection, compare a 1 h window from ATSPM and from the cameras. Approach totals should agree within about 5%.
 
 **Rollout**

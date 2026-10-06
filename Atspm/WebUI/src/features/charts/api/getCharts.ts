@@ -19,11 +19,20 @@ import {
   ChartType,
   RawChartResponse,
 } from '@/features/charts/common/types'
+import {
+  TMC_DEVICE_SOURCES_FLAG_KEY,
+  TMC_DEVICE_SOURCES_FLAG_STALE_TIME,
+  getTmcDeviceSourcesEnabled,
+} from '@/features/charts/turningMovementCounts/useTmcSources'
 import { TransformedChartResponse } from '@/features/charts/types'
 import { reportsAxios } from '@/lib/axios'
-import { ExtractFnReturnType, QueryConfig } from '@/lib/react-query'
+import {
+  ExtractFnReturnType,
+  QueryConfig,
+  queryClient,
+} from '@/lib/react-query'
 import { dateToTimestamp } from '@/utils/dateTime'
-import { useQuery } from 'react-query'
+import { QueryClient, useQuery, useQueryClient } from 'react-query'
 import { transformChartData } from './transformData'
 
 export const TypeApiMap: Record<ChartType, string> = {
@@ -77,7 +86,8 @@ const mapStringBooleansToBoolean = (obj: ChartOptions) => {
 
 export const getCharts = async (
   type: ChartType,
-  options: ChartOptions
+  options: ChartOptions,
+  client: QueryClient = queryClient
 ): Promise<TransformedChartResponse> => {
   const endpoint = TypeApiMap[type]
   const transformedOptions = mapStringBooleansToBoolean(options)
@@ -93,9 +103,17 @@ export const getCharts = async (
       ? (Array.isArray(ids) ? ids : String(ids ?? '').split(',')).map(Number).filter(n => Number.isInteger(n) && n > 0) : []
   }
   const response = await reportsAxios.post(endpoint, transformedOptions)
+  // The TMC count source is only labelled while device sources are enabled.
+  const hideSource =
+    type === ChartType.TurningMovementCounts &&
+    !(await client
+      .fetchQuery(TMC_DEVICE_SOURCES_FLAG_KEY, getTmcDeviceSourcesEnabled, {
+        staleTime: TMC_DEVICE_SOURCES_FLAG_STALE_TIME,
+      })
+      .catch(() => false))
   return transformChartData({
     type,
-    data: response,
+    data: hideSource ? { ...response, source: undefined } : response,
   } as unknown as RawChartResponse)
 }
 
@@ -115,10 +133,13 @@ export const useCharts = ({
   chartOptions,
   config,
 }: UseChartsOptions) => {
+  const client = useQueryClient()
   return useQuery<ExtractFnReturnType<QueryFnType>>({
+    // A failed report fails the same way again, and retries delay the error by several requests.
+    retry: false,
     ...config,
     enabled: false,
     queryKey: ['charts', chartType, chartOptions],
-    queryFn: () => getCharts(chartType, chartOptions),
+    queryFn: () => getCharts(chartType, chartOptions, client),
   })
 }

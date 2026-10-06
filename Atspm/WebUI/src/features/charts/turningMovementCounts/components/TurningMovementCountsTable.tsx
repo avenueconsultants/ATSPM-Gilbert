@@ -8,6 +8,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Stack,
   Typography,
 } from '@mui/material'
 import { format } from 'date-fns'
@@ -519,11 +520,13 @@ export default function TurningMovementCountsTable({
       return `${h1} - ${h2t}`
     })
 
+    // Source is only set while device sources are enabled.
+    const source = chartData.data.source
     const lines: string[] = []
-    lines.push(['Source', ...header].map(csvEscape).join(','))
+    lines.push([...(source ? ['Source'] : []), ...header].map(csvEscape).join(','))
 
     rows.forEach((row) => {
-      lines.push([chartData.data.source ?? 'ATSPM', ...row].map(csvEscape).join(','))
+      lines.push([...(source ? [source] : []), ...row].map(csvEscape).join(','))
     })
 
     return lines.join('\n')
@@ -540,9 +543,16 @@ export default function TurningMovementCountsTable({
     <Box sx={{ mt: 4 }}>
       <Accordion disableGutters defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h4" component="h2">
-            Table View
-          </Typography>
+          <Stack direction="row" alignItems="baseline" spacing={3}>
+            <Typography variant="h4" component="h2">
+              Table View
+            </Typography>
+            {chartData.data.source && (
+              <Typography color="text.secondary">
+                Source: {chartData.data.source}
+              </Typography>
+            )}
+          </Stack>
         </AccordionSummary>
 
         <AccordionDetails>

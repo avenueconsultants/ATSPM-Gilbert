@@ -1,9 +1,9 @@
 import { getDeviceActiveDevicesByLocationFromLocationId } from '@/api/config/device/device'
 import { reportsAxios, reportsRequest } from '@/lib/axios'
 import '@testing-library/jest-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { getCharts } from '../api/getCharts'
+import { getCharts, useCharts } from '../api/getCharts'
 import { ChartType } from '../common/types'
 import { TmcSourceOptions } from './components/TmcSourceOptions'
 import { formatDecoderLabel, groupTmcSources } from './useTmcSources'
@@ -58,7 +58,7 @@ test('one physical camera has one choice even with two logging streams; multiple
 test('page data defaults to ATSPM and selecting cameras sends all device IDs', async () => {
   const change = jest.fn()
   show({ id: 1, devices: [camera(1), camera(2)] }, change)
-  expect(await screen.findByLabelText('Indiana events (ATSPM)')).toBeChecked()
+  expect(await screen.findByLabelText('Indiana Events (ATSPM)')).toBeChecked()
   fireEvent.click(screen.getByLabelText('Vision Camera API (2 cameras)'))
   expect(change).toHaveBeenCalledWith('devices', [1, 2], 'VisionCameraAPI')
   expect(devices).not.toHaveBeenCalled()
@@ -140,6 +140,32 @@ test('report request carries device selection and defaults to ATSPM', async () =
     expect.any(String),
     expect.objectContaining({ source: 'atspm', deviceIds: [] })
   )
+})
+
+test.each([
+  ['enabled', () => request.mockResolvedValue(true), 'Vision Camera API (3 of 4 cameras)'],
+  ['disabled', () => request.mockResolvedValue(false), undefined],
+  ['unavailable', () => request.mockRejectedValue(new Error('Not found')), undefined],
+])('report source label follows the device sources flag when %s', async (_, flag, expected) => {
+  flag()
+  ;(reportsAxios.post as jest.Mock).mockResolvedValue({ source: 'Vision Camera API (3 of 4 cameras)', charts: [] })
+  const result = await getCharts(ChartType.TurningMovementCounts, {
+    start: new Date(2026, 8, 24), end: new Date(2026, 8, 25), locationIdentifier: '1',
+  } as any, new QueryClient())
+  expect((result as any).data.source).toBe(expected)
+})
+
+test('a failed report is requested once, not retried', async () => {
+  ;(reportsAxios.post as jest.Mock).mockRejectedValue(new Error('None of the selected devices responded.'))
+  // The app's client keeps react-query's default of three retries.
+  const client = new QueryClient({ defaultOptions: { queries: { retryDelay: 0 } } })
+  const { result } = renderHook(() => useCharts({
+    chartType: ChartType.TurningMovementCounts,
+    chartOptions: { start: new Date(2026, 8, 24), end: new Date(2026, 8, 25), locationIdentifier: '1' } as any,
+  }), { wrapper: ({ children }) => <QueryClientProvider client={client}>{children}</QueryClientProvider> })
+  await act(() => result.current.refetch())
+  await waitFor(() => expect(result.current.isError).toBe(true))
+  expect(reportsAxios.post).toHaveBeenCalledTimes(1)
 })
 
 
