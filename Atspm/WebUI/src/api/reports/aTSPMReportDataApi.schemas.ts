@@ -1886,6 +1886,10 @@ export interface TurningMovementCountsLanesResult {
 }
 
 export interface TurningMovementCountsOptions {
+  source?: string | null
+  deviceIds?: number[] | null
+  decoder?: string | null
+  combineThruRight?: boolean
   /** @nullable */
   locationIdentifier?: string | null
   start?: string
@@ -1895,6 +1899,8 @@ export interface TurningMovementCountsOptions {
 }
 
 export interface TurningMovementCountsResult {
+  source?: string | null
+  warnings?: string[] | null
   /** @nullable */
   charts?: TurningMovementCountsLanesResult[] | null
   /** @nullable */

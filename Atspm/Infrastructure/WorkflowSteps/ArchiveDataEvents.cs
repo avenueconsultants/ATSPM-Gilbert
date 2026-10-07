@@ -76,8 +76,11 @@ namespace Utah.Udot.ATSPM.Infrastructure.WorkflowSteps
                 dynamic comp = Activator.CreateInstance(typeof(CompressedEventLogs<>).MakeGenericType(g.Key.Item7));
 
                 comp.LocationIdentifier = g.Key.LocationIdentifier;
-                comp.Start = tl.Start;
-                comp.End = tl.End;
+                // Archive keys use timestamp-without-time-zone database columns. Preserve
+                // Timeline's bounds and clock values, but remove Kind so UTC camera data
+                // can be saved too. Payload timestamps retain their original time basis.
+                comp.Start = DateTime.SpecifyKind(tl.Start, DateTimeKind.Unspecified);
+                comp.End = DateTime.SpecifyKind(tl.End, DateTimeKind.Unspecified);
                 comp.DataType = g.Key.Item7;
                 comp.DeviceId = g.Key.Id;
                 comp.Data = list;

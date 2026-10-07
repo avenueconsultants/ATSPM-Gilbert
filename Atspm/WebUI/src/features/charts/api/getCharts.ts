@@ -19,11 +19,20 @@ import {
   ChartType,
   RawChartResponse,
 } from '@/features/charts/common/types'
+import {
+  TMC_DEVICE_SOURCES_FLAG_KEY,
+  TMC_DEVICE_SOURCES_FLAG_STALE_TIME,
+  getTmcDeviceSourcesEnabled,
+} from '@/features/charts/turningMovementCounts/useTmcSources'
 import { TransformedChartResponse } from '@/features/charts/types'
 import { reportsAxios } from '@/lib/axios'
-import { ExtractFnReturnType, QueryConfig } from '@/lib/react-query'
+import {
+  ExtractFnReturnType,
+  QueryConfig,
+  queryClient,
+} from '@/lib/react-query'
 import { dateToTimestamp } from '@/utils/dateTime'
-import { useQuery } from 'react-query'
+import { QueryClient, useQuery, useQueryClient } from 'react-query'
 import { transformChartData } from './transformData'
 
 export const TypeApiMap: Record<ChartType, string> = {
@@ -40,7 +49,6 @@ export const TypeApiMap: Record<ChartType, string> = {
   [ChartType.PurduePhaseTermination]:
     '/api/v1/PurduePhaseTermination/GetReportData',
   [ChartType.PreemptionDetails]: '/api/v1/PreemptDetail/GetReportData',
-    [ChartType.PrioritySummary]: '/api/v1/PrioritySummary/GetReportData',
   [ChartType.PurdueSplitFailure]: '/api/v1/SplitFail/GetReportData',
   [ChartType.SplitMonitor]: '/api/v1/SplitMonitor/GetReportData',
   [ChartType.TimingAndActuation]: '/api/v1/TimingAndActuation/GetReportData',
@@ -54,7 +62,7 @@ export const TypeApiMap: Record<ChartType, string> = {
     [ChartType.RampMetering]: '/api/v1/RampMetering/GetReportData',
 }
 
-type StringBooleanMap = Record<string, boolean | string | Date>
+type StringBooleanMap = Record<string, boolean | string | Date | number | number[] | undefined>
 
 const mapStringBooleansToBoolean = (obj: ChartOptions) => {
   return Object.entries(obj).reduce<StringBooleanMap>((acc, [key, value]) => {
@@ -78,17 +86,34 @@ const mapStringBooleansToBoolean = (obj: ChartOptions) => {
 
 export const getCharts = async (
   type: ChartType,
-  options: ChartOptions
+  options: ChartOptions,
+  client: QueryClient = queryClient
 ): Promise<TransformedChartResponse> => {
   const endpoint = TypeApiMap[type]
   const transformedOptions = mapStringBooleansToBoolean(options)
   transformedOptions.start = dateToTimestamp(transformedOptions.start as Date)
   transformedOptions.end = dateToTimestamp(transformedOptions.end as Date)
 
+  if (type === ChartType.TurningMovementCounts) {
+    const tmcOptions = options as { source?: string; deviceIds?: number[] | string; decoder?: string }
+    transformedOptions.source = tmcOptions.source ?? 'atspm'
+    transformedOptions.decoder = transformedOptions.source === 'devices' ? tmcOptions.decoder : undefined
+    const ids = tmcOptions.deviceIds
+    transformedOptions.deviceIds = transformedOptions.source === 'devices'
+      ? (Array.isArray(ids) ? ids : String(ids ?? '').split(',')).map(Number).filter(n => Number.isInteger(n) && n > 0) : []
+  }
   const response = await reportsAxios.post(endpoint, transformedOptions)
+  // The TMC count source is only labelled while device sources are enabled.
+  const hideSource =
+    type === ChartType.TurningMovementCounts &&
+    !(await client
+      .fetchQuery(TMC_DEVICE_SOURCES_FLAG_KEY, getTmcDeviceSourcesEnabled, {
+        staleTime: TMC_DEVICE_SOURCES_FLAG_STALE_TIME,
+      })
+      .catch(() => false))
   return transformChartData({
     type,
-    data: response,
+    data: hideSource ? { ...response, source: undefined } : response,
   } as unknown as RawChartResponse)
 }
 
@@ -108,10 +133,13 @@ export const useCharts = ({
   chartOptions,
   config,
 }: UseChartsOptions) => {
+  const client = useQueryClient()
   return useQuery<ExtractFnReturnType<QueryFnType>>({
+    // A failed report fails the same way again, and retries delay the error by several requests.
+    retry: false,
     ...config,
     enabled: false,
     queryKey: ['charts', chartType, chartOptions],
-    queryFn: () => getCharts(chartType, chartOptions),
+    queryFn: () => getCharts(chartType, chartOptions, client),
   })
 }

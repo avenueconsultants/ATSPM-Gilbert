@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<NameSpacePrefix>Utah.Udot</NameSpacePrefix>
@@ -62,4 +62,8 @@
 		<Folder Include="EventLogDecoderTests\TestData\" />
 	</ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="../ApplicationTests/Business/TurningMovementCounts/TurningMovementCountDecoderContractTests.cs" Link="TurningMovementCounts/TurningMovementCountDecoderContractTests.cs" />
+    <None Update="TurningMovementCounts/Fixtures/*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

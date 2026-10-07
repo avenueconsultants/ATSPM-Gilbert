@@ -84,6 +84,8 @@ export interface TurningMovementCountsTableDisplayProps {
 export interface TransformedTurningMovementCountsResponse {
   type: ChartType
   data: {
+    source?: string
+    warnings?: string[]
     displayProps?: TurningMovementCountsTableDisplayProps
     labels: Labels
     table: RawTurningMovementCountTableRow[]

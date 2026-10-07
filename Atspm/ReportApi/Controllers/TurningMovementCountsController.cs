@@ -1,4 +1,4 @@
-﻿#region license
+#region license
 // Copyright 2026 Utah Departement of Transportation
 // for ReportApi - Utah.Udot.Atspm.ReportApi.Controllers/TurningMovementCountsController.cs
 // 
@@ -24,8 +24,17 @@ namespace Utah.Udot.Atspm.ReportApi.Controllers
     /// Turning movement count report controller
     /// </summary>
     [ApiVersion(1.0)]
-    public class TurningMovementCountsController : ReportControllerBase<TurningMovementCountsOptions, TurningMovementCountsResult>
+    public class TurningMovementCountsController : ReportExceptionControllerBase<TurningMovementCountsOptions, TurningMovementCountsResult>
     {
+        /// <summary>
+        /// Indicates whether device-based TMC report sources are enabled. Uses the standard
+        /// configuration providers: Features:TmcDeviceSources in configuration, or
+        /// Features__TmcDeviceSources as an environment variable. Defaults to false when absent.
+        /// The default ATSPM/Indiana report source and scheduled device logging are unaffected.
+        /// </summary>
+        [Microsoft.AspNetCore.Mvc.HttpGet("deviceSourcesEnabled")]
+        public bool DeviceSourcesEnabled([Microsoft.AspNetCore.Mvc.FromServices] IConfiguration configuration) => configuration.GetValue<bool>("Features:TmcDeviceSources");
+
         /// <inheritdoc/>
         public TurningMovementCountsController(IReportService<TurningMovementCountsOptions, TurningMovementCountsResult> reportService, ILogger<TurningMovementCountsController> logger) : base(reportService, logger) { }
     }

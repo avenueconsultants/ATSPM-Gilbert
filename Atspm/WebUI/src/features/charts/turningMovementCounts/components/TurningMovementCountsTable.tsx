@@ -8,6 +8,7 @@ import {
   AccordionDetails,
   AccordionSummary,
   Box,
+  Stack,
   Typography,
 } from '@mui/material'
 import { format } from 'date-fns'
@@ -37,6 +38,7 @@ type NewLaneSeries = {
 
 export interface TurningMovementCountsTableChartData {
   data: {
+    source?: string
     displayProps?: TurningMovementCountsTableDisplayProps
     labels: Labels
     table: NewLaneSeries[]
@@ -52,6 +54,12 @@ interface TurningMovementCountsTableProps {
 }
 
 type SelectionMode = 'combine' | 'split'
+
+export function buildTurningMovementCountsCsvFilename(
+  base: string = 'Turning_Movement_Counts', laneType: string, directionMode: string, movementMode: string
+) {
+  return `${base}_${laneType}_${directionMode}_${movementMode}.csv`
+}
 
 function formatTime(ts: string) {
   return format(new Date(ts), 'HH:mm')
@@ -512,11 +520,13 @@ export default function TurningMovementCountsTable({
       return `${h1} - ${h2t}`
     })
 
+    // Source is only set while device sources are enabled.
+    const source = chartData.data.source
     const lines: string[] = []
-    lines.push(header.map(csvEscape).join(','))
+    lines.push([...(source ? ['Source'] : []), ...header].map(csvEscape).join(','))
 
     rows.forEach((row) => {
-      lines.push(row.map(csvEscape).join(','))
+      lines.push([...(source ? [source] : []), ...row].map(csvEscape).join(','))
     })
 
     return lines.join('\n')
@@ -524,7 +534,7 @@ export default function TurningMovementCountsTable({
 
   const handleDownloadCsv = () => {
     const csv = buildCsv()
-    const filename = `${displayProps?.exportFileName}.csv`
+    const filename = buildTurningMovementCountsCsvFilename(displayProps?.exportFileName, resolvedActiveLaneType, directionMode, movementMode)
 
     downloadTextFile(filename, csv)
   }
@@ -533,9 +543,16 @@ export default function TurningMovementCountsTable({
     <Box sx={{ mt: 4 }}>
       <Accordion disableGutters defaultExpanded>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h4" component="h2">
-            Table View
-          </Typography>
+          <Stack direction="row" alignItems="baseline" spacing={3}>
+            <Typography variant="h4" component="h2">
+              Table View
+            </Typography>
+            {chartData.data.source && (
+              <Typography color="text.secondary">
+                Source: {chartData.data.source}
+              </Typography>
+            )}
+          </Stack>
         </AccordionSummary>
 
         <AccordionDetails>

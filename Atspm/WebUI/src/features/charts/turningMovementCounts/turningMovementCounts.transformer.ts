@@ -69,7 +69,7 @@ export default function transformTurningMovementCountsData(
       return compareMovementTypes(a.movementType, b.movementType)
     })
     .map((data) => ({
-      chart: transformData(data),
+      chart: transformData(data, response.data.source),
     }))
 
   const directions = getAvailableTurningMovementDirections(
@@ -102,6 +102,8 @@ export default function transformTurningMovementCountsData(
   return {
     type: ChartType.TurningMovementCounts,
     data: {
+      source: response.data.source,
+      warnings: response.data.warnings ?? [],
       displayProps,
       labels,
       table: response.data.table,
@@ -133,7 +135,10 @@ function createTableDisplayProps(charts: RawTurningMovementCountsData[]) {
   })
 }
 
-function transformData(data: RawTurningMovementCountsData): EChartsOption {
+function transformData(
+  data: RawTurningMovementCountsData,
+  source?: string
+): EChartsOption {
   const {
     lanes,
     plans,
@@ -149,7 +154,8 @@ function transformData(data: RawTurningMovementCountsData): EChartsOption {
     ['Peak Hour: ', peakHour ?? 'N/A'],
     ['Peak Hour Volume: ', formatNullableNumber(peakHourVolume)],
     ['Peak Hour Factor: ', formatNullableNumber(peakHourFactor, 2)],
-    ['fLU: ', formatNullableNumber(laneUtilizationFactor, 2)]
+    ['fLU: ', formatNullableNumber(laneUtilizationFactor, 2)],
+    ...(source ? [['Source: ', source]] : [])
   )
 
   const titleHeader = `Turning Movement Counts\n${data.locationDescription} - ${data.direction} ${data.movementType} - ${data.laneType}`

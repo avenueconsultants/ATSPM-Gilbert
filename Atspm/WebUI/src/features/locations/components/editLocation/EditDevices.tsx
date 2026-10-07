@@ -7,6 +7,7 @@ import type { DeviceEventDownload } from '@/api/data'
 import { useGetLoggingSyncDeviceEvents } from '@/api/data'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { useDeleteDevice } from '@/features/devices/api/devices'
+import { useDeviceTestDownloadEnabled } from '@/features/devices/api/useDeviceTestDownloadEnabled'
 import DeviceCard from '@/features/locations/components/editLocation/DeviceCard'
 import { useLocationStore } from '@/features/locations/components/editLocation/locationStore'
 import DeviceModal from '@/features/locations/components/editLocation/NewDeviceModal'
@@ -39,6 +40,7 @@ function getDeviceEventDownloads(result: unknown): DeviceEventDownload[] {
 }
 
 const EditDevices = () => {
+  const testDownloadEnabled = useDeviceTestDownloadEnabled()
   const theme = useTheme()
   const { location } = useLocationStore()
   const { addNotification } = useNotificationStore()
@@ -212,6 +214,7 @@ const EditDevices = () => {
   )
 
   const handleResync = useCallback(async () => {
+    if (!testDownloadEnabled) return
     try {
       setIsFetchingEvents(true)
       setVerificationStage('saving')
@@ -229,12 +232,18 @@ const EditDevices = () => {
       setVerificationStage('idle')
       setIsFetchingEvents(false)
     }
-  }, [deviceIds, persistPendingIpChanges, syncDeviceEvents])
+  }, [
+    deviceIds,
+    persistPendingIpChanges,
+    syncDeviceEvents,
+    testDownloadEnabled,
+  ])
 
   // ------------------------------------------------
   // 1) If the wizard says "READY_TO_RUN", open modal & run check
   // ------------------------------------------------
   useEffect(() => {
+    if (!testDownloadEnabled) return
     if (deviceVerificationStatus !== 'READY_TO_RUN') return
     if (deviceIds.length === 0) return
     setShowSyncModal(true)
@@ -242,6 +251,7 @@ const EditDevices = () => {
     setDeviceVerificationStatus('DONE')
   }, [
     deviceVerificationStatus,
+    testDownloadEnabled,
     setDeviceVerificationStatus,
     handleResync,
     deviceIds,
@@ -292,23 +302,25 @@ const EditDevices = () => {
 
   return (
     <>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button
-          startIcon={<LanIcon />}
-          variant="contained"
-          color="primary"
-          disabled={!hasDevices}
-          onClick={() => {
-            setShowSyncModal(true)
-            handleResync()
-          }}
-        >
-          Verify IP Addresses
-        </Button>
-      </Box>
+      {testDownloadEnabled && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button
+            startIcon={<LanIcon />}
+            variant="contained"
+            color="primary"
+            disabled={!hasDevices}
+            onClick={() => {
+              setShowSyncModal(true)
+              handleResync()
+            }}
+          >
+            Verify IP Addresses
+          </Button>
+        </Box>
+      )}
 
       <DevicesWizardModal
-        open={showSyncModal}
+        open={testDownloadEnabled && showSyncModal}
         onClose={handleModalClose}
         onSaveAndClose={handleSaveAndClose}
         devices={combinedDevices}

@@ -20,6 +20,7 @@ using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
 using Utah.Udot.Atspm.Common;
 using Utah.Udot.Atspm.Data.Models.EventLogModels;
+using Utah.Udot.Atspm.Infrastructure.Extensions;
 
 namespace Utah.Udot.Atspm.Infrastructure.Services.EventLogImporters
 {
@@ -31,15 +32,18 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.EventLogImporters
         private readonly IEnumerable<IEventLogDecoder> _decoders;
         protected readonly ILogger _log;
         protected readonly EventLogImporterConfiguration _options;
+        private readonly TimeProvider _clock;
 
         #endregion
 
         ///<inheritdoc cref="IEventLogImporter"/>
-        public EventLogFileImporter(IEnumerable<IEventLogDecoder> decoders, ILogger<IEventLogImporter> log, IOptionsSnapshot<EventLogImporterConfiguration> options) : base(true)
+        public EventLogFileImporter(IEnumerable<IEventLogDecoder> decoders, ILogger<IEventLogImporter> log, IOptionsSnapshot<EventLogImporterConfiguration> options, TimeProvider clock = null) : base(true)
         {
             _decoders = decoders;
             _log = log;
             _options = options?.Get(GetType().Name) ?? options?.Value;
+            // Allow timezone-boundary tests without changing the machine's clock or timezone.
+            _clock = clock ?? TimeProvider.System;
         }
 
         #region Properties
@@ -52,9 +56,26 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.EventLogImporters
         //{
         //}
 
-        private bool IsAcceptableDateRange(EventLogModelBase log)
+        private bool IsAcceptableDateRange(EventLogModelBase log, Lazy<TimeZoneInfo> deviceTimeZone)
         {
-            return log.Timestamp <= DateTime.Now && log.Timestamp > _options.EarliestAcceptableDate;
+            // Compare like clocks: UTC camera statistics can look hours ahead of logger-local
+            // time. Local-kind timestamps denote the machine's local zone and can be compared in UTC.
+            // Validation must not rewrite the decoded timestamp or change the stored payload.
+            var now = _clock.GetUtcNow();
+            bool notInFuture;
+            if (log.Timestamp.Kind != DateTimeKind.Unspecified)
+                notInFuture = log.Timestamp.ToUniversalTime() <= now.UtcDateTime;
+            else
+            {
+                // Indiana timestamps are device-local wall time, including Vision events already
+                // converted by their decoder. Compare with that site's current time, not the logger's.
+                // Legacy devices without coordinates retain the previous logger-local assumption;
+                // the Vision decoder requires coordinates before converting aware timestamps.
+                var zone = log is IndianaEvent ? deviceTimeZone.Value : _clock.LocalTimeZone;
+                notInFuture = log.Timestamp <= TimeZoneInfo.ConvertTime(now, zone).DateTime;
+            }
+            // EarliestAcceptableDate remains the configured wall-clock cutoff in the record's time basis.
+            return notInFuture && log.Timestamp > _options.EarliestAcceptableDate;
         }
 
         /// <inheritdoc/>
@@ -90,6 +111,8 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.EventLogImporters
 
             if (CanExecute(parameter))
             {
+                // Resolve at most once per import, and only when an unspecified Indiana event needs it.
+                var deviceTimeZone = new Lazy<TimeZoneInfo>(() => device.GetTimeZoneFromLocation() ?? _clock.LocalTimeZone);
                 var logMessages = new EventLogDecoderLogMessages(_log, this.GetType().Name, device, file);
 
                 foreach (IEventLogDecoder decoder in _decoders.Where(w => decoders.Contains(w.GetType().Name)))
@@ -128,7 +151,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.EventLogImporters
 
                     foreach (var log in decodedLogs)
                     {
-                        if (IsAcceptableDateRange(log))
+                        if (IsAcceptableDateRange(log, deviceTimeZone))
                         {
                             //TODO: add this back in
                             //progress?.Report(new ControllerDecodeProgress(log, decodedLogs.Count - 1, decodedLogs.Count));

@@ -1,3 +1,4 @@
+import { useTmcSources } from '../../turningMovementCounts/useTmcSources'
 import { Location } from '@/api/config'
 import { useChartDefaults } from '@/features/charts/api/getChartDefaults'
 import { useGetMeasureTypes } from '@/features/charts/api/getMeasureTypes'
@@ -92,6 +93,8 @@ const SelectChart = ({
 }: SelectChartProps) => {
   const { data: chartDefaultsData, isLoading } = useChartDefaults()
   const { data: measureTypesData } = useGetMeasureTypes()
+  const { sources: tmcSources, loading: tmcSourcesLoading } = useTmcSources(location, !!location)
+  const hasCameraTmc = tmcSources.length > 1
 
   const chartDefaultsRaw =
     chartDefaultsData &&
@@ -140,7 +143,8 @@ const SelectChart = ({
     const unsortedCharts = measureTypesData.value.reduce(
       (acc, measureType) => {
         if (
-          location?.charts?.includes(measureType.id) &&
+          (location?.charts?.includes(measureType.id) ||
+            (measureType.abbreviation === 'TMC' && hasCameraTmc)) &&
           measureType.showOnWebsite
         ) {
           const chartType = abbreviationToChartType[measureType.abbreviation]
@@ -165,7 +169,7 @@ const SelectChart = ({
       },
       {} as Record<ChartType, React.ComponentType<any>>
     )
-  }, [measureTypesData, location])
+  }, [measureTypesData, location, hasCameraTmc])
 
   const isChartTypeAvailable = Boolean(
     location && chartType && chartType in availableCharts
@@ -174,7 +178,9 @@ const SelectChart = ({
   useEffect(() => {
     if (!isLoading && chartDefaultsRaw) {
       const simplifiedDefaults = simplifyChartDefaults(chartDefaultsRaw)
-      setChartOptions(simplifiedDefaults)
+      setChartOptions((previous) => chartType === ChartType.TurningMovementCounts
+        ? { ...simplifiedDefaults, ...previous }
+        : simplifiedDefaults)
     }
   }, [chartType, chartDefaultsRaw, isLoading, setChartOptions])
 
@@ -183,6 +189,7 @@ const SelectChart = ({
   }
 
   useEffect(() => {
+    if (chartType === ChartType.TurningMovementCounts && tmcSourcesLoading) return
     if (location && !isChartTypeAvailable) {
       setChartType(null)
     } else if (
@@ -192,7 +199,7 @@ const SelectChart = ({
     ) {
       setChartType(ChartType.PurduePhaseTermination)
     }
-  }, [location, chartType, availableCharts, setChartType, isChartTypeAvailable])
+  }, [location, chartType, availableCharts, setChartType, isChartTypeAvailable, tmcSourcesLoading])
 
   const handleChartOptionsUpdate = (update: {
     option: string
@@ -213,6 +220,12 @@ const SelectChart = ({
     if (!ChartComponent || !chartDefaultsForUi) return null
     if (isLoading) return <div>Loading...</div>
 
+    if (chartType === ChartType.TurningMovementCounts) {
+      const tmc = chartOptions as { source?: string; deviceIds?: number[] | string; decoder?: string }
+      return <TurningMovementCountsChartOptions chartDefaults={chartDefaultsForUi as any}
+        handleChartOptionsUpdate={handleChartOptionsUpdate as any} location={location}
+        source={tmc?.source} deviceIds={tmc?.deviceIds} decoder={tmc?.decoder} />
+    }
     return (
       <ChartComponent
         chartDefaults={chartDefaultsForUi}
