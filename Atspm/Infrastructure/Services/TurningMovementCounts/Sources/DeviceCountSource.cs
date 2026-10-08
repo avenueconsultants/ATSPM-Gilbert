@@ -11,6 +11,8 @@ public sealed class DeviceCountSource<TDecoder>(TDecoder decoder) : IDeviceCount
     public async Task<TmcCountSourceResult> ReadAsync(TmcCountSourceRequest request, CancellationToken token)
     {
         var selected = request.Devices.OrderBy(d => d.Id).ToList();
+        if (request.Options.ReconcileLanes && !decoder.SupportsLaneReconciliation)
+            throw new ReportException(400, $"Decoder {typeof(TDecoder).Name} does not provide lane reconciliation evidence.");
         if (selected.Count == 0) throw new ReportException(400, "Select at least one device.");
         foreach (var device in selected)
         {
@@ -31,6 +33,8 @@ public sealed class DeviceCountSource<TDecoder>(TDecoder decoder) : IDeviceCount
         warnings.AddRange(results.SelectMany(r => r.Warnings));
         var counts = decoder.MergeCounts(results.SelectMany(r => r.Counts), warnings);
         var label = Regex.Replace(Regex.Replace(typeof(TDecoder).Name, @"([A-Z]+)([A-Z][a-z])", "$1 $2"), @"([a-z0-9])([A-Z])", "$1 $2");
-        return new($"{label} ({selected.Count} {decoder.DeviceLabel}{(selected.Count == 1 ? "" : "s")})", counts, warnings.Distinct().ToArray());
+        return new($"{label} ({selected.Count} {decoder.DeviceLabel}{(selected.Count == 1 ? "" : "s")})", counts, warnings.Distinct().ToArray()) {
+            ZoneEvidence = results.SelectMany(r => r.ZoneEvidence).ToArray()
+        };
     }
 }
