@@ -2,6 +2,7 @@ using Utah.Udot.Atspm.Exceptions;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,6 +24,7 @@ public sealed class VisionCameraAPI(IHttpClientFactory clientFactory, TmcCameraC
 {
     private readonly HttpClient client = clientFactory.CreateClient("TmcCamera");
     private readonly ConcurrentDictionary<string, Task<JObject>> discovery = new();
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(30);
     public string DeviceLabel => "camera";
     public int MinimumBinMinutes => 1;
     public bool SupportsLaneReconciliation => true;
@@ -108,7 +110,20 @@ public sealed class VisionCameraAPI(IHttpClientFactory clientFactory, TmcCameraC
                 try { rows.AddRange(await ReadBins(device, day, stop, minutes, cancellationToken)); responded = true; }
                 catch (ReportException) { throw; }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidDataException)
-                { cancellationToken.ThrowIfCancellationRequested(); warnings.Add($"Camera {device.DeviceIdentifier}: no data for {day:yyyy-MM-dd} ({ex.Message})."); }
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var reason = ex is TaskCanceledException ? $"timed out after {RequestTimeout.TotalSeconds:0} seconds" : ex.Message.TrimEnd('.');
+                    warnings.Add($"Camera {device.DeviceIdentifier}: no data for {day:yyyy-MM-dd} ({reason}).");
+                    // An unreachable camera would make every remaining day wait out the same failure.
+                    if (stop < end && (ex is TaskCanceledException
+                        || ex is HttpRequestException { HttpRequestError: HttpRequestError.ConnectionError or HttpRequestError.NameResolutionError }))
+                    {
+                        var last = stop;
+                        while (last.AddDays(1) < end) last = last.AddDays(1);
+                        warnings.Add($"Camera {device.DeviceIdentifier}: unreachable; skipped {stop:yyyy-MM-dd}{(last > stop ? $" to {last:yyyy-MM-dd}" : "")}.");
+                        break;
+                    }
+                }
             }
         }
         if (rows.Count == 0) warnings.Add($"Camera {device.DeviceIdentifier}: no bins in the requested range.");
@@ -162,12 +177,21 @@ public sealed class VisionCameraAPI(IHttpClientFactory clientFactory, TmcCameraC
         try
         {
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
-            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            timeout.CancelAfter(RequestTimeout);
             var uri = new UriBuilder("http", device.Ipaddress, device.DeviceConfiguration.Port) { Path = path.Split('?')[0], Query = path.Contains('?') ? path.Split('?')[1] : "" }.Uri;
-            using var response = await client.GetAsync(uri, timeout.Token);
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            // Comm managers with login turned on accept the device configuration's credentials as HTTP Basic.
+            var user = device.DeviceConfiguration.UserName;
+            if (!string.IsNullOrEmpty(user))
+                request.Headers.Authorization = new AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"{user}:{device.DeviceConfiguration.Password}")));
+            using var response = await client.SendAsync(request, timeout.Token);
             var text = await response.Content.ReadAsStringAsync(timeout.Token);
+            // A rejection is that camera's warning; the other cameras' counts still report.
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                throw new HttpRequestException("login rejected; check the username and password on the device configuration", null, response.StatusCode);
             if (response.StatusCode == HttpStatusCode.BadRequest)
-                throw new ReportException(502, $"Camera {device.DeviceIdentifier} rejected the request: {text[..Math.Min(text.Length, 1024)]}");
+                throw new HttpRequestException($"rejected the request: {text[..Math.Min(text.Length, 200)]}", null, response.StatusCode);
             response.EnsureSuccessStatusCode();
             return text;
         }

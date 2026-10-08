@@ -21,7 +21,7 @@ export interface TmcSource {
 }
 export const ATSPM_SOURCE: TmcSource = {
   key: 'atspm',
-  name: 'Indiana events (ATSPM)',
+  name: 'Indiana Events (ATSPM)',
   deviceIds: [],
 }
 
@@ -65,15 +65,20 @@ export function groupTmcSources(devices: TmcDevice[]): TmcSource[] {
   ]
 }
 
+export const TMC_DEVICE_SOURCES_FLAG_KEY = ['tmc-device-sources-enabled']
+export const TMC_DEVICE_SOURCES_FLAG_STALE_TIME = 60000
+
+export const getTmcDeviceSourcesEnabled = () =>
+  reportsRequest<boolean>({
+    url: '/api/v1/TurningMovementCounts/deviceSourcesEnabled',
+    method: 'GET',
+  })
+
 export function useTmcSources(location?: Location | null, enabled = true) {
   const flag = useQuery(
-    ['tmc-device-sources-enabled'],
-    () =>
-      reportsRequest<boolean>({
-        url: '/api/v1/TurningMovementCounts/deviceSourcesEnabled',
-        method: 'GET',
-      }),
-    { enabled, staleTime: 60000 }
+    TMC_DEVICE_SOURCES_FLAG_KEY,
+    getTmcDeviceSourcesEnabled,
+    { enabled, staleTime: TMC_DEVICE_SOURCES_FLAG_STALE_TIME }
   )
   const loaded =
     Array.isArray(location?.devices) &&

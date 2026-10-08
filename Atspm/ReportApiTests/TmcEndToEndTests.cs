@@ -33,7 +33,7 @@ public class TmcEndToEndTests
         public int Calls, Current, Maximum;
         public string OfflineIndex = "";
         public string ZoneName;
-        public bool BadRequest;
+        public string BadRequestIndex = "";
         public List<string> Paths = new();
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
@@ -46,7 +46,7 @@ public class TmcEndToEndTests
                 if(index==OfflineIndex) throw new HttpRequestException("camera offline");
                 if(path.EndsWith("device-info")) return Json("{\"name\":\"O420 02 NB 05 LT\"}");
                 Interlocked.Increment(ref Calls);
-                if(BadRequest) return new(HttpStatusCode.BadRequest){Content=new StringContent("invalid camera date")};
+                if(index==BadRequestIndex) return new(HttpStatusCode.BadRequest){Content=new StringContent("invalid camera date")};
                 return Json(JsonSerializer.Serialize(new { statistics = new[] { new { zoneId=int.Parse(index), zoneName=ZoneName ?? "N2"+index+"-1", time="2026-09-25T17:15:00Z", volume=7, throughCount=4, leftTurnCount=2, rightTurnCount=1 } } }));
             } finally { Interlocked.Decrement(ref Current); }
         }
@@ -365,6 +365,7 @@ public class TmcEndToEndTests
         Assert.Equal(HttpStatusCode.OK,response.StatusCode);
         using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal(1,result.RootElement.GetProperty("charts")[0].GetProperty("totalVolume").GetInt32());
+        Assert.Equal("Indiana Events (ATSPM)",result.RootElement.GetProperty("source").GetString());
         Assert.Empty(f.Camera.Paths);
     }
     [Theory] [InlineData(null, false)] [InlineData(false, false)] [InlineData(true, true)]
@@ -376,11 +377,18 @@ public class TmcEndToEndTests
     }
     [Fact] public async Task PartialFailureWarnsAndAllOfflineIs503() {
         using var f=new Fixture(2); f.Camera.OfflineIndex="2";
-        using var response=await f.Report(1,2); Assert.Equal(HttpStatusCode.OK,response.StatusCode); Assert.Contains("offline",await response.Content.ReadAsStringAsync());
+        using var response=await f.Report(1,2); Assert.Equal(HttpStatusCode.OK,response.StatusCode);
+        using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Contains(result.RootElement.GetProperty("warnings").EnumerateArray(),w=>w.GetString().Contains("offline"));
+        Assert.Equal("Vision Camera API (1 of 2 cameras)",result.RootElement.GetProperty("source").GetString());
         using var failed=await f.Report(2); Assert.Equal(HttpStatusCode.ServiceUnavailable,failed.StatusCode);
+        Assert.StartsWith("None of the selected devices responded.\nCamera 2: no data for",await failed.Content.ReadAsStringAsync());
     }
-    [Fact] public async Task Camera400Becomes502() {
-        using var f=new Fixture(); f.Camera.BadRequest=true;
-        using var response=await f.Report(1); Assert.Equal(HttpStatusCode.BadGateway,response.StatusCode);
+    [Fact] public async Task Camera400IsThatCamerasWarning() {
+        using var f=new Fixture(2); f.Camera.BadRequestIndex="2";
+        using var response=await f.Report(1,2); Assert.Equal(HttpStatusCode.OK,response.StatusCode);
+        using var result=JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Contains(result.RootElement.GetProperty("warnings").EnumerateArray(),w=>w.GetString().Contains("rejected the request: invalid camera date"));
+        Assert.Equal("Vision Camera API (1 of 2 cameras)",result.RootElement.GetProperty("source").GetString());
     }
 }

@@ -22,7 +22,7 @@ namespace Utah.Udot.Atspm.Business.TurningMovementCounts
     /// </summary>
     public class TurningMovementCountsResult
     {
-        public string Source { get; set; } = "ATSPM";
+        public string Source { get; set; } = "Indiana Events (ATSPM)";
         public IReadOnlyList<TmcZoneEvidence> ZoneEvidence { get; set; } = Array.Empty<TmcZoneEvidence>();
         public IReadOnlyList<string> Warnings { get; set; } = Array.Empty<string>();
         public List<TurningMovementCountsLanesResult> Charts { get; set; }

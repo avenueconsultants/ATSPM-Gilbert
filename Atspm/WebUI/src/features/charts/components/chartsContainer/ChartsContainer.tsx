@@ -14,7 +14,7 @@ import LocationsConfigContainer from '@/features/locations/components/locationCo
 import { dateToTimestamp } from '@/utils/dateTime'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import { LoadingButton } from '@mui/lab'
-import { Alert, Box, Chip } from '@mui/material'
+import { Alert, Box, Stack } from '@mui/material'
 import { AxiosError } from 'axios'
 import { differenceInMinutes } from 'date-fns'
 import { usePathname, useRouter } from 'next/navigation'
@@ -195,8 +195,11 @@ export default function ChartsContainer({
       case ChartType.TurningMovementCounts:
         return (
           <>
-            {'source' in chartData.data && <Chip label={`Source: ${chartData.data.source}`} sx={{ mb: 1 }} />}
-            {'warnings' in chartData.data && chartData.data.warnings?.map(message => <Alert key={message} severity="warning">{message}</Alert>)}
+            {'warnings' in chartData.data && !!chartData.data.warnings?.length && (
+              <Box sx={{ mt: 2 }}>
+                {chartData.data.warnings.map(message => <Alert key={message} severity="warning">{message}</Alert>)}
+              </Box>
+            )}
             <TurningMovementCountsTable chartData={chartData} />
             <DefaultChartResults
               refs={chartRefs.current}
@@ -242,26 +245,6 @@ export default function ChartsContainer({
         >
           Generate Charts
         </LoadingButton>
-
-        {isError && (
-          <Alert severity="error" sx={{ marginLeft: 1 }}>
-            {error instanceof AxiosError
-              ? error.response?.data
-              : (error as Error).message}
-          </Alert>
-        )}
-
-        {alert && (
-          <Alert severity="error" sx={{ marginLeft: 1 }}>
-            {alert}
-          </Alert>
-        )}
-
-        {chartData && chartData.data.charts.length == 0 && (
-          <Alert severity="warning" sx={{ marginLeft: 1 }}>
-            No Data Avaliable
-          </Alert>
-        )}
       </Box>
 
       {useChartsController &&
@@ -282,6 +265,25 @@ export default function ChartsContainer({
             toggleConfigLabel={showConfig ? 'Charts' : 'Config'}
           />
         ))}
+
+      {/* Below the toolbox, which overlaps the button row. Line breaks separate per-device reasons. */}
+      {(isError || alert || chartData?.data.charts.length === 0) && (
+        <Stack spacing={1} sx={{ mt: 2 }}>
+          {isError && (
+            <Alert severity="error" sx={{ whiteSpace: 'pre-line' }}>
+              {error instanceof AxiosError
+                ? error.response?.data
+                : (error as Error).message}
+            </Alert>
+          )}
+
+          {alert && <Alert severity="error">{alert}</Alert>}
+
+          {chartData?.data.charts.length === 0 && (
+            <Alert severity="warning">No Data Avaliable</Alert>
+          )}
+        </Stack>
+      )}
 
       <Box display={displayStyle(!showConfig)}>
         {chartData && displayCharts()}

@@ -22,11 +22,12 @@ namespace InfrastructureTests.TurningMovementCounts;
 public sealed class CameraHandler : HttpMessageHandler
 {
     public readonly List<Uri> Requests = new();
+    public readonly List<string> Authorizations = new();
     public Func<Uri, HttpResponseMessage> Response { get; set; } = uri => new(HttpStatusCode.OK) { Content = new StringContent(
         uri.AbsolutePath.EndsWith("device-info") ? "{\"name\":\"O420 02 NB 05 LT\"}" :
         File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "TurningMovementCounts/Fixtures", uri.Query.Contains("interval=5") ? "vision-5-minute.json" : "vision-15-minute.json"))) };
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
-    { lock(Requests) Requests.Add(request.RequestUri); return Task.FromResult(Response(request.RequestUri)); }
+    { lock(Requests) { Requests.Add(request.RequestUri); Authorizations.Add(request.Headers.Authorization?.ToString()); } return Task.FromResult(Response(request.RequestUri)); }
 }
 public class VisionCameraAPITests : ApplicationTests.Business.TurningMovementCounts.TurningMovementCountDecoderContractTests<VisionCameraAPI>
 {
@@ -155,11 +156,32 @@ public class VisionCameraAPITests : ApplicationTests.Business.TurningMovementCou
         await Decoder(handler).DecodeAsync(request,default); Assert.Equal(4,bins);
         Assert.Contains(handler.Requests,u=>u.Query.Contains("end-time=2026-09-26T05:00:00Z"));
     }
-    [Fact] public async Task BadDateResponseIs502AndUnreachableCameraIsWarning() {
-        var handler=new CameraHandler { Response=_=>new(HttpStatusCode.BadRequest){Content=new StringContent("bad date")} };
-        var error=await Assert.ThrowsAsync<ReportException>(()=>Decoder(handler).DecodeAsync(Request(),default)); Assert.Equal(502,error.StatusCode);
-        handler.Response=_=>throw new HttpRequestException("offline");
-        var result=await Decoder(handler).DecodeAsync(Request(),default); Assert.False(result.Responded); Assert.NotEmpty(result.Warnings);
+    [Theory]
+    [InlineData(HttpStatusCode.BadRequest, "Camera 1: no data for 2026-09-25 (rejected the request: bad date).")]
+    [InlineData(HttpStatusCode.Unauthorized, "Camera 1: no data for 2026-09-25 (login rejected; check the username and password on the device configuration).")]
+    public async Task RejectedRequestIsThatCamerasWarning(HttpStatusCode status, string warning) {
+        var handler=new CameraHandler { Response=_=>new(status){Content=new StringContent("bad date")} };
+        var result=await Decoder(handler).DecodeAsync(Request(),default);
+        Assert.False(result.Responded); Assert.Contains(warning,result.Warnings);
+    }
+    [Fact] public async Task UnreachableCameraIsWarningAndRemainingDaysAreSkipped() {
+        var handler=new CameraHandler { Response=_=>throw new HttpRequestException(HttpRequestError.ConnectionError,"refused") };
+        var request=Request(); request.Options.End=request.Options.Start.AddDays(3);
+        var result=await Decoder(handler).DecodeAsync(request,default);
+        Assert.False(result.Responded); Assert.Single(handler.Requests);
+        Assert.Contains("Camera 1: unreachable; skipped 2026-09-26 to 2026-09-27.",result.Warnings);
+    }
+    [Fact] public async Task OtherFailuresStillTryEveryDay() {
+        var handler=new CameraHandler { Response=_=>new(HttpStatusCode.InternalServerError) };
+        var request=Request(); request.Options.End=request.Options.Start.AddDays(3);
+        await Decoder(handler).DecodeAsync(request,default); Assert.Equal(3,handler.Requests.Count);
+    }
+    [Fact] public async Task ConfiguredLoginIsSentAsBasicCredentials() {
+        var handler=new CameraHandler(); var request=Request();
+        await Decoder(handler).DecodeAsync(request,default); Assert.Null(handler.Authorizations.Single());
+        request.Device.DeviceConfiguration.UserName="admin"; request.Device.DeviceConfiguration.Password="secret";
+        await Decoder(handler).DecodeAsync(request,default);
+        Assert.Equal("Basic "+Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("admin:secret")),handler.Authorizations.Last());
     }
     [Fact] public async Task StoredRejectsSubFifteenMinuteBinsBeforeReading() {
         var request=Request(5); request.Device.DeviceProperties["TmcDecoder"]=nameof(VisionBinStatisticsStored);

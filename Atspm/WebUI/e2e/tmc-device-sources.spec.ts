@@ -18,7 +18,7 @@ test('select camera source, generate TMC, and export source-labelled CSV', async
   })
   await page.goto(`/performance-measures?${params}`)
   await expect(
-    page.getByRole('radio', { name: 'Indiana events (ATSPM)', exact: true })
+    page.getByRole('radio', { name: 'Indiana Events (ATSPM)', exact: true })
   ).toBeChecked({ timeout: 30000 })
   await page.getByRole('radio', { name: /Vision Camera API/ }).check()
   const responsePromise = page.waitForResponse(

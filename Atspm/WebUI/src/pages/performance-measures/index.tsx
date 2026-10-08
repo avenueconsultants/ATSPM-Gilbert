@@ -109,6 +109,13 @@ const PerformanceMeasures = () => {
     calendarEndDate
   )
 
+  // Missing-day marks come from ATSPM controller events, so they don't apply to device counts.
+  const usesDeviceCounts =
+    chartType === ChartType.TurningMovementCounts &&
+    !!chartOptions &&
+    'source' in chartOptions &&
+    chartOptions.source === 'devices'
+
   const handleStartDateTimeChange = (date: Date) => {
     setStartDateTime(date)
   }
@@ -195,7 +202,7 @@ const PerformanceMeasures = () => {
                 changeEndDate={handleEndDateTimeChange}
                 noCalendar={isMobileView}
                 warning={binSizeWarning ?? timespanWarning}
-                markDays={location ? missingDays : undefined}
+                markDays={location && !usesDeviceCounts ? missingDays : undefined}
                 onMonthChange={handleDateChange}
                 onChange={handleDateChange}
               />

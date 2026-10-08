@@ -29,11 +29,15 @@ public sealed class DeviceCountSource<TDecoder>(TDecoder decoder) : IDeviceCount
         }).ToList();
         var results = await Task.WhenAll(selected.Select(device => decoder.DecodeAsync(new TmcDecodeRequest(request.Location, device,
             device.DeviceProperties ?? new(), request.Options) { Cameras = selected }, token)));
-        if (results.All(r => !r.Responded)) throw new ReportException(503, "None of the selected devices responded. " + string.Join(" ", results.SelectMany(r => r.Warnings)));
+        var responded = results.Count(r => r.Responded);
+        // One line per device: its first failure explains it without repeating every day.
+        if (responded == 0) throw new ReportException(503, string.Join("\n", results.Select(r => r.Warnings.FirstOrDefault())
+            .Where(w => w != null).Prepend("None of the selected devices responded.")));
         warnings.AddRange(results.SelectMany(r => r.Warnings));
         var counts = decoder.MergeCounts(results.SelectMany(r => r.Counts), warnings);
         var label = Regex.Replace(Regex.Replace(typeof(TDecoder).Name, @"([A-Z]+)([A-Z][a-z])", "$1 $2"), @"([a-z0-9])([A-Z])", "$1 $2");
-        return new($"{label} ({selected.Count} {decoder.DeviceLabel}{(selected.Count == 1 ? "" : "s")})", counts, warnings.Distinct().ToArray()) {
+        var count = responded == selected.Count ? $"{selected.Count}" : $"{responded} of {selected.Count}";
+        return new($"{label} ({count} {decoder.DeviceLabel}{(selected.Count == 1 ? "" : "s")})", counts, warnings.Distinct().ToArray()) {
             ZoneEvidence = results.SelectMany(r => r.ZoneEvidence).ToArray()
         };
     }
