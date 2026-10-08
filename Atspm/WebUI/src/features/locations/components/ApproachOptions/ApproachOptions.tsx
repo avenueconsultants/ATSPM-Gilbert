@@ -1,5 +1,6 @@
 import { usePatchApproachFromKey, usePatchLocationFromKey } from '@/api/config'
 import { AddButton } from '@/components/addButton'
+import ReconcileLanesButton from '../ReconcileLanes/ReconcileLanesButton'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import ApproachesInfo from '@/features/locations/components/ApproachesInfo/approachesInfo'
 import ApproachesReconcilationReport from '@/features/locations/components/ApproachesReconcilationReport/ApproachesReconcilationReport'
@@ -439,6 +440,7 @@ const ApproachOptions = () => {
               Get Zones
             </Button>
           )}
+          <ReconcileLanesButton />
         </Box>
       </Paper>
 
