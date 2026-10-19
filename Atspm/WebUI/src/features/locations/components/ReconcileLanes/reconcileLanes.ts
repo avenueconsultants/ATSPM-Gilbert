@@ -5,7 +5,8 @@ import type {
 
 export type ZoneEvidence = {
   deviceId: number
-  zoneName: string
+  zoneName: string | null
+  zoneId?: number | null
   through: number
   left: number
   right: number
@@ -44,6 +45,11 @@ const eligible = (d: ConfigDetector) =>
 const flatten = (approaches: ConfigApproach[]) =>
   approaches.flatMap((a) => a.detectors.map((d) => ({ a, d })))
 
+export const zoneEvidenceLabel = (row: ZoneEvidence) =>
+  row.zoneName?.trim()
+    ? row.zoneName
+    : `Unnamed zone ${row.zoneId ?? '(ID unavailable)'}`
+
 /** The current location already includes its template. Match exact configured zone names without a naming convention. */
 export function reconcileLanes(
   approaches: ConfigApproach[],
@@ -54,6 +60,43 @@ export function reconcileLanes(
   const recommendations: Recommendation[] = []
   const warnings: string[] = []
   const configured = flatten(approaches).filter(({ d }) => eligible(d))
+  // Build indexes once rather than rescanning every detector and bin row per lane.
+  const groups = new Map<string, typeof configured>()
+  for (const entry of configured) {
+    const name = entry.d.dectectorIdentifier ?? ''
+    const group = groups.get(name) ?? []
+    group.push(entry)
+    groups.set(name, group)
+  }
+  const assignments = new Map(
+    [...groups].map(([name, group]) => {
+      const assigned = group.flatMap(
+        ({ d }) => movements[movementName(d.movementType)] ?? []
+      )
+      return [
+        name,
+        {
+          assigned: new Set(assigned),
+          overlap: new Set(assigned).size !== assigned.length,
+        },
+      ]
+    })
+  )
+  const evidenceByDevice = new Map<number, Map<string, ZoneEvidence[]>>()
+  for (const row of evidence) {
+    if (!row.zoneName?.trim()) {
+      warnings.push(
+        `${zoneEvidenceLabel(row)} on device ${row.deviceId}: configure a zone name before matching lanes.`
+      )
+      continue
+    }
+    const zones =
+      evidenceByDevice.get(row.deviceId) ?? new Map<string, ZoneEvidence[]>()
+    const rows = zones.get(row.zoneName) ?? []
+    rows.push(row)
+    zones.set(row.zoneName, rows)
+    evidenceByDevice.set(row.deviceId, zones)
+  }
   const owners = new Map<string, number[]>()
   for (const camera of inventory) {
     if (camera.error)
@@ -82,9 +125,7 @@ export function reconcileLanes(
       continue
     }
     if (!completeInventory) continue // Another unreachable device could own the same zone name.
-    const rows = evidence.filter(
-      (e) => e.deviceId === devices[0] && e.zoneName === name
-    )
+    const rows = evidenceByDevice.get(devices[0])?.get(name) ?? []
     if (rows.length !== 1 || rows[0].bins === 0) {
       warnings.push(
         `${label}: no unambiguous bin evidence in the selected period.`
@@ -96,11 +137,9 @@ export function reconcileLanes(
       L: rows[0].left,
       R: rows[0].right,
     }
-    const group = configured.filter((r) => r.d.dectectorIdentifier === name)
-    const assigned = group.flatMap(
-      (r) => movements[movementName(r.d.movementType)] ?? []
-    )
-    if (new Set(assigned).size !== assigned.length) {
+    const group = groups.get(name)!
+    const { assigned, overlap } = assignments.get(name)!
+    if (overlap) {
       if (group[0].d.id === d.id)
         warnings.push(
           `Zone ${name}: overlapping movement assignments can double-count vehicles. Review channels ${group.map((r) => r.d.detectorChannel).join(', ')}.`
@@ -120,7 +159,7 @@ export function reconcileLanes(
         `${label}: no ${absent.join('/')} observed. Zero counts do not establish a turn-only lane or justify removing a movement.`
       )
     const unassigned = Object.keys(counts).filter(
-      (m) => counts[m] > 0 && !assigned.includes(m)
+      (m) => counts[m] > 0 && !assigned.has(m)
     )
     // Do not infer which of several physical lanes sharing a zone should receive another movement.
     if (group.length > 1 && unassigned.length) {
@@ -160,7 +199,10 @@ export function reconcileLanes(
       )
   }
   for (const row of evidence)
-    if (!owners.has(row.zoneName))
+    if (
+      row.zoneName?.trim() &&
+      !owners.get(row.zoneName)?.includes(row.deviceId)
+    )
       warnings.push(
         `Bin zone ${row.zoneName} on device ${row.deviceId} is absent from the current inventory; configuration may have changed.`
       )

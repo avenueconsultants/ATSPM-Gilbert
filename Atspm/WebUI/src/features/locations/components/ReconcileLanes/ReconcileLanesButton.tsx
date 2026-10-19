@@ -22,7 +22,7 @@ import {
   Typography,
 } from '@mui/material'
 import { format, startOfDay, subDays } from 'date-fns'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { useLocationStore } from '../editLocation/locationStore'
 import { laneDecoders } from './laneDecoders'
@@ -31,6 +31,7 @@ import {
   LaneReview,
   reconcileLanes,
   ZoneEvidence,
+  zoneEvidenceLabel,
   ZoneInventory,
 } from './reconcileLanes'
 
@@ -71,13 +72,18 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
   const devicesQuery = useQuery(['lane-review-devices', location.id], () =>
     getDeviceActiveDevicesByLocationFromLocationId(location.id)
   )
-  const devices = normalizeTmcDevices(devicesQuery.data).map((d) => ({
-    ...d,
-    deviceConfiguration: d.deviceConfiguration ?? {
-      port: configurations?.value?.find((c) => c.id === d.deviceConfigurationId)
-        ?.port,
-    },
-  }))
+  const devices = useMemo(
+    () =>
+      normalizeTmcDevices(devicesQuery.data).map((d) => ({
+        ...d,
+        deviceConfiguration: d.deviceConfiguration ?? {
+          port: configurations?.value?.find(
+            (c) => c.id === d.deviceConfigurationId
+          )?.port,
+        },
+      })),
+    [devicesQuery.data, configurations]
+  )
   const sources = groupTmcSources(devices).filter(
     (s) => s.decoder && laneDecoders[s.decoder]
   )
@@ -88,14 +94,19 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
       : sources.some((s) => s.decoder === selectedDecoder)
         ? selectedDecoder
         : ''
-  const inputs = JSON.stringify({
-    decoder,
-    start,
-    end,
-    minimum,
-    approaches,
-    devices,
-  })
+  const inputs = useMemo(
+    () =>
+      JSON.stringify({
+        location,
+        decoder,
+        start,
+        end,
+        minimum,
+        approaches,
+        devices,
+      }),
+    [location, decoder, start, end, minimum, approaches, devices]
+  )
   const stale = snapshot !== inputs
   async function run() {
     setBusy(true)
@@ -124,25 +135,9 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
       const chosen = devices
         .filter((d) => source.deviceIds.includes(d.id!))
         .sort((a, b) => a.id! - b.id!)
-      const unique = [
-        ...new Map(
-          chosen
-            .slice()
-            .reverse()
-            .map((d) => [adapter.identity(d), d])
-        ).values(),
-      ]
-      const inventory: ZoneInventory[] = await Promise.all(
-        unique.map(async (d) => {
-          try {
-            return { deviceId: d.id!, names: await adapter.readZones(d) }
-          } catch {
-            return { deviceId: d.id!, names: [], error: 'Get Zones failed' }
-          }
-        })
-      )
       const result = await reportsRequest<{
         zoneEvidence: ZoneEvidence[]
+        sourceDeviceIds: number[]
         warnings: string[]
       }>({
         url: '/api/v1/TurningMovementCounts/getReportData',
@@ -150,7 +145,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
         data: {
           locationIdentifier: location.locationIdentifier,
           source: 'devices',
-          deviceIds: unique.map((d) => d.id),
+          deviceIds: chosen.map((d) => d.id),
           decoder,
           start,
           end,
@@ -158,10 +153,28 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
           reconcileLanes: true,
         },
       })
-      if (!Array.isArray(result.zoneEvidence))
+      if (
+        !Array.isArray(result.zoneEvidence) ||
+        !Array.isArray(result.sourceDeviceIds) ||
+        result.sourceDeviceIds.length === 0 ||
+        result.sourceDeviceIds.some((id) => !chosen.some((d) => d.id === id))
+      )
         throw new Error(
           'The report API must be updated to support zone evidence.'
         )
+      // The decoder resolves index/serial aliases. Use its selection for inventory too,
+      // including cameras with no returned bins; evidence alone is not an inventory.
+      const inventory: ZoneInventory[] = await Promise.all(
+        chosen
+          .filter((d) => result.sourceDeviceIds.includes(d.id!))
+          .map(async (d) => {
+            try {
+              return { deviceId: d.id!, names: await adapter.readZones(d) }
+            } catch {
+              return { deviceId: d.id!, names: [], error: 'Get Zones failed' }
+            }
+          })
+      )
       setEvidence(result.zoneEvidence)
       const analysis = reconcileLanes(
         approaches,
@@ -372,9 +385,9 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                   </thead>
                   <tbody>
                     {evidence.map((e) => (
-                      <tr key={`${e.deviceId}:${e.zoneName}`}>
+                      <tr key={`${e.deviceId}:${e.zoneId}:${e.zoneName}`}>
                         <td>{e.deviceId}</td>
-                        <td>{e.zoneName}</td>
+                        <td>{zoneEvidenceLabel(e)}</td>
                         <td>{e.through}</td>
                         <td>{e.left}</td>
                         <td>{e.right}</td>

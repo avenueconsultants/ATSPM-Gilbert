@@ -107,4 +107,8 @@ public record TmcDecodeResult(IReadOnlyList<MovementCount> Counts, IReadOnlyList
 }
 
 /// <summary>Source observations, independent of configured ATSPM lanes. Zero counts do not prove a prohibited movement.</summary>
-public record TmcZoneEvidence(int DeviceId, string ZoneName, long Through, long Left, long Right, int Bins);
+public record TmcZoneEvidence(int DeviceId, string ZoneName, long Through, long Left, long Right, int Bins)
+{
+    /// <summary>Optional source zone ID; identifies unnamed zones without inventing a matching name.</summary>
+    public long? ZoneId { get; init; }
+}

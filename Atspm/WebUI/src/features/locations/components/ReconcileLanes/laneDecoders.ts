@@ -11,11 +11,8 @@ type InventoryDevice = Pick<
  */
 export interface LaneDecoder {
   readZones(device: InventoryDevice): Promise<string[]>
-  identity(device: InventoryDevice): string
 }
 const vision: LaneDecoder = {
-  identity: (d) =>
-    `${d.ipaddress}:${d.deviceConfiguration?.port}/${d.deviceIdentifier?.replace(/-bins$/, '')}`,
   readZones: async (d) => {
     const names = await configRequest<string[]>({
       url: '/Detector/retrieveDetectionData',

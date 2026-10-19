@@ -17,7 +17,7 @@ public sealed class TurningMovementCountReportService(ILocationRepository locati
         var data = await source.ReadAsync(request, cancelToken);
         if (options.ReconcileLanes)
             return new TurningMovementCountsResult { Source = data.Label, Warnings = data.Warnings,
-                ZoneEvidence = data.ZoneEvidence, Charts = new(), Table = new() };
+                ZoneEvidence = data.ZoneEvidence, SourceDeviceIds = data.SourceDeviceIds, Charts = new(), Table = new() };
         var plans = data.Plans.Count > 0 ? data.Plans : new[] { new Plan("0", options.Start, options.End) };
         return builder.Build(location, options, data.Counts, plans, data.Label, data.Warnings, data.BinOrigin);
     }

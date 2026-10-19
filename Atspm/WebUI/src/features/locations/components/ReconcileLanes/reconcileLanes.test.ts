@@ -59,6 +59,26 @@ it('uses configured lanes and arbitrary names to recommend separate left and thr
   expect(current[0].detectors).toHaveLength(1)
 })
 
+it('never matches null or whitespace zone names to unassigned lanes', () => {
+  const review = reconcileLanes(
+    approach([detector(1, { dectectorIdentifier: '' })]),
+    [{ deviceId: 7, names: [''] }],
+    [null, ' '].map((zoneName, i) => ({
+      ...evidence[0],
+      zoneName,
+      zoneId: 101 + i,
+    }))
+  )
+  expect(review.recommendations).toEqual([])
+  expect(review.warnings).toContain(
+    'Unnamed zone 101 on device 7: configure a zone name before matching lanes.'
+  )
+  expect(review.warnings).toContain(
+    'Unnamed zone 102 on device 7: configure a zone name before matching lanes.'
+  )
+  expect(review.warnings.join(' ')).not.toContain('null')
+})
+
 it('excludes controller channels including 64 and does not call their zones unused', () => {
   const current = approach([
     detector(1, { detectorChannel: 1 }),

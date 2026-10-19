@@ -3,7 +3,7 @@ import { useFlags } from '@/feature-flags/FeatureFlagContext'
 import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { configRequest, reportsRequest } from '@/lib/axios'
 import '@testing-library/jest-dom'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import {
   ConfigApproach,
@@ -45,7 +45,11 @@ it('shows the separate button when enabled', () => {
   expect(screen.getByRole('button', { name: 'Reconcile Lanes' })).toBeEnabled()
 })
 
-async function openReview(warnings: string[] = []) {
+async function openReview(
+  warnings: string[] = [],
+  aliases = false,
+  unnamed = false
+) {
   jest.clearAllMocks()
   ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
   ;(useGetDeviceConfigurations as jest.Mock).mockReturnValue({
@@ -84,10 +88,23 @@ async function openReview(warnings: string[] = []) {
       deviceConfiguration: { port: 8080 },
       deviceProperties: { TmcDecoder: 'VisionCameraAPI' },
     },
+    ...(aliases
+      ? [
+          {
+            id: 8,
+            deviceStatus: 'Active',
+            deviceIdentifier: '1',
+            ipaddress: '127.0.0.1',
+            deviceConfiguration: { port: 8080 },
+            deviceProperties: { TmcDecoder: 'VisionCameraAPI' },
+          },
+        ]
+      : []),
   ])
   ;(configRequest as jest.Mock).mockResolvedValue(['Lane Alpha', 'Unused'])
   ;(reportsRequest as jest.Mock).mockResolvedValue({
     warnings,
+    sourceDeviceIds: [7],
     zoneEvidence: [
       {
         deviceId: 7,
@@ -97,6 +114,17 @@ async function openReview(warnings: string[] = []) {
         right: 0,
         bins: 96,
       },
+      ...(unnamed
+        ? [101, 102].map((zoneId) => ({
+            deviceId: 7,
+            zoneId,
+            zoneName: null,
+            through: 3,
+            left: 0,
+            right: 0,
+            bins: 1,
+          }))
+        : []),
     ],
   })
   const client = new QueryClient({
@@ -184,5 +212,61 @@ it('keeps partial source responses diagnostic-only', async () => {
     screen.queryByRole('checkbox', { name: /use separate/ })
   ).not.toBeInTheDocument()
   expect(screen.getByText(/Resolve them and rerun/)).toBeVisible()
+  client.clear()
+})
+
+it('uses the decoder-selected owner for serial/index aliases and retains recommendations', async () => {
+  const client = await openReview([], true)
+  expect(reportsRequest).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: expect.objectContaining({ deviceIds: [7, 8] }),
+    })
+  )
+  expect(configRequest).toHaveBeenCalledTimes(1)
+  expect(configRequest).toHaveBeenCalledWith(
+    expect.objectContaining({
+      data: expect.objectContaining({ deviceId: '123' }),
+    })
+  )
+  const recommendation = screen.getByRole('checkbox', {
+    name: /use separate L \+ T/,
+  })
+  fireEvent.click(recommendation)
+  expect(recommendation).toBeChecked()
+  client.clear()
+})
+
+it('shows separate unnamed zone IDs without suppressing valid named recommendations', async () => {
+  const client = await openReview([], false, true)
+  for (const id of [101, 102]) {
+    expect(
+      screen.getByRole('cell', { name: `Unnamed zone ${id}` })
+    ).toBeVisible()
+    expect(
+      screen.getByText(new RegExp(`Unnamed zone ${id} on device 7`))
+    ).toBeVisible()
+  }
+  const recommendation = screen.getByRole('checkbox', {
+    name: /use separate L \+ T/,
+  })
+  fireEvent.click(recommendation)
+  expect(recommendation).toBeChecked()
+  client.clear()
+})
+
+it('invalidates the memoized review when location configuration changes', async () => {
+  const client = await openReview()
+  fireEvent.click(screen.getByRole('checkbox', { name: /use separate L \+ T/ }))
+  act(() =>
+    useLocationStore.setState({
+      approaches: useLocationStore.getState().approaches.map((a) => ({
+        ...a,
+        detectors: a.detectors.map((d) => ({ ...d, laneNumber: 2 })),
+      })),
+    })
+  )
+  expect(
+    screen.getByRole('button', { name: 'Apply selected to editor' })
+  ).toBeDisabled()
   client.clear()
 })

@@ -33,6 +33,7 @@ public class TmcEndToEndTests
         public int Calls, Current, Maximum;
         public string OfflineIndex = "";
         public string ZoneName;
+        public string StatisticsJson;
         public string BadRequestIndex = "";
         public List<string> Paths = new();
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
@@ -47,6 +48,7 @@ public class TmcEndToEndTests
                 if(path.EndsWith("device-info")) return Json("{\"name\":\"O420 02 NB 05 LT\"}");
                 Interlocked.Increment(ref Calls);
                 if(index==BadRequestIndex) return new(HttpStatusCode.BadRequest){Content=new StringContent("invalid camera date")};
+                if(StatisticsJson != null) return Json(StatisticsJson);
                 return Json(JsonSerializer.Serialize(new { statistics = new[] { new { zoneId=int.Parse(index), zoneName=ZoneName ?? "N2"+index+"-1", time="2026-09-25T17:15:00Z", volume=7, throughCount=4, leftTurnCount=2, rightTurnCount=1 } } }));
             } finally { Interlocked.Decrement(ref Current); }
         }
@@ -97,8 +99,73 @@ public class TmcEndToEndTests
 
     private static Task<HttpResponseMessage> LaneReport(Fixture f, string decoder = "VisionCameraAPI") =>
         f.Client.PostAsJsonAsync("/api/v1/TurningMovementCounts/getReportData", new {
-            source="devices", decoder, deviceIds=new[]{1}, locationIdentifier="1", reconcileLanes=true,
+            source="devices", decoder, deviceIds=f.Devices.Select(d => d.Id).ToArray(), locationIdentifier="1", reconcileLanes=true,
             start="2026-09-25T10:00:00", end="2026-09-25T11:00:00", binSize=15 });
+
+    [Fact]
+    public async Task LaneAliasesUseOneInventoryOwnerWithoutBlockingWarning()
+    {
+        using var f = new Fixture(count: 2, laneReconciliation: true);
+        f.Devices[1].DeviceIdentifier = "523648495";
+        using var response = await LaneReport(f);
+        Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(new[] { 1 }, json.RootElement.GetProperty("sourceDeviceIds").EnumerateArray().Select(v => v.GetInt32()));
+        Assert.Single(json.RootElement.GetProperty("zoneEvidence").EnumerateArray());
+        Assert.Empty(json.RootElement.GetProperty("warnings").EnumerateArray());
+        Assert.Equal(1, f.Camera.Calls);
+    }
+
+    [Fact]
+    public async Task UnnamedLaneZonesRemainSeparateWithSourceIds()
+    {
+        using var f = new Fixture(laneReconciliation: true);
+        f.Camera.StatisticsJson = """
+            {"statistics":[
+              {"zoneId":101,"zoneName":null,"time":"2026-09-25T17:15:00Z","throughCount":4},
+              {"zoneId":102,"zoneName":null,"time":"2026-09-25T17:15:00Z","throughCount":9}]}
+            """;
+        using var response = await LaneReport(f);
+        Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var rows = json.RootElement.GetProperty("zoneEvidence").EnumerateArray().ToArray();
+        Assert.Equal(new long[] {101, 102}, rows.Select(r => r.GetProperty("zoneId").GetInt64()));
+        Assert.Equal(new long[] {4, 9}, rows.Select(r => r.GetProperty("through").GetInt64()));
+        Assert.Empty(json.RootElement.GetProperty("warnings").EnumerateArray());
+    }
+
+    [Fact]
+    public async Task NegativeLaneCountsIdentifyTheCamera()
+    {
+        using var f = new Fixture(laneReconciliation: true);
+        f.Devices[0].DeviceIdentifier = "523648495";
+        f.Camera.StatisticsJson = """
+            {"statistics":[{"zoneId":101,"zoneName":"Lane","time":"2026-09-25T17:15:00Z","throughCount":-1}]}
+            """;
+        using var response = await LaneReport(f);
+        Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+        Assert.Contains("Camera 523648495 (device 1): negative movement counts", await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ChartAndLaneEvidenceShareExclusiveTimeRange(bool reconcileLanes)
+    {
+        using var f = new Fixture(laneReconciliation: true);
+        f.Camera.StatisticsJson = """
+            {"statistics":[
+              {"zoneId":1,"zoneName":"NB","time":"2026-09-25T16:45:00Z","throughCount":100},
+              {"zoneId":1,"zoneName":"NB","time":"2026-09-25T17:00:00Z","throughCount":4},
+              {"zoneId":1,"zoneName":"NB","time":"2026-09-25T18:00:00Z","throughCount":200}]}
+            """;
+        using var response = reconcileLanes ? await LaneReport(f) : await f.Report(1);
+        Assert.True(response.IsSuccessStatusCode, await response.Content.ReadAsStringAsync());
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(4, reconcileLanes
+            ? json.RootElement.GetProperty("zoneEvidence")[0].GetProperty("through").GetInt32()
+            : json.RootElement.GetProperty("charts").EnumerateArray().Sum(r => r.GetProperty("totalVolume").GetInt32()));
+    }
 
     [Theory]
     [InlineData("A231-1")]

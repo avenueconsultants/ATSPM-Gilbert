@@ -15,7 +15,7 @@ This flag is independent of `Features:TmcDeviceSources` and `Features:DeviceTest
 
 1. Open **Reconcile Lanes**. The current location configuration is the baseline; any template was already applied during creation. Decoder choices come from the active devices’ comma-separated `TmcDecoder` properties, using the same grouping as the TMC chart. Only decoders supporting lane evidence are offered. A single supported decoder is selected automatically; multiple supported decoders require a choice.
 2. Choose the observation period, interpreted in the same location timezone as TMC reports. The end is exclusive. The existing Vision decoder converts to UTC for the camera request. Default: three completed calendar days, 15-minute bins. Minimum count defaults to five and controls recommendations for previously unassigned movements.
-3. Read the complete zone inventory using the existing Get Zones endpoint. Fetch independent zone movement evidence through the existing TMC report endpoint with `reconcileLanes: true`.
+3. Fetch independent zone movement evidence through the existing TMC report endpoint with `reconcileLanes: true`. The decoder resolves camera aliases (including index/serial pairs), and the response supplies `sourceDeviceIds`. Read the complete zone inventory through the existing Get Zones endpoint only for those selected devices, including devices with no returned evidence. Successfully resolved aliases do not block recommendations; actual read warnings still do.
 4. Compare active detectors above channel 64 against the inventory by exact configured zone name. A configured physical lane number and vehicle lane type are required before recommending a movement split. There are no Gilbert zone-name expressions or special 100/300-series rules in this comparison.
 5. Review recommended changes separately from warnings. Select changes explicitly and provide unused channels above 64 for new movement entries. **Apply selected to editor** stages changes; use the existing location/approach save controls to persist them.
 
@@ -30,12 +30,13 @@ For example, a configured left entry with substantial through counts can be reco
 - Zero counts never cause a movement or lane to be removed. Low counts, missing bins, missing configured lane numbers, and conflicting zone assignments require review.
 - The count table reports returned bins, not guaranteed complete coverage. Source read warnings disable recommendations for that run. An unavailable inventory prevents edits because another device could own the same zone name.
 - Duplicate zone names across cameras, or multiple zone IDs with the same name during the selected period, need verification. Indiana matching uses zone names, so blindly combining these would conceal ambiguity.
+- Unnamed zones remain separate by source zone ID. They appear as `Unnamed zone <ID>` in counts and warnings, but that display label is never used to match an ATSPM lane. Negative-count errors identify the camera and configured device ID.
 - Existing location configuration is the intended baseline, not proof of current road geometry. Verify physical geometry before accepting recommendations.
 - Configurations and review inputs must remain unchanged between comparison and application. New channels are validated together before staging, so one invalid channel leaves the editor unchanged.
 
 ## Decoder contract and reuse
 
-`ITurningMovementCountDecoder.SupportsLaneReconciliation` defaults to false. Supporting decoders return `TmcZoneEvidence` (device ID, exact zone name, T/L/R totals and distinct bin count) in `TmcDecodeResult.ZoneEvidence` when requested. DeviceCountSource retains separate evidence per device; it does not combine zones into approaches. Ordinary TMC chart behavior is unchanged.
+`ITurningMovementCountDecoder.SupportsLaneReconciliation` defaults to false. Supporting decoders return `TmcZoneEvidence` (device ID, exact zone name, optional source zone ID, T/L/R totals and distinct bin count) in `TmcDecodeResult.ZoneEvidence` when requested. DeviceCountSource retains separate evidence per device and returns the selected device IDs after alias resolution; it does not combine zones into approaches. Ordinary TMC chart behavior is unchanged.
 
 VisionCameraAPI supports this optional mode before its chart-specific name/layer mapping, closest-advance filtering and chart aggregation. It uses the same camera access, cancellation, UTC conversion and bin-statistics parser as reporting. The front-end `laneDecoders` adapter supplies independent inventory access through the existing Get Zones endpoint. A future source supplies its own adapter and optional report-decoder capability; matching and application logic remain source-neutral.
 

@@ -131,19 +131,17 @@ public sealed class VisionCameraAPI(IHttpClientFactory clientFactory, TmcCameraC
         {
             // Reconciliation must see every zone, including zones absent from the location configuration.
             // Chart layer/name conventions and closest-advance filtering would hide the very errors being reviewed.
-            var evidence = rows.Where(r => {
-                var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(r.Timestamp, DateTimeKind.Utc), zone);
-                return local >= request.Options.Start && local < request.Options.End;
-            }).GroupBy(r => (r.ZoneId, r.ZoneName, r.Timestamp)).Select(g => g.Last()).ToArray();
+            var evidence = VisionZoneMapper.InRequestedRange(rows, request, zone, false)
+                .GroupBy(r => (r.ZoneId, r.ZoneName, r.Timestamp)).Select(g => g.Last()).ToArray();
             if (evidence.Any(r => r.ThroughCount < 0 || r.LeftTurnCount < 0 || r.RightTurnCount < 0))
-                throw new ReportException(502, "Camera returned negative movement counts.");
-            foreach (var duplicate in evidence.GroupBy(r => r.ZoneName).Where(g => g.Select(r => r.ZoneId).Distinct().Count() > 1))
+                throw new ReportException(502, $"Camera {device.DeviceIdentifier} (device {device.Id}): negative movement counts.");
+            foreach (var duplicate in evidence.Where(r => !string.IsNullOrWhiteSpace(r.ZoneName)).GroupBy(r => r.ZoneName).Where(g => g.Select(r => r.ZoneId).Distinct().Count() > 1))
                 warnings.Add($"Camera {device.DeviceIdentifier}: multiple zone IDs use the name {duplicate.Key}; verify configuration changes before editing lanes.");
             return new TmcDecodeResult(Array.Empty<MovementCount>(), warnings) {
                 Responded = responded,
-                ZoneEvidence = evidence.GroupBy(r => r.ZoneName).Select(g => new TmcZoneEvidence(device.Id, g.Key,
+                ZoneEvidence = evidence.GroupBy(r => (r.ZoneId, r.ZoneName)).Select(g => new TmcZoneEvidence(device.Id, g.Key.ZoneName,
                     g.Sum(r => (long)r.ThroughCount), g.Sum(r => (long)r.LeftTurnCount),
-                    g.Sum(r => (long)r.RightTurnCount), g.Select(r => r.Timestamp).Distinct().Count())).ToArray()
+                    g.Sum(r => (long)r.RightTurnCount), g.Select(r => r.Timestamp).Distinct().Count()) { ZoneId = g.Key.ZoneId }).ToArray()
             };
         }
         var mapped = VisionZoneMapper.Map(request, rows, request.Options.BinSize, zone, false);
