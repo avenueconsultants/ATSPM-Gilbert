@@ -92,7 +92,7 @@ export default function ReconcileMockPage() {
         ))}
       </TextField>
       <Typography>{mockScenarios[scenario].explanation}</Typography>
-      <Typography variant="h6">Mock camera counts � zone NB-18</Typography>
+      <Typography variant="h6">Mock camera counts: zone NB-18</Typography>
       <Stack direction="row" spacing={2}>
         {(['through', 'left', 'right'] as const).map((movement) => (
           <TextField
