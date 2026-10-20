@@ -1,6 +1,6 @@
 # Reconcile Lanes
 
-Reconcile Lanes is a separate location-editor action. It does not run Reconcile Approaches, import events, or save configuration automatically.
+Reconcile Lanes is the feature-gated Lanes tab in the location editor’s Reconcile Approaches dialog. The Approaches tab retains the existing controller-event reconciliation. Lane analysis does not import events or save configuration automatically.
 
 ## Enablement
 
@@ -46,3 +46,9 @@ No importer, downloader, archive code, or API controller changes are required.
 
 - Report API HTTP end-to-end tests: independent/default-off feature gate, configured decoder capability, unfiltered advance/RR/arbitrary zone names, UTC query, and ordinary report regressions.
 - Frontend tests: controller-channel exclusion, current-configuration matching and missing zone names, automatic device decoder selection without template requests, split movement recommendations, zero/low counts, duplicate names, offline inventory, overlapping assignments, channel conflicts, atomic staging, stale review protection, warning-only partial responses, and feature-flag behavior.
+
+## Combined review and mock verification
+
+The location toolbar has one **Reconcile Approaches** action. With the lane feature disabled or missing, the original approach workflow is unchanged and no lane component or camera requests are started. With the flag explicitly true, the action opens a shared dialog with **Approaches** and **Lanes** tabs. Approach reconciliation runs on opening; camera analysis runs only after selecting Lanes and comparing the chosen date range. Each tab keeps its existing API and save semantics. Switching away from Lanes discards its unapplied review; staged editor changes remain.
+
+Mock tests cover through/left/right-only configurations, shared through-left/right movements, both turns missing, existing L/R entries missing through, matching configurations, zero and low counts, ambiguous camera/zone ownership, unnamed zones, unavailable inventory, source warnings, stale results, channel collisions, and explicit staged additions/removals. The combined-dialog integration test runs the real lane panel against mocked API responses and verifies that saved configuration is unchanged. Feature-flag tests cover missing, false, and non-boolean values. These tests make no changes to a real camera or database.

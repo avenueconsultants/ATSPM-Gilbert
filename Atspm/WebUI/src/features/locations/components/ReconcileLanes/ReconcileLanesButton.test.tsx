@@ -10,6 +10,7 @@ import {
   ConfigLocation,
   useLocationStore,
 } from '../editLocation/locationStore'
+import ReconcileConfigurationButton from './ReconcileConfigurationButton'
 import ReconcileLanesButton from './ReconcileLanesButton'
 
 jest.mock('@/feature-flags/FeatureFlagContext', () => ({ useFlags: jest.fn() }))
@@ -50,7 +51,8 @@ async function openReview(
   aliases = false,
   unnamed = false,
   leftCount = 20,
-  rightCount = 0
+  rightCount = 0,
+  combined = false
 ) {
   jest.clearAllMocks()
   ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
@@ -134,10 +136,29 @@ async function openReview(
   })
   render(
     <QueryClientProvider client={client}>
-      <ReconcileLanesButton />
+      {combined ? (
+        <ReconcileConfigurationButton
+          onReconcileApproaches={async () => {}}
+          approachesBusy={false}
+          approachReport={<div>Mock approach results</div>}
+        />
+      ) : (
+        <ReconcileLanesButton />
+      )}
     </QueryClientProvider>
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Reconcile Lanes' }))
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: combined ? 'Reconcile Approaches' : 'Reconcile Lanes',
+    })
+  )
+  if (combined) {
+    expect(screen.getByText('Mock approach results')).toBeVisible()
+    expect(
+      getDeviceActiveDevicesByLocationFromLocationId
+    ).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('tab', { name: 'Lanes' }))
+  }
   await waitFor(() =>
     expect(getDeviceActiveDevicesByLocationFromLocationId).toHaveBeenCalled()
   )
@@ -340,3 +361,52 @@ it('provides an editable channel field for every added movement', async () => {
   ).toBeVisible()
   client.clear()
 })
+
+it('runs the real lane panel inside combined reconciliation and stages mock additions', async () => {
+  const client = await openReview([], false, false, 20, 12, true)
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: /Add Channel 65 zone Lane Alpha Through/,
+    })
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Apply selected to editor' })
+  )
+  expect(
+    useLocationStore
+      .getState()
+      .approaches[0].detectors.map((d) => d.movementType)
+  ).toEqual(['L', 'T', 'R'])
+  expect(useLocationStore.getState().savedApproaches[0].detectors).toHaveLength(
+    1
+  )
+  fireEvent.click(screen.getByRole('tab', { name: 'Approaches' }))
+  expect(screen.getByText('Mock approach results')).toBeVisible()
+  client.clear()
+})
+
+it.each([undefined, false, 'true'])(
+  'keeps approaches available and lanes unmounted when flag is %s',
+  (flag) => {
+    jest.clearAllMocks()
+    ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: flag })
+    const reconcile = jest.fn().mockResolvedValue(undefined)
+    render(
+      <ReconcileConfigurationButton
+        onReconcileApproaches={reconcile}
+        approachesBusy={false}
+        approachReport={null}
+      />
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Reconcile Approaches' })
+    )
+    expect(reconcile).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('tab', { name: 'Lanes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(
+      getDeviceActiveDevicesByLocationFromLocationId
+    ).not.toHaveBeenCalled()
+    expect(reportsRequest).not.toHaveBeenCalled()
+  }
+)

@@ -255,3 +255,31 @@ it('suggests one distinct unused channel per added movement across proposals', (
     ])
   ).toEqual({ a: ['66', '68'], b: ['69'] })
 })
+
+describe('mock lane configuration scenarios', () => {
+  it.each([
+    ['through-only matches', ['T'], 20, 0, 0, 0, 0],
+    ['left-only matches', ['L'], 0, 20, 0, 0, 0],
+    ['right-only matches', ['R'], 0, 0, 20, 0, 0],
+    ['through needs left', ['T'], 20, 10, 0, 1, 0],
+    ['through needs right', ['T'], 20, 0, 10, 1, 0],
+    ['through needs both turns', ['T'], 20, 10, 10, 1, 0],
+    ['left and right need through', ['L', 'R'], 20, 10, 10, 1, 0],
+    ['all movements match', ['L', 'T', 'R'], 20, 10, 10, 0, 0],
+    ['left has only through observations', ['L'], 20, 0, 0, 1, 1],
+    ['all movements zero', ['L', 'T', 'R'], 0, 0, 0, 0, 3],
+    ['right below threshold', ['T'], 20, 0, 2, 0, 0],
+  ] as const)('%s', (_, configured, through, left, right, adds, removes) => {
+    const current = approach(
+      configured.map((movementType, i) => detector(i + 1, { movementType }))
+    )
+    const review = reconcileLanes(current, inventory, [
+      { ...evidence[0], through, left, right },
+    ])
+    expect(review.recommendations.filter((r) => !r.warning)).toHaveLength(adds)
+    expect(review.recommendations.filter((r) => r.warning)).toHaveLength(
+      removes
+    )
+    expect(applyLaneRecommendations(current, [], {})).toEqual(current)
+  })
+})

@@ -51,7 +51,13 @@ export default function ReconcileLanesButton() {
   )
 }
 
-function LaneDialog({ onClose }: { onClose: () => void }) {
+export function LaneDialog({
+  onClose,
+  embedded = false,
+}: {
+  onClose: () => void
+  embedded?: boolean
+}) {
   const location = useLocationStore((s) => s.location)!
   const approaches = useLocationStore((s) => s.approaches)
   const [selectedDecoder, setDecoder] = useState('')
@@ -317,9 +323,8 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
       </Box>
     )
   }
-  return (
-    <Dialog open onClose={busy ? undefined : onClose} fullWidth maxWidth="md">
-      <DialogTitle>Reconcile Lanes</DialogTitle>
+  const content = (
+    <>
       <DialogContent>
         <Stack spacing={2} sx={{ pt: 1 }}>
           <Alert severity="info">
@@ -491,6 +496,14 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
           Apply selected to editor
         </Button>
       </DialogActions>
+    </>
+  )
+  return embedded ? (
+    content
+  ) : (
+    <Dialog open onClose={busy ? undefined : onClose} fullWidth maxWidth="md">
+      <DialogTitle>Reconcile Lanes</DialogTitle>
+      {content}
     </Dialog>
   )
 }
