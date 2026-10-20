@@ -14,6 +14,7 @@ import {
   applyLaneRecommendations,
   LaneReview,
   movementLabels,
+  originalLaneChange,
   reconcileLanes,
   suggestLaneChannels,
 } from './reconcileLanes'
@@ -217,6 +218,11 @@ export default function ReconcileMockPage() {
                   />
                 ))}
               </Box>
+              {originalLaneChange(data.approaches, r) && (
+                <Typography variant="body2">
+                  {originalLaneChange(data.approaches, r)}
+                </Typography>
+              )}
             </Box>
           ))}
           {review.warnings

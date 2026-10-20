@@ -10,6 +10,16 @@ beforeAll(() => {
 it('splits TR into separate movements on the same zone and physical lane', () => {
   render(<ReconcileMockPage />)
   fireEvent.click(screen.getByRole('button', { name: 'Compare mock lanes' }))
+  expect(
+    screen.getByText(
+      'When applied, Channel 118 zone NB-18 will change from Through/Right to Through.'
+    )
+  ).toBeVisible()
+  expect(
+    within(
+      screen.getByRole('table', { name: 'Mock lane configuration' })
+    ).getByText('TR')
+  ).toBeVisible()
   fireEvent.click(
     screen.getByRole('button', { name: 'Add Channel 65 zone NB-18 Right' })
   )

@@ -29,6 +29,7 @@ import {
   applyLaneRecommendations,
   LaneReview,
   movementLabels,
+  originalLaneChange,
   Recommendation,
   reconcileLanes,
   suggestLaneChannels,
@@ -252,6 +253,7 @@ export function LaneDialog({
     const zone = approaches
       .flatMap((a) => a.detectors)
       .find((d) => d.id === r.detectorId)?.dectectorIdentifier
+    const preview = originalLaneChange(approaches, r)
     const enteredChannels = channels[r.id] ?? []
     const label =
       !r.warning && r.movements
@@ -320,6 +322,11 @@ export function LaneDialog({
             />
           ))}
         </Stack>
+        {preview && (
+          <Typography variant="body2" sx={{ gridColumn: '1 / -1' }}>
+            {preview}
+          </Typography>
+        )}
       </Box>
     )
   }

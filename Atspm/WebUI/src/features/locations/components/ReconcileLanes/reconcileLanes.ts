@@ -328,3 +328,21 @@ export function suggestLaneChannels(
     ])
   )
 }
+
+/** Preview the existing entry's movement change without mutating configuration. */
+export function originalLaneChange(
+  approaches: ConfigApproach[],
+  recommendation: Recommendation
+): string | undefined {
+  const detector = flatten(approaches).find(
+    ({ d }) => d.id === recommendation.detectorId
+  )?.d
+  const after = recommendation.movements?.[0]
+  if (!detector || recommendation.remove || !after) return undefined
+  const before = movementName(detector.movementType)
+  if (before === after) return undefined
+  const beforeLabel = (movements[before] ?? [before])
+    .map((m) => movementLabels[m] ?? m)
+    .join('/')
+  return `When applied, Channel ${detector.detectorChannel} zone ${detector.dectectorIdentifier} will change from ${beforeLabel} to ${movementLabels[after] ?? after}.`
+}

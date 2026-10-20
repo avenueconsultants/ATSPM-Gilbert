@@ -4,6 +4,7 @@ import type {
 } from '../editLocation/locationStore'
 import {
   applyLaneRecommendations,
+  originalLaneChange,
   reconcileLanes,
   suggestLaneChannels,
   ZoneEvidence,
@@ -282,4 +283,24 @@ describe('mock lane configuration scenarios', () => {
     )
     expect(applyLaneRecommendations(current, [], {})).toEqual(current)
   })
+})
+
+it.each(['TR', 'TL', 4, 5])(
+  'previews the original channel change for combined movement %s',
+  (movementType) => {
+    const current = approach([detector(1, { movementType })])
+    const review = reconcileLanes(current, inventory, [
+      { ...evidence[0], right: 20 },
+    ])
+    const split = review.recommendations.find((r) => !r.warning)!
+    expect(originalLaneChange(current, split)).toMatch(
+      /Channel 301 zone Arbitrary zone will change from Through\/(Right|Left) to Through\./
+    )
+    expect(current[0].detectors[0].movementType).toBe(movementType)
+  }
+)
+it('does not claim the original movement changes when only adding a missing movement', () => {
+  const current = approach()
+  const review = reconcileLanes(current, inventory, evidence)
+  expect(originalLaneChange(current, review.recommendations[0])).toBeUndefined()
 })
