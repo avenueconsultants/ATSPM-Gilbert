@@ -42,6 +42,13 @@ const movementName = (value: unknown) =>
   typeof value === 'number'
     ? ['NA', 'T', 'R', 'L', 'TR', 'TL', 'NW', 'LTR'][value]
     : String(value)
+const movementLabels: Record<string, string> = {
+  T: 'Through',
+  L: 'Left',
+  R: 'Right',
+}
+const removalLabel = (d: ConfigDetector, removed: string[]) =>
+  `Remove Channel ${d.detectorChannel} zone ${d.dectectorIdentifier} ${removed.map((m) => movementLabels[m] ?? m).join(' + ')}`
 const active = (d: ConfigDetector) => !d.dateDisabled
 const eligible = (d: ConfigDetector) =>
   active(d) && Number(d.detectorChannel) > 64
@@ -143,7 +150,12 @@ export function reconcileLanes(
           warning: warnings[warnings.length - 1],
           detectorId: d.id,
           remove: true,
-          description: `${label}: optionally remove this lane entry (${movementName(d.movementType)}). No bin evidence was returned; verify the lane and camera before choosing removal.`,
+          description: removalLabel(
+            d,
+            movements[movementName(d.movementType)] ?? [
+              movementName(d.movementType),
+            ]
+          ),
         })
       continue
     }
@@ -179,7 +191,7 @@ export function reconcileLanes(
         warning: warnings[warnings.length - 1],
         detectorId: d.id,
         ...(retained.length ? { movements: retained } : { remove: true }),
-        description: `${label}: optionally remove ${absent.join(' + ')}${retained.length ? ` and keep ${retained.join(' + ')}` : ' lane entry'}. None observed (T ${counts.T}, L ${counts.L}, R ${counts.R}); choose only after verifying lane use.`,
+        description: removalLabel(d, absent),
       })
     }
     const unassigned = Object.keys(counts).filter(

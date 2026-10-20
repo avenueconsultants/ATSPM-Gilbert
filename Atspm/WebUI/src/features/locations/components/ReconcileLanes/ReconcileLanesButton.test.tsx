@@ -219,7 +219,7 @@ it('keeps partial source responses diagnostic-only', async () => {
 it('lets the user choose removal instead of addition and stages it without saving', async () => {
   const client = await openReview([], false, false, 0)
   const remove = screen.getByRole('checkbox', {
-    name: /optionally remove L lane entry/,
+    name: 'Remove Channel 301 zone Lane Alpha Left',
   })
   const add = screen.getByRole('checkbox', { name: /use separate L \+ T/ })
   expect(remove.closest('[role="alert"]')).toHaveTextContent('no L observed')
