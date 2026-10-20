@@ -258,7 +258,18 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
             .join('; ')
         : r.description
     return (
-      <Box key={r.id}>
+      <Box
+        key={r.id}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns:
+            r.movements && r.movements.length > 1
+              ? 'minmax(0, 1fr) 100px'
+              : '1fr',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
         <DiscrepancyButton
           item={{ id: r.id, label }}
           width="auto"
@@ -280,25 +291,29 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
             )
           }
         />
-        {r.movements?.slice(1).map((movement, i) => (
-          <TextField
-            key={`${r.id}-${movement}`}
-            fullWidth
-            type="number"
-            inputProps={{ min: 65, step: 1 }}
-            label={`Channel for ${zone} ${movementLabels[movement] ?? movement}`}
-            value={enteredChannels[i] ?? ''}
-            onChange={(e) =>
-              setChannels((current) => ({
-                ...current,
-                [r.id]: (current[r.id] ?? []).map((value, index) =>
-                  index === i ? e.target.value : value
-                ),
-              }))
-            }
-            helperText="Unused channel above 64. The existing entry keeps its channel."
-          />
-        ))}
+        <Stack spacing={1}>
+          {r.movements?.slice(1).map((movement, i) => (
+            <TextField
+              key={`${r.id}-${movement}`}
+              size="small"
+              type="number"
+              inputProps={{
+                min: 65,
+                step: 1,
+                'aria-label': `Channel for ${zone} ${movementLabels[movement] ?? movement}`,
+              }}
+              value={enteredChannels[i] ?? ''}
+              onChange={(e) =>
+                setChannels((current) => ({
+                  ...current,
+                  [r.id]: (current[r.id] ?? []).map((value, index) =>
+                    index === i ? e.target.value : value
+                  ),
+                }))
+              }
+            />
+          ))}
+        </Stack>
       </Box>
     )
   }
@@ -397,9 +412,21 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                   optional removals.
                 </Typography>
               )}
-              {review.recommendations
-                .filter((r) => !r.warning)
-                .map(renderRecommendation)}
+              {review.recommendations.some((r) => !r.warning) && (
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ width: 100, ml: 'auto', mb: 0.5 }}
+                  >
+                    Channel
+                  </Typography>
+                  <Stack spacing={1}>
+                    {review.recommendations
+                      .filter((r) => !r.warning)
+                      .map(renderRecommendation)}
+                  </Stack>
+                </Box>
+              )}
               <Typography variant="h6">
                 Warnings — verify manually ({review.warnings.length})
               </Typography>
