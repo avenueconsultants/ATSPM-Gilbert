@@ -264,7 +264,7 @@ describe('mock lane configuration scenarios', () => {
     ['right-only matches', ['R'], 0, 0, 20, 0, 0],
     ['through needs left', ['T'], 20, 10, 0, 1, 0],
     ['through needs right', ['T'], 20, 0, 10, 1, 0],
-    ['through needs both turns', ['T'], 20, 10, 10, 1, 0],
+    ['through needs both turns', ['T'], 20, 10, 10, 2, 0],
     ['left and right need through', ['L', 'R'], 20, 10, 10, 1, 0],
     ['all movements match', ['L', 'T', 'R'], 20, 10, 10, 0, 0],
     ['left has only through observations', ['L'], 20, 0, 0, 1, 1],
@@ -304,3 +304,38 @@ it('does not claim the original movement changes when only adding a missing move
   const review = reconcileLanes(current, inventory, evidence)
   expect(originalLaneChange(current, review.recommendations[0])).toBeUndefined()
 })
+
+it.each([['L'], ['R'], ['L', 'R']])(
+  'independently applies missing turns %s',
+  (...turns) => {
+    const current = approach([detector(1, { movementType: 'T' })])
+    const review = reconcileLanes(current, inventory, [
+      { ...evidence[0], right: 20 },
+    ])
+    expect(review.recommendations).toHaveLength(2)
+    const selected = review.recommendations.filter((r) =>
+      turns.includes(r.movements![1])
+    )
+    const suggested = suggestLaneChannels(current, review.recommendations)
+    const next = applyLaneRecommendations(
+      current,
+      selected,
+      Object.fromEntries(
+        Object.entries(suggested).map(([id, values]) => [
+          id,
+          values.map(Number),
+        ])
+      )
+    )
+    expect(next[0].detectors.map((d) => d.movementType)).toEqual([
+      'T',
+      ...turns,
+    ])
+    expect(
+      next[0].detectors.every(
+        (d) => d.laneNumber === 1 && d.dectectorIdentifier === 'Arbitrary zone'
+      )
+    ).toBe(true)
+    expect(current[0].detectors).toHaveLength(1)
+  }
+)

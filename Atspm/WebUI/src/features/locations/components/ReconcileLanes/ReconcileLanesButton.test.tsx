@@ -356,7 +356,7 @@ it('provides an editable channel field for every added movement', async () => {
   expect(right).toHaveValue(66)
   expect(
     screen.getByRole('button', {
-      name: 'Add Channel 118 zone Lane Alpha Through; Add Channel 66 zone Lane Alpha Right',
+      name: 'Add Channel 118 zone Lane Alpha Through',
     })
   ).toBeVisible()
   client.clear()
@@ -369,6 +369,14 @@ it('runs the real lane panel inside combined reconciliation and stages mock addi
       name: /Add Channel 65 zone Lane Alpha Through/,
     })
   )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Add Channel 66 zone Lane Alpha Right' })
+  )
+  expect(
+    screen.getByRole('button', {
+      name: 'Add Channel 65 zone Lane Alpha Through',
+    })
+  ).toHaveAttribute('aria-pressed', 'true')
   fireEvent.click(
     screen.getByRole('button', { name: 'Apply selected to editor' })
   )

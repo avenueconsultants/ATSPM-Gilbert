@@ -27,6 +27,7 @@ import { useLocationStore } from '../editLocation/locationStore'
 import { laneDecoders } from './laneDecoders'
 import {
   applyLaneRecommendations,
+  laneChangesConflict,
   LaneReview,
   movementLabels,
   originalLaneChange,
@@ -291,7 +292,7 @@ export function LaneDialog({
                       (id) =>
                         !review!.recommendations.some(
                           (other) =>
-                            other.id === id && other.detectorId === r.detectorId
+                            other.id === id && laneChangesConflict(other, r)
                         )
                     ),
                     r.id,

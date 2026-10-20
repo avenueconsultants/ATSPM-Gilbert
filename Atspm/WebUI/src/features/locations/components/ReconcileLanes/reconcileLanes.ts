@@ -23,6 +23,7 @@ export type Recommendation = {
   description: string
   movements?: string[]
   remove?: boolean
+  independentAddition?: boolean
   /** Related verification warning; render this optional change alongside it. */
   warning?: string
 }
@@ -222,12 +223,19 @@ export function reconcileLanes(
       )
     if (Number(d.laneNumber) > 0 && (declared.length > 1 || enough.length)) {
       const next = [...new Set([...declared, ...enough])]
-      recommendations.push({
-        id: `movements-${d.id}`,
-        detectorId: d.id,
-        movements: next,
-        description: `${label}: use separate ${next.join(' + ')} entries sharing this zone and physical lane (T ${counts.T}, L ${counts.L}, R ${counts.R}). Verify camera classification and allowed turns before applying.`,
-      })
+      const proposals =
+        declared.length === 1
+          ? enough.map((movement) => [declared[0], movement])
+          : [next]
+      proposals.forEach((proposal, index) =>
+        recommendations.push({
+          id: `movements-${d.id}${index ? `-${proposal[1]}` : ''}`,
+          detectorId: d.id,
+          independentAddition: declared.length === 1,
+          movements: proposal,
+          description: `${label}: use separate ${proposal.join(' + ')} entries sharing this zone and physical lane (T ${counts.T}, L ${counts.L}, R ${counts.R}). Verify camera classification and allowed turns before applying.`,
+        })
+      )
     } else if (enough.length)
       warnings.push(
         `${label}: unassigned ${enough.join('/')} observed; configured lane number needs verification before recommending a split.`
@@ -263,8 +271,14 @@ export function applyLaneRecommendations(
   channels: Record<string, number[]>
 ): ConfigApproach[] {
   const result = structuredClone(approaches)
-  if (new Set(selected.map((r) => r.detectorId)).size !== selected.length)
-    throw new Error('Choose only one change per lane entry.')
+  if (
+    selected.some((r, index) =>
+      selected.slice(index + 1).some((other) => laneChangesConflict(r, other))
+    )
+  )
+    throw new Error(
+      'Choose only one change per lane entry, except distinct movement additions.'
+    )
   const used = new Set(
     flatten(result).map(({ d }) => Number(d.detectorChannel))
   )
@@ -345,4 +359,18 @@ export function originalLaneChange(
     .map((m) => movementLabels[m] ?? m)
     .join('/')
   return `When applied, Channel ${detector.detectorChannel} zone ${detector.dectectorIdentifier} will change from ${beforeLabel} to ${movementLabels[after] ?? after}.`
+}
+
+/** Separate additions can coexist; removals and rewrites remain exclusive. */
+export function laneChangesConflict(
+  a: Recommendation,
+  b: Recommendation
+): boolean {
+  if (a.detectorId !== b.detectorId) return false
+  return !(
+    a.independentAddition &&
+    b.independentAddition &&
+    a.movements?.[0] === b.movements?.[0] &&
+    a.movements?.[1] !== b.movements?.[1]
+  )
 }

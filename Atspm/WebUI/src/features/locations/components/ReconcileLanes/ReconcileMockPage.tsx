@@ -12,6 +12,7 @@ import DiscrepancyButton from '../ApproachesReconcilationReport/DiscrepancyButto
 import { loadMockScenario, mockScenarios } from './mockScenarios'
 import {
   applyLaneRecommendations,
+  laneChangesConflict,
   LaneReview,
   movementLabels,
   originalLaneChange,
@@ -187,7 +188,7 @@ export default function ReconcileMockPage() {
                                 !review.recommendations.some(
                                   (other) =>
                                     other.id === id &&
-                                    other.detectorId === r.detectorId
+                                    laneChangesConflict(other, r)
                                 )
                             ),
                             r.id,
