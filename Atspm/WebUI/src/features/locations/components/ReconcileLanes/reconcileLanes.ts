@@ -42,7 +42,7 @@ const movementName = (value: unknown) =>
   typeof value === 'number'
     ? ['NA', 'T', 'R', 'L', 'TR', 'TL', 'NW', 'LTR'][value]
     : String(value)
-const movementLabels: Record<string, string> = {
+export const movementLabels: Record<string, string> = {
   T: 'Through',
   L: 'Left',
   R: 'Right',

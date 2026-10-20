@@ -173,10 +173,19 @@ it('reads independent zones and report evidence, separates warnings, and stages 
     })
   )
   expect(screen.getByText(/Unused zone Unused/)).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: /Add Channel .* zone Lane Alpha Through/,
+    })
+  )
   fireEvent.change(screen.getByLabelText(/New channels for T/), {
     target: { value: '302' },
   })
+  expect(
+    screen.getByRole('button', {
+      name: 'Add Channel 302 zone Lane Alpha Through',
+    })
+  ).toHaveAttribute('aria-pressed', 'true')
   fireEvent.click(
     screen.getByRole('button', { name: 'Apply selected to editor' })
   )
@@ -196,7 +205,11 @@ it('reads independent zones and report evidence, separates warnings, and stages 
 
 it('blocks applying stale results after review inputs change', async () => {
   const client = await openReview()
-  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: /Add Channel .* zone Lane Alpha Through/,
+    })
+  )
   fireEvent.change(screen.getByLabelText('Minimum observed count'), {
     target: { value: '10' },
   })
@@ -210,7 +223,7 @@ it('blocks applying stale results after review inputs change', async () => {
 it('keeps partial source responses diagnostic-only', async () => {
   const client = await openReview(['Device did not return one day'])
   expect(
-    screen.queryByRole('button', { name: /use separate/ })
+    screen.queryByRole('button', { name: /Add Channel/ })
   ).not.toBeInTheDocument()
   expect(screen.getByText(/Resolve them and rerun/)).toBeVisible()
   client.clear()
@@ -221,7 +234,9 @@ it('lets the user choose removal instead of addition and stages it without savin
   const remove = screen.getByRole('button', {
     name: 'Remove Channel 301 zone Lane Alpha Left',
   })
-  const add = screen.getByRole('button', { name: /use separate L \+ T/ })
+  const add = screen.getByRole('button', {
+    name: /Add Channel .* zone Lane Alpha Through/,
+  })
   expect(remove.closest('[role="alert"]')).toHaveTextContent('no L observed')
   expect(add.closest('[role="alert"]')).toBeNull()
   expect(remove).toHaveAttribute('aria-pressed', 'false')
@@ -260,7 +275,7 @@ it('uses the decoder-selected owner for serial/index aliases and retains recomme
     })
   )
   const recommendation = screen.getByRole('button', {
-    name: /use separate L \+ T/,
+    name: /Add Channel .* zone Lane Alpha Through/,
   })
   fireEvent.click(recommendation)
   expect(recommendation).toHaveAttribute('aria-pressed', 'true')
@@ -278,7 +293,7 @@ it('shows separate unnamed zone IDs without suppressing valid named recommendati
     ).toBeVisible()
   }
   const recommendation = screen.getByRole('button', {
-    name: /use separate L \+ T/,
+    name: /Add Channel .* zone Lane Alpha Through/,
   })
   fireEvent.click(recommendation)
   expect(recommendation).toHaveAttribute('aria-pressed', 'true')
@@ -287,7 +302,11 @@ it('shows separate unnamed zone IDs without suppressing valid named recommendati
 
 it('invalidates the memoized review when location configuration changes', async () => {
   const client = await openReview()
-  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: /Add Channel .* zone Lane Alpha Through/,
+    })
+  )
   act(() =>
     useLocationStore.setState({
       approaches: useLocationStore.getState().approaches.map((a) => ({

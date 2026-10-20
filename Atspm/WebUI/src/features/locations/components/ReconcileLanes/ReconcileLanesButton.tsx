@@ -28,6 +28,7 @@ import { laneDecoders } from './laneDecoders'
 import {
   applyLaneRecommendations,
   LaneReview,
+  movementLabels,
   Recommendation,
   reconcileLanes,
   ZoneEvidence,
@@ -240,10 +241,26 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
     }
   }
   function renderRecommendation(r: Recommendation) {
+    const zone = approaches
+      .flatMap((a) => a.detectors)
+      .find((d) => d.id === r.detectorId)?.dectectorIdentifier
+    const enteredChannels = (channels[r.id] ?? '')
+      .split(',')
+      .map((c) => c.trim())
+    const label =
+      !r.warning && r.movements
+        ? r.movements
+            .slice(1)
+            .map(
+              (movement, i) =>
+                `Add Channel ${enteredChannels[i] || '[enter channel]'} zone ${zone} ${movementLabels[movement] ?? movement}`
+            )
+            .join('; ')
+        : r.description
     return (
       <Box key={r.id}>
         <DiscrepancyButton
-          item={{ id: r.id, label: r.description }}
+          item={{ id: r.id, label }}
           width="auto"
           selected={selected.includes(r.id)}
           onToggle={() =>
