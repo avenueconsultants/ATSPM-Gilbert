@@ -4,7 +4,15 @@ import type {
 } from '../editLocation/locationStore'
 import type { ZoneEvidence, ZoneInventory } from './reconcileLanes'
 
-export const mockScenarios = [
+type MockScenario = {
+  name: string
+  movements: string[]
+  counts: number[]
+  separateLanes?: boolean
+  zones?: { name: string; counts: number[] }[]
+  explanation: string
+}
+export const mockScenarios: MockScenario[] = [
   {
     name: 'Split Through/Right',
     movements: ['TR'],
@@ -68,10 +76,23 @@ export const mockScenarios = [
     explanation:
       'Below the minimum count of five: warn rather than recommend adding Right.',
   },
+  {
+    name: 'Multiple Through lanes, different zones',
+    movements: ['T', 'T'],
+    counts: [120, 0, 0],
+    separateLanes: true,
+    zones: [
+      { name: 'NB-18', counts: [120, 0, 0] },
+      { name: 'NB-19', counts: [85, 0, 0] },
+    ],
+    explanation:
+      'Channels 118 and 119 are separate Through lanes on camera zones NB-18 and NB-19. Keep both lanes and their counts separate; no overlap warnings or changes are expected.',
+  },
 ]
 
 export function loadMockScenario(index: number) {
   const scenario = mockScenarios[index]
+  const zones = scenario.zones ?? [{ name: 'NB-18', counts: scenario.counts }]
   const approaches = [
     {
       id: 1,
@@ -84,7 +105,7 @@ export function loadMockScenario(index: number) {
             id: i + 1,
             approachId: 1,
             detectorChannel: 118 + i,
-            dectectorIdentifier: 'NB-18',
+            dectectorIdentifier: zones[scenario.zones ? i : 0].name,
             laneNumber: scenario.separateLanes ? i + 1 : 1,
             movementType,
             laneType: 'V',
@@ -93,18 +114,17 @@ export function loadMockScenario(index: number) {
       ),
     },
   ] as unknown as ConfigApproach[]
-  const inventory: ZoneInventory[] = [{ deviceId: 1, names: ['NB-18'] }]
-  const evidence: ZoneEvidence[] = [
-    {
-      deviceId: 1,
-      zoneId: 100,
-      zoneName: 'NB-18',
-      through: scenario.counts[0],
-      left: scenario.counts[1],
-      right: scenario.counts[2],
-      bins: 96,
-    },
+  const inventory: ZoneInventory[] = [
+    { deviceId: 1, names: zones.map((zone) => zone.name) },
   ]
+  const evidence: ZoneEvidence[] = zones.map((zone, i) => ({
+    deviceId: 1,
+    zoneId: 100 + i,
+    zoneName: zone.name,
+    through: zone.counts[0],
+    left: zone.counts[1],
+    right: zone.counts[2],
+    bins: 96,
+  }))
   return { approaches, inventory, evidence }
 }
-

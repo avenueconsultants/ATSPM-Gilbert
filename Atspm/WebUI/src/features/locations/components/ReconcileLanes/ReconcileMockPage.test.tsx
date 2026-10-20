@@ -71,3 +71,29 @@ it.each([undefined, 'false', 'true'])(
     }
   }
 )
+
+it('keeps Through lanes on distinct camera zones separate without warnings', () => {
+  render(<ReconcileMockPage />)
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: /Scenario/ }))
+  fireEvent.click(
+    screen.getByRole('option', {
+      name: 'Multiple Through lanes, different zones',
+    })
+  )
+  expect(screen.getByLabelText('NB-18 through')).toHaveValue(120)
+  expect(screen.getByLabelText('NB-19 through')).toHaveValue(85)
+  // Editing one camera zone must not alter the other zone's evidence.
+  fireEvent.change(screen.getByLabelText('NB-19 through'), {
+    target: { value: '90' },
+  })
+  expect(screen.getByLabelText('NB-18 through')).toHaveValue(120)
+  fireEvent.click(screen.getByRole('button', { name: 'Compare mock lanes' }))
+  expect(screen.getByText('No warnings.')).toBeVisible()
+  expect(screen.getByText('No changes recommended.')).toBeVisible()
+  const rows = within(
+    screen.getByRole('table', { name: 'Mock lane configuration' })
+  ).getAllByRole('row')
+  expect(rows).toHaveLength(3)
+  expect(rows[1]).toHaveTextContent('118NB-181Through')
+  expect(rows[2]).toHaveTextContent('119NB-192Through')
+})

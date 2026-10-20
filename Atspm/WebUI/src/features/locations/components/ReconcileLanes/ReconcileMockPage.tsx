@@ -94,32 +94,46 @@ export default function ReconcileMockPage() {
         ))}
       </TextField>
       <Typography>{mockScenarios[scenario].explanation}</Typography>
-      <Typography variant="h6">Mock camera counts: zone NB-18</Typography>
-      <Stack direction="row" spacing={2}>
-        {(['through', 'left', 'right'] as const).map((movement) => (
-          <TextField
-            key={movement}
-            type="number"
-            size="small"
-            label={movement}
-            inputProps={{ min: 0 }}
-            value={data.evidence[0][movement]}
-            onChange={(e) => {
-              setData({
-                ...data,
-                evidence: [
-                  {
-                    ...data.evidence[0],
-                    [movement]: Math.max(0, Number(e.target.value)),
-                  },
-                ],
-              })
-              setReview(undefined)
-              setSelected([])
-            }}
-          />
-        ))}
-      </Stack>
+      {data.evidence.map((row, index) => (
+        <Box key={row.zoneId}>
+          <Typography variant="h6">
+            Mock camera counts: zone {row.zoneName}
+          </Typography>
+          <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+            {(['through', 'left', 'right'] as const).map((movement) => (
+              <TextField
+                key={movement}
+                type="number"
+                size="small"
+                label={movement}
+                inputProps={{
+                  min: 0,
+                  'aria-label':
+                    data.evidence.length > 1
+                      ? `${row.zoneName} ${movement}`
+                      : movement,
+                }}
+                value={row[movement]}
+                onChange={(e) => {
+                  setData({
+                    ...data,
+                    evidence: data.evidence.map((entry, i) =>
+                      i === index
+                        ? {
+                            ...entry,
+                            [movement]: Math.max(0, Number(e.target.value)),
+                          }
+                        : entry
+                    ),
+                  })
+                  setReview(undefined)
+                  setSelected([])
+                }}
+              />
+            ))}
+          </Stack>
+        </Box>
+      ))}
       <Typography variant="h6">Current mock configuration</Typography>
       <Box sx={{ '& th, & td': { p: 1, textAlign: 'left' } }}>
         <table aria-label="Mock lane configuration">
@@ -173,7 +187,7 @@ export default function ReconcileMockPage() {
                           .movements!.slice(1)
                           .map(
                             (m, i) =>
-                              `Add Channel ${channels[r.id]?.[i]} zone NB-18 ${movementLabels[m]}`
+                              `Add Channel ${channels[r.id]?.[i]} zone ${data.approaches.flatMap((a) => a.detectors).find((d) => d.id === r.detectorId)?.dectectorIdentifier} ${movementLabels[m]}`
                           )
                           .join('; '),
                   }}
@@ -236,6 +250,9 @@ export default function ReconcileMockPage() {
                 {warning}
               </Alert>
             ))}
+          {review.warnings.length === 0 && (
+            <Typography>No warnings.</Typography>
+          )}
           {review.recommendations.length === 0 && (
             <Typography>No changes recommended.</Typography>
           )}
