@@ -10,12 +10,10 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   MenuItem,
   Stack,
   TextField,
@@ -24,6 +22,7 @@ import {
 import { format, startOfDay, subDays } from 'date-fns'
 import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
+import DiscrepancyButton from '../ApproachesReconcilationReport/DiscrepancyButton'
 import { useLocationStore } from '../editLocation/locationStore'
 import { laneDecoders } from './laneDecoders'
 import {
@@ -243,30 +242,26 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
   function renderRecommendation(r: Recommendation) {
     return (
       <Box key={r.id}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={selected.includes(r.id)}
-              onChange={(_, checked) =>
-                setSelected(
-                  checked
-                    ? [
-                        ...selected.filter(
-                          (id) =>
-                            !review!.recommendations.some(
-                              (other) =>
-                                other.id === id &&
-                                other.detectorId === r.detectorId
-                            )
-                        ),
-                        r.id,
-                      ]
-                    : selected.filter((id) => id !== r.id)
-                )
-              }
-            />
+        <DiscrepancyButton
+          item={{ id: r.id, label: r.description }}
+          width="auto"
+          selected={selected.includes(r.id)}
+          onToggle={() =>
+            setSelected(
+              selected.includes(r.id)
+                ? selected.filter((id) => id !== r.id)
+                : [
+                    ...selected.filter(
+                      (id) =>
+                        !review!.recommendations.some(
+                          (other) =>
+                            other.id === id && other.detectorId === r.detectorId
+                        )
+                    ),
+                    r.id,
+                  ]
+            )
           }
-          label={r.description}
         />
         {r.movements && r.movements.length > 1 && (
           <TextField

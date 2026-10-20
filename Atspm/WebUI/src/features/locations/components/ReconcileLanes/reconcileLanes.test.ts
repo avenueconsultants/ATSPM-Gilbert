@@ -212,3 +212,32 @@ it.each([1, 64, 301, 302.5, NaN])(
     expect(current[0].detectors).toHaveLength(1)
   }
 )
+
+it('adds a missing through movement once for entries on the same physical lane', () => {
+  const current = approach([detector(1, { movementType: 'R' }), detector(2)])
+  const result = reconcileLanes(current, inventory, evidence)
+  const additions = result.recommendations.filter((r) => !r.warning)
+  expect(additions).toHaveLength(1)
+  expect(additions[0].movements).toEqual(['R', 'T'])
+  const next = applyLaneRecommendations(current, additions, {
+    'movements-1': [303],
+  })
+  expect(next[0].detectors.map((d) => d.movementType).sort()).toEqual([
+    'L',
+    'R',
+    'T',
+  ])
+  expect(current[0].detectors).toHaveLength(2)
+})
+it('keeps missing movement assignments manual when physical lanes differ', () => {
+  const result = reconcileLanes(
+    approach([
+      detector(1, { movementType: 'R' }),
+      detector(2, { laneNumber: 2 }),
+    ]),
+    inventory,
+    evidence
+  )
+  expect(result.recommendations.filter((r) => !r.warning)).toHaveLength(0)
+  expect(result.warnings.join(' ')).toContain('verify which lane')
+})

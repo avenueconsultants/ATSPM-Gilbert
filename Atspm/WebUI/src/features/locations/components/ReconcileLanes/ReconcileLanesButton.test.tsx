@@ -173,7 +173,7 @@ it('reads independent zones and report evidence, separates warnings, and stages 
     })
   )
   expect(screen.getByText(/Unused zone Unused/)).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('checkbox', { name: /use separate L \+ T/ }))
+  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
   fireEvent.change(screen.getByLabelText(/New channels for T/), {
     target: { value: '302' },
   })
@@ -196,7 +196,7 @@ it('reads independent zones and report evidence, separates warnings, and stages 
 
 it('blocks applying stale results after review inputs change', async () => {
   const client = await openReview()
-  fireEvent.click(screen.getByRole('checkbox', { name: /use separate L \+ T/ }))
+  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
   fireEvent.change(screen.getByLabelText('Minimum observed count'), {
     target: { value: '10' },
   })
@@ -210,7 +210,7 @@ it('blocks applying stale results after review inputs change', async () => {
 it('keeps partial source responses diagnostic-only', async () => {
   const client = await openReview(['Device did not return one day'])
   expect(
-    screen.queryByRole('checkbox', { name: /use separate/ })
+    screen.queryByRole('button', { name: /use separate/ })
   ).not.toBeInTheDocument()
   expect(screen.getByText(/Resolve them and rerun/)).toBeVisible()
   client.clear()
@@ -218,18 +218,18 @@ it('keeps partial source responses diagnostic-only', async () => {
 
 it('lets the user choose removal instead of addition and stages it without saving', async () => {
   const client = await openReview([], false, false, 0)
-  const remove = screen.getByRole('checkbox', {
+  const remove = screen.getByRole('button', {
     name: 'Remove Channel 301 zone Lane Alpha Left',
   })
-  const add = screen.getByRole('checkbox', { name: /use separate L \+ T/ })
+  const add = screen.getByRole('button', { name: /use separate L \+ T/ })
   expect(remove.closest('[role="alert"]')).toHaveTextContent('no L observed')
   expect(add.closest('[role="alert"]')).toBeNull()
-  expect(remove).not.toBeChecked()
-  expect(add).not.toBeChecked()
+  expect(remove).toHaveAttribute('aria-pressed', 'false')
+  expect(add).toHaveAttribute('aria-pressed', 'false')
   fireEvent.click(add)
   fireEvent.click(remove)
-  expect(add).not.toBeChecked()
-  expect(remove).toBeChecked()
+  expect(add).toHaveAttribute('aria-pressed', 'false')
+  expect(remove).toHaveAttribute('aria-pressed', 'true')
   fireEvent.click(
     screen.getByRole('button', { name: 'Apply selected to editor' })
   )
@@ -259,11 +259,11 @@ it('uses the decoder-selected owner for serial/index aliases and retains recomme
       data: expect.objectContaining({ deviceId: '123' }),
     })
   )
-  const recommendation = screen.getByRole('checkbox', {
+  const recommendation = screen.getByRole('button', {
     name: /use separate L \+ T/,
   })
   fireEvent.click(recommendation)
-  expect(recommendation).toBeChecked()
+  expect(recommendation).toHaveAttribute('aria-pressed', 'true')
   client.clear()
 })
 
@@ -277,17 +277,17 @@ it('shows separate unnamed zone IDs without suppressing valid named recommendati
       screen.getByText(new RegExp(`Unnamed zone ${id} on device 7`))
     ).toBeVisible()
   }
-  const recommendation = screen.getByRole('checkbox', {
+  const recommendation = screen.getByRole('button', {
     name: /use separate L \+ T/,
   })
   fireEvent.click(recommendation)
-  expect(recommendation).toBeChecked()
+  expect(recommendation).toHaveAttribute('aria-pressed', 'true')
   client.clear()
 })
 
 it('invalidates the memoized review when location configuration changes', async () => {
   const client = await openReview()
-  fireEvent.click(screen.getByRole('checkbox', { name: /use separate L \+ T/ }))
+  fireEvent.click(screen.getByRole('button', { name: /use separate L \+ T/ }))
   act(() =>
     useLocationStore.setState({
       approaches: useLocationStore.getState().approaches.map((a) => ({

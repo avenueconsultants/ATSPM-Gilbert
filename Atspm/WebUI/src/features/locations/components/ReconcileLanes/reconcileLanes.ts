@@ -198,13 +198,24 @@ export function reconcileLanes(
       (m) => counts[m] > 0 && !assigned.has(m)
     )
     // Do not infer which of several physical lanes sharing a zone should receive another movement.
-    if (group.length > 1 && unassigned.length) {
+    const samePhysicalLane = group.every(
+      ({ a, d: other }) =>
+        a.id === group[0].a.id &&
+        Number(other.laneNumber) > 0 &&
+        Number(other.laneNumber) === Number(d.laneNumber) &&
+        ['V', '1'].includes(String(other.laneType))
+    )
+    if (group.length > 1 && unassigned.length && !samePhysicalLane) {
       warnings.push(
         `Zone ${name}: unassigned ${unassigned.join('/')} observed across multiple configured lanes; verify which lane serves it.`
       )
       continue
     }
-    const enough = unassigned.filter((m) => counts[m] >= minimum)
+    // Shared movement entries need only one proposal for the missing movement.
+    const enough =
+      group[0].d.id === d.id
+        ? unassigned.filter((m) => counts[m] >= minimum)
+        : []
     if (unassigned.some((m) => counts[m] < minimum))
       warnings.push(
         `${label}: low-volume unassigned movements; review T ${counts.T}, L ${counts.L}, R ${counts.R} before adding a lane.`
