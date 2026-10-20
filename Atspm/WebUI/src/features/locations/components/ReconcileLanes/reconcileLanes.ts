@@ -22,6 +22,7 @@ export type Recommendation = {
   detectorId: number
   description: string
   movements?: string[]
+  remove?: boolean
 }
 export type LaneReview = {
   recommendations: Recommendation[]
@@ -130,6 +131,17 @@ export function reconcileLanes(
       warnings.push(
         `${label}: no unambiguous bin evidence in the selected period.`
       )
+      if (
+        name.trim() &&
+        ['V', '1'].includes(String(d.laneType)) &&
+        (rows.length === 0 || (rows.length === 1 && rows[0].bins === 0))
+      )
+        recommendations.push({
+          id: `remove-${d.id}`,
+          detectorId: d.id,
+          remove: true,
+          description: `${label}: optionally remove this lane entry (${movementName(d.movementType)}). No bin evidence was returned; verify the lane and camera before choosing removal.`,
+        })
       continue
     }
     const counts: Record<string, number> = {
@@ -154,10 +166,18 @@ export function reconcileLanes(
       continue
     }
     const absent = declared.filter((m) => counts[m] === 0)
-    if (absent.length)
+    if (absent.length) {
       warnings.push(
-        `${label}: no ${absent.join('/')} observed. Zero counts do not establish a turn-only lane or justify removing a movement.`
+        `${label}: no ${absent.join('/')} observed. Zero counts do not establish a turn-only lane; verify permitted movements before choosing removal.`
       )
+      const retained = declared.filter((m) => !absent.includes(m))
+      recommendations.push({
+        id: `remove-${d.id}`,
+        detectorId: d.id,
+        ...(retained.length ? { movements: retained } : { remove: true }),
+        description: `${label}: optionally remove ${absent.join(' + ')}${retained.length ? ` and keep ${retained.join(' + ')}` : ' lane entry'}. None observed (T ${counts.T}, L ${counts.L}, R ${counts.R}); choose only after verifying lane use.`,
+      })
+    }
     const unassigned = Object.keys(counts).filter(
       (m) => counts[m] > 0 && !assigned.has(m)
     )
@@ -216,6 +236,8 @@ export function applyLaneRecommendations(
   channels: Record<string, number[]>
 ): ConfigApproach[] {
   const result = structuredClone(approaches)
+  if (new Set(selected.map((r) => r.detectorId)).size !== selected.length)
+    throw new Error('Choose only one change per lane entry.')
   const used = new Set(
     flatten(result).map(({ d }) => Number(d.detectorChannel))
   )
@@ -225,6 +247,10 @@ export function applyLaneRecommendations(
     if (!match || !eligible(match.d))
       throw new Error('Configuration changed. Run reconciliation again.')
     const { a, d } = match
+    if (change.remove) {
+      a.detectors = a.detectors.filter((entry) => entry.id !== d.id)
+      continue
+    }
     if (change.movements) {
       const [first, ...rest] = change.movements
       const additions = channels[change.id] ?? []

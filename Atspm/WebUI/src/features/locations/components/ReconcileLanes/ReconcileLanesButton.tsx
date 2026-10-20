@@ -319,12 +319,17 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                 </Alert>
               )}
               <Typography variant="h6">
-                Recommended changes ({review.recommendations.length})
+                Optional lane changes ({review.recommendations.length})
+              </Typography>
+              <Typography>
+                Choose additions or removals after verifying lane use. Nothing
+                is selected automatically. Removal affects the configured lane
+                entry, not the camera zone. Apply stages your choices; save the
+                approach to persist them.
               </Typography>
               {review.recommendations.length === 0 && (
                 <Typography>
-                  No changes can be recommended confidently. Review warnings
-                  below.
+                  No lane changes are available. Review warnings below.
                 </Typography>
               )}
               {review.recommendations.map((r) => (
@@ -336,7 +341,17 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                         onChange={(_, checked) =>
                           setSelected(
                             checked
-                              ? [...selected, r.id]
+                              ? [
+                                  ...selected.filter(
+                                    (id) =>
+                                      !review.recommendations.some(
+                                        (other) =>
+                                          other.id === id &&
+                                          other.detectorId === r.detectorId
+                                      )
+                                  ),
+                                  r.id,
+                                ]
                               : selected.filter((id) => id !== r.id)
                           )
                         }
@@ -344,7 +359,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                     }
                     label={r.description}
                   />
-                  {r.movements && (
+                  {r.movements && r.movements.length > 1 && (
                     <TextField
                       fullWidth
                       label={`New channels for ${r.movements.slice(1).join(', ')} (comma separated)`}

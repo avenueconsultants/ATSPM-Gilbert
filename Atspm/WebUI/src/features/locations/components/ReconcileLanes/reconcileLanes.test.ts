@@ -90,12 +90,18 @@ it('excludes controller channels including 64 and does not call their zones unus
   })
 })
 
-it('never removes a configured movement based on zero counts', () => {
+it('offers removal for zero counts but only removes explicitly selected entries', () => {
   const current = approach()
   const result = reconcileLanes(current, inventory, [
     { ...evidence[0], through: 0, left: 0 },
   ])
-  expect(result.recommendations).toHaveLength(0)
+  expect(result.recommendations).toHaveLength(1)
+  expect(result.recommendations[0].remove).toBe(true)
+  expect(applyLaneRecommendations(current, [], {})[0].detectors).toHaveLength(1)
+  expect(
+    applyLaneRecommendations(current, result.recommendations, {})[0].detectors
+  ).toHaveLength(0)
+  expect(current[0].detectors).toHaveLength(1)
   expect(result.warnings.join(' ')).toContain('Zero counts')
 })
 
@@ -104,8 +110,27 @@ it('splits combined movements without losing an unobserved configured movement',
   const result = reconcileLanes(current, inventory, [
     { ...evidence[0], left: 0 },
   ])
-  expect(result.recommendations[0].movements).toEqual(['T', 'R'])
+  expect(
+    result.recommendations.find((r) => r.id === 'movements-1')?.movements
+  ).toEqual(['T', 'R'])
+  const reduce = result.recommendations.find((r) => r.id === 'remove-1')!
+  expect(
+    applyLaneRecommendations(current, [reduce], {})[0].detectors[0].movementType
+  ).toBe('T')
+  expect(() =>
+    applyLaneRecommendations(current, result.recommendations, {})
+  ).toThrow('only one change')
   expect(result.warnings.join(' ')).toContain('Zero counts')
+})
+
+it('offers optional removal when a known zone has no returned bins', () => {
+  const current = approach()
+  const result = reconcileLanes(current, inventory, [])
+  expect(result.recommendations[0].remove).toBe(true)
+  expect(result.warnings.join(' ')).toContain('no unambiguous bin evidence')
+  expect(
+    applyLaneRecommendations(current, result.recommendations, {})[0].detectors
+  ).toEqual([])
 })
 
 it('warns about overlapping assignments without adding more counts', () => {

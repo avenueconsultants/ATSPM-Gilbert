@@ -48,7 +48,8 @@ it('shows the separate button when enabled', () => {
 async function openReview(
   warnings: string[] = [],
   aliases = false,
-  unnamed = false
+  unnamed = false,
+  leftCount = 20
 ) {
   jest.clearAllMocks()
   ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
@@ -110,7 +111,7 @@ async function openReview(
         deviceId: 7,
         zoneName: 'Lane Alpha',
         through: 80,
-        left: 20,
+        left: leftCount,
         right: 0,
         bins: 96,
       },
@@ -212,6 +213,34 @@ it('keeps partial source responses diagnostic-only', async () => {
     screen.queryByRole('checkbox', { name: /use separate/ })
   ).not.toBeInTheDocument()
   expect(screen.getByText(/Resolve them and rerun/)).toBeVisible()
+  client.clear()
+})
+
+it('lets the user choose removal instead of addition and stages it without saving', async () => {
+  const client = await openReview([], false, false, 0)
+  const remove = screen.getByRole('checkbox', {
+    name: /optionally remove L lane entry/,
+  })
+  const add = screen.getByRole('checkbox', { name: /use separate L \+ T/ })
+  expect(remove).not.toBeChecked()
+  expect(add).not.toBeChecked()
+  fireEvent.click(add)
+  fireEvent.click(remove)
+  expect(add).not.toBeChecked()
+  expect(remove).toBeChecked()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Apply selected to editor' })
+  )
+  expect(useLocationStore.getState().approaches[0].detectors).toHaveLength(0)
+  expect(useLocationStore.getState().savedApproaches[0].detectors).toHaveLength(
+    1
+  )
+  expect(useLocationStore.getState().hasUnsavedChanges()).toBe(true)
+  expect(
+    (configRequest as jest.Mock).mock.calls.every(
+      ([c]) => c.url === '/Detector/retrieveDetectionData'
+    )
+  ).toBe(true)
   client.clear()
 })
 
