@@ -4,11 +4,14 @@ import {
   Button,
   MenuItem,
   Stack,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
-import DiscrepancyButton from '../ApproachesReconcilationReport/DiscrepancyButton'
+import DiscrepancyButton from '@/features/locations/components/ApproachesReconcilationReport/DiscrepancyButton'
+import ApproachMockScenarios from './ApproachMockScenarios'
 import { loadMockScenario, mockScenarios } from './mockScenarios'
 import {
   applyLaneRecommendations,
@@ -18,10 +21,28 @@ import {
   originalLaneChange,
   reconcileLanes,
   suggestLaneChannels,
-} from './reconcileLanes'
+} from '@/features/locations/components/ReconcileLanes/reconcileLanes'
 
 // Deliberately uses local React state, never the real location store or API clients.
 export default function ReconcileMockPage() {
+  const [tab, setTab] = useState('lanes')
+  return (
+    <>
+      <Tabs
+        value={tab}
+        onChange={(_, value) => setTab(value)}
+        aria-label="Scenario type"
+        sx={{ mx: 'auto', maxWidth: 1100 }}
+      >
+        <Tab label="Lanes" value="lanes" />
+        <Tab label="Approaches" value="approaches" />
+      </Tabs>
+      {tab === 'lanes' ? <LaneMockScenarios /> : <ApproachMockScenarios />}
+    </>
+  )
+}
+
+function LaneMockScenarios() {
   const [scenario, setScenario] = useState(0)
   const [data, setData] = useState(() => loadMockScenario(0))
   const [review, setReview] = useState<LaneReview>()
@@ -181,7 +202,7 @@ export default function ReconcileMockPage() {
                   width="auto"
                   item={{
                     id: r.id,
-                    label: r.warning
+                    label: (r.warning || r.zoneChange)
                       ? r.description
                       : r
                           .movements!.slice(1)

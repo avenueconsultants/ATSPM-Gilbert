@@ -74,7 +74,11 @@ interface ApproachSlice {
   setScrollToDetector: (detectorId: number | null) => void
 
   updateApproaches: (newApproaches: ConfigApproach[]) => void
-  addApproach: (protectedPhaseNumber?: number) => void
+  addApproach: (
+    protectedPhaseNumber?: number,
+    isOverlap?: boolean,
+    properties?: Partial<ConfigApproach>
+  ) => void
   updateApproach: (updatedApproach: ConfigApproach) => void
   updateSavedApproach: (updatedApproach: ConfigApproach) => void
   updateSavedApproaches: (updatedApproaches: ConfigApproach[]) => void
@@ -83,7 +87,11 @@ interface ApproachSlice {
   deleteApproach: (approach: ConfigApproach) => void
   resetStore: () => void
 
-  addDetector: (approachId: number, detectorChannel?: number) => void
+  addDetector: (
+    approachId: number,
+    detectorChannel?: number,
+    properties?: Partial<ConfigDetector>
+  ) => void
   updateDetector: (detectorId: number, name: string, val: unknown) => void
   deleteDetector: (detectorId: number) => void
 }
@@ -187,7 +195,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       set({ approaches: JSON.parse(JSON.stringify(savedApproaches)) })
     },
 
-    addApproach: (protectedPhaseNumber) => {
+    addApproach: (protectedPhaseNumber, isOverlap = false, properties) => {
       const { location, approaches } = get()
       const id = Math.round(Math.random() * 10000)
       const index = approaches.length
@@ -198,7 +206,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         description: 'New Approach',
         isNew: true,
         detectors: [],
-        isProtectedPhaseOverlap: false,
+        isProtectedPhaseOverlap: isOverlap,
         isPermissivePhaseOverlap: false,
         isPedestrianPhaseOverlap: false,
         permissivePhaseNumber: null,
@@ -214,6 +222,16 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         protectedPhaseNumber: protectedPhaseNumber ?? null,
       }
 
+      // Drafts may edit fields, but identity, ownership, and detector collection belong to the store.
+      const {
+        id: draftId,
+        index: draftIndex,
+        locationId: draftLocation,
+        isNew: draftNew,
+        detectors: draftDetectors,
+        ...fields
+      } = properties ?? {}
+      Object.assign(newApproach, fields)
       set({
         approaches: [newApproach, ...approaches],
         scrollToApproach: newApproach.id,
@@ -274,7 +292,7 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       })
     },
 
-    addDetector: (approachId, detectorChannel) => {
+    addDetector: (approachId, detectorChannel, properties) => {
       const { approaches, updateApproach, setScrollToDetector } = get()
       const approach = approaches.find((a) => a.id === approachId)
       if (!approach) return
@@ -297,6 +315,14 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         movementType: 'NA',
         laneType: 'NA',
       }
+      // Keep identity and destination controlled by the store, not the draft editor.
+      const {
+        id: draftId,
+        approachId: draftApproach,
+        isNew: draftNew,
+        ...fields
+      } = properties ?? {}
+      Object.assign(newDetector, fields)
       if (detectorChannel != null) {
         newDetector.detectorChannel = detectorChannel
       }

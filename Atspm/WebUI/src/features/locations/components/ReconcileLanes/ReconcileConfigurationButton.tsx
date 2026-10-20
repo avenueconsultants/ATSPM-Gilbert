@@ -47,7 +47,7 @@ export default function ReconcileConfigurationButton({
       </LoadingButton>
       {/* Disabled installations retain the original workflow and make no lane requests. */}
       {open && lanesEnabled && (
-        <Dialog open onClose={close} fullWidth maxWidth="md">
+        <Dialog open onClose={close} fullWidth maxWidth="xl">
           <DialogTitle>Reconcile Approaches and Lanes</DialogTitle>
           <Tabs
             value={tab}

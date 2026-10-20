@@ -1,13 +1,14 @@
 import type {
   ConfigApproach,
   ConfigDetector,
-} from '../editLocation/locationStore'
-import type { ZoneEvidence, ZoneInventory } from './reconcileLanes'
+} from '@/features/locations/components/editLocation/locationStore'
+import type { ZoneEvidence, ZoneInventory } from '@/features/locations/components/ReconcileLanes/reconcileLanes'
 
 type MockScenario = {
   name: string
   movements: string[]
   counts: number[]
+  configuredZones?: string[]
   separateLanes?: boolean
   zones?: { name: string; counts: number[] }[]
   explanation: string
@@ -74,7 +75,7 @@ export const mockScenarios: MockScenario[] = [
     movements: ['T'],
     counts: [120, 0, 2],
     explanation:
-      'Below the minimum count of five: warn rather than recommend adding Right.',
+      'Below the minimum count of 25: warn rather than recommend adding Right.',
   },
   {
     name: 'Multiple Through lanes, different zones',
@@ -87,6 +88,14 @@ export const mockScenarios: MockScenario[] = [
     ],
     explanation:
       'Channels 118 and 119 are separate Through lanes on camera zones NB-18 and NB-19. Keep both lanes and their counts separate; no overlap warnings or changes are expected.',
+  },
+  {
+    name: 'Separate Through/Right zones, shared camera zone',
+    movements: ['T', 'R'],
+    counts: [120, 0, 30],
+    configuredZones: ['NB-18', 'NB-19'],
+    explanation:
+      'Channel 118 (Through) uses NB-18 and Channel 119 (Right) uses NB-19 on the same physical lane. The camera only has NB-18, reporting 120 Through and 30 Right. Select Change Channel 119 zone NB-19 to NB-18 to reuse the existing Right detector. Its channel and settings remain intact, and no additional Right detector is created.',
   },
 ]
 
@@ -105,7 +114,7 @@ export function loadMockScenario(index: number) {
             id: i + 1,
             approachId: 1,
             detectorChannel: 118 + i,
-            dectectorIdentifier: zones[scenario.zones ? i : 0].name,
+            dectectorIdentifier: scenario.configuredZones?.[i] ?? zones[scenario.zones ? i : 0].name,
             laneNumber: scenario.separateLanes ? i + 1 : 1,
             movementType,
             laneType: 'V',

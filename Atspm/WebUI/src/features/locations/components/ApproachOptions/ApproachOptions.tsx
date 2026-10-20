@@ -41,8 +41,10 @@ import ReconcileConfigurationButton from '../ReconcileLanes/ReconcileConfigurati
 
 type SyncLocationResponse = {
   loggedButUnusedProtectedOrPermissivePhases?: number[] | null
+  reconciliationWarnings?: string[]
   loggedButUnusedOverlapPhases?: number[] | null
   loggedButUnusedDetectorChannels?: number[] | null
+  missingPhaseAssignments?: LocationDiscrepancyReport['missingPhaseAssignments']
   removedApproachIds?: number[] | null
   removedDetectors?: Array<string | number> | null
 }
@@ -270,7 +272,12 @@ const ApproachOptions = () => {
       const removedApproachIds = response.removedApproachIds ?? []
       const removedDetectors = (response.removedDetectors ?? []).map(String)
 
-      setBadApproaches(removedApproachIds)
+      setBadApproaches([
+        ...new Set([
+          ...removedApproachIds,
+          ...(response.missingPhaseAssignments ?? []).map((a) => a.approachId),
+        ]),
+      ])
       setBadDetectors(removedDetectors)
 
       const notFoundApproaches = removedApproachIds.map((id) => {
@@ -281,16 +288,15 @@ const ApproachOptions = () => {
         }
       })
 
-      const foundPhaseNumbers = Array.from(
-        new Set<number>([
-          ...(response.loggedButUnusedProtectedOrPermissivePhases ?? []),
-          ...(response.loggedButUnusedOverlapPhases ?? []),
-        ])
-      )
+      const foundPhaseNumbers =
+        response.loggedButUnusedProtectedOrPermissivePhases ?? []
 
       setCategories({
         foundPhaseNumbers,
+        foundOverlapNumbers: response.loggedButUnusedOverlapPhases ?? [],
+        warnings: response.reconciliationWarnings ?? [],
         notFoundApproaches,
+        missingPhaseAssignments: response.missingPhaseAssignments,
         foundDetectorChannels: response.loggedButUnusedDetectorChannels ?? [],
         notFoundDetectorChannels: removedDetectors,
       })

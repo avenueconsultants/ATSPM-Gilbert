@@ -68,56 +68,71 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
 
         public static TemplateLocationModifiedDto ModifyLocationWithEvents(Location sourceLocation, IEnumerable<IndianaEvent> indianaEvents)
         {
-            var cycleEvents = indianaEvents.Where(e =>
-                new List<short>
+            // Phase and overlap identifiers are separate namespaces. A matching number
+            // in the other namespace must never validate a configured assignment.
+            var events = indianaEvents.ToList();
+            var protectedOrPermissivePhasesInUse = events.Where(e => e.EventCode is 1 or 8 or 11)
+                .Select(e => e.EventParam).ToHashSet();
+            var overlapPhasesInUse = events.Where(e => e.EventCode >= 61 && e.EventCode <= 66)
+                .Select(e => e.EventParam).ToHashSet();
+            var pedestrianPhasesInUse = events.Where(e => e.EventCode is 21 or 22 or 23)
+                .Select(e => e.EventParam).ToHashSet();
+            var pedestrianOverlapsInUse = events.Where(e => e.EventCode >= 67 && e.EventCode <= 70)
+                .Select(e => e.EventParam).ToHashSet();
+            var detectorChannelsInUse = events.Where(e => e.EventCode == 82)
+                .Select(e => e.EventParam).ToHashSet();
+            var warnings = new List<string>();
+            var fyaIdentifiers = events.Where(e => e.EventCode is 32 or 33)
+                .Select(e => e.EventParam).Distinct().OrderBy(p => p).ToList();
+            if (fyaIdentifiers.Count > 0)
+            {
+                // FYA indicates permissive operation, not whether protected service also
+                // exists. Keep the reported identifiers without assuming a phase mapping.
+                warnings.Add($"Flashing yellow arrow (FYA) events were observed for identifiers {string.Join(", ", fyaIdentifiers)}. Review the left-turn configuration manually to ensure the protected/permissive assignments and overlap settings are correct.");
+            }
+
+            bool Observed(int? number, bool overlap, bool pedestrian = false) => number.HasValue &&
+                (pedestrian ? (overlap ? pedestrianOverlapsInUse : pedestrianPhasesInUse)
+                    : (overlap ? overlapPhasesInUse : protectedOrPermissivePhasesInUse)).Contains((short)number.Value);
+
+            var missingAssignments = new List<MissingPhaseAssignmentDto>();
+            foreach (var approach in sourceLocation.Approaches)
+            {
+                void CheckAssignment(string role, int? number, bool overlap, bool pedestrian = false)
                 {
-                    1,
-                    8,
-                    11,
-                    61, //Overlap
-                    63, //Overlap
-                    64, //Overlap
-                    90, //Ped
-                }.Contains(e.EventCode)).ToList();
-
-            var protectedOrPermissivePhasesInUse = cycleEvents.Where(d => ((d.EventCode == 1) || (d.EventCode == 8) || (d.EventCode == 11))).Select(d => d.EventParam).Distinct();
-            var overlapPhasesInUse = cycleEvents.Where(d => ((d.EventCode == 61) || (d.EventCode == 63) || (d.EventCode == 64))).Select(d => d.EventParam).Distinct();
-            var pedestrianPhasesInUse = cycleEvents.Where(d => (d.EventCode == 90)).Select(d => d.EventParam).Distinct();
-
-            var detectorChannelsInUse = indianaEvents.Where(d => d.EventCode == 82).Select(d => d.EventParam).Distinct();
+                    // Report each field independently even when another phase or detector
+                    // keeps this approach active. Zero represents an unassigned protected phase.
+                    if (number > 0 && !Observed(number, overlap, pedestrian))
+                        missingAssignments.Add(new MissingPhaseAssignmentDto
+                        {
+                            ApproachId = approach.Id, Role = role,
+                            PhaseNumber = number.Value, IsOverlap = overlap
+                        });
+                    // Identical numeric IDs in phase and overlap events are unrelated.
+                    // Report missing assignments and unconfigured observations independently.
+                }
+                // One-to-one pedestrian settings must be checked against regular vehicle
+                // phases, never inferred from an overlap with the same numeric identifier.
+                if (sourceLocation.PedsAre1to1 && approach.ProtectedPhaseNumber > 0 && !approach.IsProtectedPhaseOverlap &&
+                    (approach.PedestrianPhaseNumber != approach.ProtectedPhaseNumber || approach.IsPedestrianPhaseOverlap))
+                    warnings.Add($"Approach {approach.Id} ({approach.Description}): pedestrian configuration does not match the one-to-one setting. Verify pedestrian phase {approach.ProtectedPhaseNumber} and its detector mapping.");
+                CheckAssignment("protected", approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap);
+                CheckAssignment("permissive", approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap);
+                CheckAssignment("pedestrian", approach.PedestrianPhaseNumber, approach.IsPedestrianPhaseOverlap, true);
+            }
 
             var newVersion = (Location)sourceLocation.Clone();
-            // Detach the original entity
-            var ogApproaches = newVersion.Approaches;
-
-
-            // Step 1: Partition the approaches into kept and removed
-            var removedApproaches = newVersion.Approaches
-                .Where(approach =>
-                    !(((approach.PermissivePhaseNumber == null ? false : protectedOrPermissivePhasesInUse.Contains((short)approach.PermissivePhaseNumber)) ||
-                      (approach.ProtectedPhaseNumber == null ? false : protectedOrPermissivePhasesInUse.Contains((short)approach.ProtectedPhaseNumber)) ||
-                      (approach.PedestrianPhaseNumber == null ? false : pedestrianPhasesInUse.Contains((short)approach.PedestrianPhaseNumber)) ||
-                      (approach.PermissivePhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.PermissivePhaseNumber) && approach.IsPermissivePhaseOverlap == true)) ||
-                      (approach.ProtectedPhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.ProtectedPhaseNumber) && approach.IsProtectedPhaseOverlap == true)) ||
-                      (approach.PedestrianPhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.PedestrianPhaseNumber) && approach.IsPedestrianPhaseOverlap == true)))
-                      || (approach.Detectors.Where(det => detectorChannelsInUse.Contains((short)det.DetectorChannel)).ToList().Count >= 1)))
-                .ToList();
-
-            var savedApproaches = newVersion.Approaches
-                .Where(approach =>
-                    (((approach.PermissivePhaseNumber == null ? false : protectedOrPermissivePhasesInUse.Contains((short)approach.PermissivePhaseNumber)) ||
-                      (approach.ProtectedPhaseNumber == null ? false : protectedOrPermissivePhasesInUse.Contains((short)approach.ProtectedPhaseNumber)) ||
-                      (approach.PedestrianPhaseNumber == null ? false : pedestrianPhasesInUse.Contains((short)approach.PedestrianPhaseNumber)) ||
-                      (approach.PermissivePhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.PermissivePhaseNumber) && approach.IsPermissivePhaseOverlap == true)) ||
-                      (approach.ProtectedPhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.ProtectedPhaseNumber) && approach.IsProtectedPhaseOverlap == true)) ||
-                      (approach.PedestrianPhaseNumber == null ? false : (overlapPhasesInUse.Contains((short)approach.PedestrianPhaseNumber) && approach.IsPedestrianPhaseOverlap == true)))
-                      || (approach.Detectors.Where(det => detectorChannelsInUse.Contains((short)det.DetectorChannel)).ToList().Count >= 1)))
-                .ToList();
-
+            bool ApproachObserved(Approach approach) =>
+                Observed(approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap) ||
+                Observed(approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap) ||
+                Observed(approach.PedestrianPhaseNumber, approach.IsPedestrianPhaseOverlap, true) ||
+                // Preserve approaches supported by detector activity even when no phase
+                // transition occurred in the observation window.
+                approach.Detectors.Any(d => detectorChannelsInUse.Contains((short)d.DetectorChannel));
+            var removedApproaches = newVersion.Approaches.Where(a => !ApproachObserved(a)).ToList();
+            newVersion.Approaches = newVersion.Approaches.Where(ApproachObserved).ToList();
             var removedDetectors = new List<string>();
-            newVersion.Approaches = savedApproaches;
 
-            // Step 1: Filter and save the Detectors for each Approach
             foreach (var approach in newVersion.Approaches)
             {
                 removedDetectors.AddRange(approach.Detectors
@@ -139,48 +154,30 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
             // Step 3: Find all detectorChannels from the input array that are not attached to any approach
             var unattachedDetectorChannels = detectorChannelsInUse.Except(usedDetectorChannels).ToList();
 
-            var usedProtectedOrPermissivePhases = newVersion.Approaches
-                .SelectMany(approach => new List<int?>
+            var usedProtectedOrPermissivePhases = newVersion.Approaches.SelectMany(a => new int?[]
                 {
-                    approach.PermissivePhaseNumber,
-                    approach.ProtectedPhaseNumber
-                })
-                .Where(phase => phase.HasValue) // Filter out null values
-                .Select(phase => (short)phase.Value) // Cast non-null values to short
-                .Where(phase => protectedOrPermissivePhasesInUse.Contains(phase))
-                .Distinct()
-                .ToList();
+                    a.IsProtectedPhaseOverlap ? null : a.ProtectedPhaseNumber,
+                    a.IsPermissivePhaseOverlap ? null : a.PermissivePhaseNumber
+                }).Where(p => p.HasValue).Select(p => (short)p.Value).ToHashSet();
+            var unattachedProtectedOrPermissivePhases = protectedOrPermissivePhasesInUse.Except(usedProtectedOrPermissivePhases).OrderBy(p => p).ToList();
 
-            var unattachedProtectedOrPermissivePhases = protectedOrPermissivePhasesInUse.Except(usedProtectedOrPermissivePhases).ToList();
-
-            // Step 2: Find shorts in overlapPhasesInUse that are not attached to any remaining approach
-            var usedOverlapPhases = newVersion.Approaches
-                .Where(approach => (approach.IsPermissivePhaseOverlap || approach.IsProtectedPhaseOverlap || approach.IsPedestrianPhaseOverlap))
-                .SelectMany(approach => new List<int?>
+            // Each field has its own overlap flag; one flagged field must not consume
+            // the regular phase number from another field on the same approach.
+            var usedOverlapPhases = newVersion.Approaches.SelectMany(a => new int?[]
                 {
-                    approach.PermissivePhaseNumber,
-                    approach.ProtectedPhaseNumber,
-                    approach.PedestrianPhaseNumber
-                })
-                .Where(phase => phase.HasValue) // Exclude nulls
-                .Select(phase => (short)phase.Value) // Cast non-null values to short
-                .Where(phase => overlapPhasesInUse.Contains(phase))
-                .Distinct()
-                .ToList();
-
-            var unattachedOverlapPhases = overlapPhasesInUse.Except(usedOverlapPhases).ToList();
-
-
-            // Step 3: Find shorts in pedestrianPhasesInUse that are not attached to any remaining approach
-            var usedPedestrianPhases = newVersion.Approaches
-                .SelectMany(approach => new List<int?> { approach.PedestrianPhaseNumber })
-                .Where(phase => phase.HasValue) // Exclude nulls
-                .Select(phase => (short)phase.Value) // Cast non-null values to short
-                .Where(phase => pedestrianPhasesInUse.Contains(phase))
-                .Distinct()
-                .ToList();
-
-            var unattachedPedestrianPhases = pedestrianPhasesInUse.Except(usedPedestrianPhases).ToList();
+                    a.IsProtectedPhaseOverlap ? a.ProtectedPhaseNumber : null,
+                    a.IsPermissivePhaseOverlap ? a.PermissivePhaseNumber : null
+                }).Where(p => p.HasValue).Select(p => (short)p.Value).ToHashSet();
+            var unattachedOverlapPhases = overlapPhasesInUse.Except(usedOverlapPhases).OrderBy(p => p).ToList();
+            var usedPedestrianPhases = newVersion.Approaches.Where(a => !a.IsPedestrianPhaseOverlap)
+                .Select(a => a.PedestrianPhaseNumber).Where(p => p.HasValue).Select(p => (short)p.Value);
+            var unattachedPedestrianPhases = pedestrianPhasesInUse.Except(usedPedestrianPhases).OrderBy(p => p).ToList();
+            foreach (var phase in unattachedPedestrianPhases)
+                warnings.Add($"Pedestrian phase {phase} was observed without a configured pedestrian phase assignment. Review the crosswalk mapping and one-to-one pedestrian setting manually; do not add it as a vehicle phase.");
+            var usedPedestrianOverlaps = newVersion.Approaches.Where(a => a.IsPedestrianPhaseOverlap)
+                .Select(a => a.PedestrianPhaseNumber).Where(p => p.HasValue).Select(p => (short)p.Value);
+            foreach (var overlap in pedestrianOverlapsInUse.Except(usedPedestrianOverlaps).OrderBy(p => p))
+                warnings.Add($"Pedestrian overlap {overlap} was observed without a configured pedestrian overlap assignment. Review the crosswalk mapping manually; do not add it as a vehicle phase.");
 
             return new TemplateLocationModifiedDto
             {
@@ -333,6 +330,8 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
                 //        }
                 //    }).ToList()
                 //},
+                ReconciliationWarnings = warnings,
+                MissingPhaseAssignments = missingAssignments,
                 LoggedButUnusedProtectedOrPermissivePhases = unattachedProtectedOrPermissivePhases,
                 LoggedButUnusedOverlapPhases = unattachedOverlapPhases,
                 LoggedButUnusedPedestrianPhases = unattachedPedestrianPhases,

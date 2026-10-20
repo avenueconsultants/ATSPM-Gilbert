@@ -31,7 +31,7 @@ const evidence: ZoneEvidence[] = [
     deviceId: 7,
     zoneName: 'Arbitrary zone',
     through: 80,
-    left: 20,
+    left: 30,
     right: 0,
     bins: 96,
   },
@@ -259,17 +259,17 @@ it('suggests one distinct unused channel per added movement across proposals', (
 
 describe('mock lane configuration scenarios', () => {
   it.each([
-    ['through-only matches', ['T'], 20, 0, 0, 0, 0],
-    ['left-only matches', ['L'], 0, 20, 0, 0, 0],
-    ['right-only matches', ['R'], 0, 0, 20, 0, 0],
-    ['through needs left', ['T'], 20, 10, 0, 1, 0],
-    ['through needs right', ['T'], 20, 0, 10, 1, 0],
-    ['through needs both turns', ['T'], 20, 10, 10, 2, 0],
-    ['left and right need through', ['L', 'R'], 20, 10, 10, 1, 0],
-    ['all movements match', ['L', 'T', 'R'], 20, 10, 10, 0, 0],
-    ['left has only through observations', ['L'], 20, 0, 0, 1, 1],
+    ['through-only matches', ['T'], 30, 0, 0, 0, 0],
+    ['left-only matches', ['L'], 0, 30, 0, 0, 0],
+    ['right-only matches', ['R'], 0, 0, 30, 0, 0],
+    ['through needs left', ['T'], 30, 30, 0, 1, 0],
+    ['through needs right', ['T'], 30, 0, 30, 1, 0],
+    ['through needs both turns', ['T'], 30, 30, 30, 2, 0],
+    ['left and right need through', ['L', 'R'], 30, 30, 30, 1, 0],
+    ['all movements match', ['L', 'T', 'R'], 30, 30, 30, 0, 0],
+    ['left has only through observations', ['L'], 30, 0, 0, 1, 1],
     ['all movements zero', ['L', 'T', 'R'], 0, 0, 0, 0, 3],
-    ['right below threshold', ['T'], 20, 0, 2, 0, 0],
+    ['right below threshold', ['T'], 30, 0, 2, 0, 0],
   ] as const)('%s', (_, configured, through, left, right, adds, removes) => {
     const current = approach(
       configured.map((movementType, i) => detector(i + 1, { movementType }))
@@ -290,7 +290,7 @@ it.each(['TR', 'TL', 4, 5])(
   (movementType) => {
     const current = approach([detector(1, { movementType })])
     const review = reconcileLanes(current, inventory, [
-      { ...evidence[0], right: 20 },
+      { ...evidence[0], right: 30 },
     ])
     const split = review.recommendations.find((r) => !r.warning)!
     expect(originalLaneChange(current, split)).toMatch(
@@ -310,7 +310,7 @@ it.each([['L'], ['R'], ['L', 'R']])(
   (...turns) => {
     const current = approach([detector(1, { movementType: 'T' })])
     const review = reconcileLanes(current, inventory, [
-      { ...evidence[0], right: 20 },
+      { ...evidence[0], right: 30 },
     ])
     expect(review.recommendations).toHaveLength(2)
     const selected = review.recommendations.filter((r) =>
@@ -339,3 +339,77 @@ it.each([['L'], ['R'], ['L', 'R']])(
     expect(current[0].detectors).toHaveLength(1)
   }
 )
+
+it.each([24, 25])('defaults to 25 observed counts: %s', (right) => {
+  const review = reconcileLanes(
+    approach([detector(1, { movementType: 'T' })]),
+    inventory,
+    [{ ...evidence[0], left: 0, right }]
+  )
+  expect(review.recommendations.filter((r) => !r.warning)).toHaveLength(
+    right >= 25 ? 1 : 0
+  )
+})
+
+it('reassigns an existing Right detector without adding or changing its other settings', () => {
+  const current = approach([
+    detector(1, { movementType: 'T' }),
+    detector(2, {
+      movementType: 'R',
+      dectectorIdentifier: 'Old right zone',
+      latencyCorrection: 0.5,
+    }),
+  ])
+  const review = reconcileLanes(current, inventory, [
+    { ...evidence[0], left: 0, right: 30 },
+  ])
+  expect(review.recommendations).toHaveLength(1)
+  expect(review.recommendations[0].zoneChange).toEqual({
+    from: 'Old right zone',
+    to: 'Arbitrary zone',
+  })
+  const next = applyLaneRecommendations(current, review.recommendations, {})
+  expect(next[0].detectors).toEqual([
+    current[0].detectors[0],
+    { ...current[0].detectors[1], dectectorIdentifier: 'Arbitrary zone' },
+  ])
+  expect(
+    reconcileLanes(next, inventory, [{ ...evidence[0], left: 0, right: 30 }])
+      .recommendations
+  ).toHaveLength(0)
+  current[0].detectors[1].dectectorIdentifier = 'Changed meanwhile'
+  expect(() =>
+    applyLaneRecommendations(current, review.recommendations, {})
+  ).toThrow('Configuration changed')
+})
+it('does not guess between multiple existing Right detectors', () => {
+  const current = approach([
+    detector(1, { movementType: 'T' }),
+    detector(2, { movementType: 'R', dectectorIdentifier: 'Old A' }),
+    detector(3, { movementType: 'R', dectectorIdentifier: 'Old B' }),
+  ])
+  const review = reconcileLanes(current, inventory, [
+    { ...evidence[0], left: 0, right: 30 },
+  ])
+  expect(review.recommendations).toHaveLength(0)
+  expect(review.warnings.join(' ')).toContain(
+    'several existing Right detectors'
+  )
+})
+it('does not reassign Right from another physical lane or a valid camera zone', () => {
+  for (const overrides of [
+    { laneNumber: 2, dectectorIdentifier: 'Old right' },
+    { dectectorIdentifier: 'Other camera zone' },
+  ]) {
+    const current = approach([
+      detector(1, { movementType: 'T' }),
+      detector(2, { movementType: 'R', ...overrides }),
+    ])
+    const review = reconcileLanes(
+      current,
+      [{ deviceId: 7, names: ['Arbitrary zone', 'Other camera zone'] }],
+      [{ ...evidence[0], left: 0, right: 30 }]
+    )
+    expect(review.recommendations.some((r) => r.zoneChange)).toBe(false)
+  }
+})

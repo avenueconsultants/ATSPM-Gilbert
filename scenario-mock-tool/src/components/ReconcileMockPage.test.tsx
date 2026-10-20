@@ -1,8 +1,10 @@
-import { getServerSideProps } from '@/pages/dev/reconcile-scenarios'
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import type { GetServerSidePropsContext } from 'next'
 import ReconcileMockPage from './ReconcileMockPage'
+
+jest.mock('@/stores/notifications', () => ({
+  useNotificationStore: () => ({ addNotification: jest.fn() }),
+}))
 
 beforeAll(() => {
   global.structuredClone = (value) => JSON.parse(JSON.stringify(value))
@@ -55,23 +57,6 @@ it('allows changing counts and explicitly removing a movement', () => {
   expect(table.getAllByRole('row')).toHaveLength(2)
   expect(table.getByText('Through')).toBeVisible()
 })
-it.each([undefined, 'false', 'true'])(
-  'gates the mock route with %s',
-  async (value) => {
-    const prior = process.env.ENABLE_RECONCILE_MOCKS
-    try {
-      if (value === undefined) delete process.env.ENABLE_RECONCILE_MOCKS
-      else process.env.ENABLE_RECONCILE_MOCKS = value
-      expect(await getServerSideProps({} as GetServerSidePropsContext)).toEqual(
-        value === 'true' ? { props: {} } : { notFound: true }
-      )
-    } finally {
-      if (prior === undefined) delete process.env.ENABLE_RECONCILE_MOCKS
-      else process.env.ENABLE_RECONCILE_MOCKS = prior
-    }
-  }
-)
-
 it('keeps Through lanes on distinct camera zones separate without warnings', () => {
   render(<ReconcileMockPage />)
   fireEvent.mouseDown(screen.getByRole('combobox', { name: /Scenario/ }))
@@ -96,4 +81,18 @@ it('keeps Through lanes on distinct camera zones separate without warnings', () 
   expect(rows).toHaveLength(3)
   expect(rows[1]).toHaveTextContent('118NB-181Through')
   expect(rows[2]).toHaveTextContent('119NB-192Through')
+})
+
+it('warns when separate configured Through/Right zones correspond to one camera zone', () => {
+  render(<ReconcileMockPage />)
+  fireEvent.mouseDown(screen.getByRole('combobox', { name: /Scenario/ }))
+  fireEvent.click(screen.getByRole('option', { name: 'Separate Through/Right zones, shared camera zone' }))
+  expect(screen.getByLabelText('through')).toHaveValue(120)
+  expect(screen.getByLabelText('right')).toHaveValue(30)
+  fireEvent.click(screen.getByRole('button', { name: 'Compare mock lanes' }))
+  expect(screen.getByText(/Channel 119, zone NB-19: not returned by the devices/)).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Change Channel 119 zone NB-19 to NB-18' })).toBeVisible()
+  const rows = within(screen.getByRole('table', { name: 'Mock lane configuration' })).getAllByRole('row')
+  expect(rows[1]).toHaveTextContent('118NB-181Through')
+  expect(rows[2]).toHaveTextContent('119NB-191Right')
 })

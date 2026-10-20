@@ -69,7 +69,7 @@ export function LaneDialog({
   const [end, setEnd] = useState(
     format(startOfDay(new Date()), "yyyy-MM-dd'T'HH:mm")
   )
-  const [minimum, setMinimum] = useState(5)
+  const [minimum, setMinimum] = useState(25)
   const [review, setReview] = useState<LaneReview>()
   const [evidence, setEvidence] = useState<ZoneEvidence[]>([])
   const [snapshot, setSnapshot] = useState('')
@@ -410,7 +410,7 @@ export function LaneDialog({
                 </Alert>
               )}
               <Typography variant="h6">
-                Recommended lane additions (
+                Recommended lane changes (
                 {review.recommendations.filter((r) => !r.warning).length})
               </Typography>
               <Typography>

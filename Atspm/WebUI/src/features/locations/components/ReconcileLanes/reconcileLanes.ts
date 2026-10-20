@@ -23,6 +23,7 @@ export type Recommendation = {
   description: string
   movements?: string[]
   remove?: boolean
+  zoneChange?: { from: string; to: string }
   independentAddition?: boolean
   /** Related verification warning; render this optional change alongside it. */
   warning?: string
@@ -66,7 +67,7 @@ export function reconcileLanes(
   approaches: ConfigApproach[],
   inventory: ZoneInventory[],
   evidence: ZoneEvidence[],
-  minimum = 5
+  minimum = 25
 ): LaneReview {
   const recommendations: Recommendation[] = []
   const warnings: string[] = []
@@ -241,6 +242,58 @@ export function reconcileLanes(
         `${label}: unassigned ${enough.join('/')} observed; configured lane number needs verification before recommending a split.`
       )
   }
+  // Prefer repairing an existing single-movement entry on the same physical
+  // lane over creating a duplicate. An absent zone is evidence to review, not
+  // permission to remap a detector automatically.
+  const repairs = new Map<Recommendation, (typeof configured)[number]>()
+  const ambiguous = new Set<Recommendation>()
+  for (const proposal of recommendations) {
+    if (!proposal.independentAddition || proposal.movements?.length !== 2)
+      continue
+    const source = configured.find(({ d }) => d.id === proposal.detectorId)!
+    const candidates = configured.filter(
+      ({ a, d }) =>
+        a.id === source.a.id &&
+        Number(d.laneNumber) > 0 &&
+        Number(d.laneNumber) === Number(source.d.laneNumber) &&
+        ['V', '1'].includes(String(d.laneType)) &&
+        movementName(d.movementType) === proposal.movements![1] &&
+        !!d.dectectorIdentifier?.trim() &&
+        !owners.has(d.dectectorIdentifier)
+    )
+    if (candidates.length === 1) repairs.set(proposal, candidates[0])
+    else if (candidates.length > 1) {
+      ambiguous.add(proposal)
+      warnings.push(
+        `Zone ${source.d.dectectorIdentifier}: several existing ${movementLabels[proposal.movements[1]]} detectors could share this zone (channels ${candidates.map(({ d }) => d.detectorChannel).join(', ')}). Verify which detector to reassign; no additional detector is recommended.`
+      )
+    }
+  }
+  for (const [proposal, candidate] of repairs) {
+    if (
+      [...repairs.values()].filter(({ d }) => d.id === candidate.d.id).length >
+      1
+    ) {
+      ambiguous.add(proposal)
+      warnings.push(
+        `Channel ${candidate.d.detectorChannel}: multiple camera zones could match this detector. Verify the zone assignment manually.`
+      )
+      continue
+    }
+    const source = configured.find(({ d }) => d.id === proposal.detectorId)!.d
+    const from = candidate.d.dectectorIdentifier!
+    const to = source.dectectorIdentifier!
+    Object.assign(proposal, {
+      id: `zone-${candidate.d.id}`,
+      detectorId: candidate.d.id,
+      independentAddition: false,
+      movements: undefined,
+      zoneChange: { from, to },
+      description: `Change Channel ${candidate.d.detectorChannel} zone ${from} to ${to}`,
+    })
+  }
+  for (let i = recommendations.length - 1; i >= 0; i--)
+    if (ambiguous.has(recommendations[i])) recommendations.splice(i, 1)
   const allAssigned = new Set(
     flatten(approaches)
       .filter(({ d }) => active(d))
@@ -288,6 +341,15 @@ export function applyLaneRecommendations(
     if (!match || !eligible(match.d))
       throw new Error('Configuration changed. Run reconciliation again.')
     const { a, d } = match
+    if (change.zoneChange) {
+      if (
+        d.dectectorIdentifier !== change.zoneChange.from ||
+        !change.zoneChange.to.trim()
+      )
+        throw new Error('Configuration changed. Run reconciliation again.')
+      d.dectectorIdentifier = change.zoneChange.to
+      continue
+    }
     if (change.remove) {
       a.detectors = a.detectors.filter((entry) => entry.id !== d.id)
       continue
