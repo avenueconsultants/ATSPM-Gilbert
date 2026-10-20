@@ -29,6 +29,7 @@ import { laneDecoders } from './laneDecoders'
 import {
   applyLaneRecommendations,
   LaneReview,
+  Recommendation,
   reconcileLanes,
   ZoneEvidence,
   zoneEvidenceLabel,
@@ -239,6 +240,48 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
       setError((e as Error).message)
     }
   }
+  function renderRecommendation(r: Recommendation) {
+    return (
+      <Box key={r.id}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={selected.includes(r.id)}
+              onChange={(_, checked) =>
+                setSelected(
+                  checked
+                    ? [
+                        ...selected.filter(
+                          (id) =>
+                            !review!.recommendations.some(
+                              (other) =>
+                                other.id === id &&
+                                other.detectorId === r.detectorId
+                            )
+                        ),
+                        r.id,
+                      ]
+                    : selected.filter((id) => id !== r.id)
+                )
+              }
+            />
+          }
+          label={r.description}
+        />
+        {r.movements && r.movements.length > 1 && (
+          <TextField
+            fullWidth
+            label={`New channels for ${r.movements.slice(1).join(', ')} (comma separated)`}
+            value={channels[r.id] ?? ''}
+            onChange={(e) =>
+              setChannels({ ...channels, [r.id]: e.target.value })
+            }
+            helperText="Unused channels above 64. The existing entry keeps its channel; other settings and zone name are copied."
+          />
+        )}
+      </Box>
+    )
+  }
   return (
     <Dialog open onClose={busy ? undefined : onClose} fullWidth maxWidth="md">
       <DialogTitle>Reconcile Lanes</DialogTitle>
@@ -319,7 +362,8 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                 </Alert>
               )}
               <Typography variant="h6">
-                Optional lane changes ({review.recommendations.length})
+                Recommended lane additions (
+                {review.recommendations.filter((r) => !r.warning).length})
               </Typography>
               <Typography>
                 Choose additions or removals after verifying lane use. Nothing
@@ -327,57 +371,24 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
                 entry, not the camera zone. Apply stages your choices; save the
                 approach to persist them.
               </Typography>
-              {review.recommendations.length === 0 && (
+              {review.recommendations.every((r) => r.warning) && (
                 <Typography>
-                  No lane changes are available. Review warnings below.
+                  No lane additions are recommended. Review warnings below for
+                  optional removals.
                 </Typography>
               )}
-              {review.recommendations.map((r) => (
-                <Box key={r.id}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selected.includes(r.id)}
-                        onChange={(_, checked) =>
-                          setSelected(
-                            checked
-                              ? [
-                                  ...selected.filter(
-                                    (id) =>
-                                      !review.recommendations.some(
-                                        (other) =>
-                                          other.id === id &&
-                                          other.detectorId === r.detectorId
-                                      )
-                                  ),
-                                  r.id,
-                                ]
-                              : selected.filter((id) => id !== r.id)
-                          )
-                        }
-                      />
-                    }
-                    label={r.description}
-                  />
-                  {r.movements && r.movements.length > 1 && (
-                    <TextField
-                      fullWidth
-                      label={`New channels for ${r.movements.slice(1).join(', ')} (comma separated)`}
-                      value={channels[r.id] ?? ''}
-                      onChange={(e) =>
-                        setChannels({ ...channels, [r.id]: e.target.value })
-                      }
-                      helperText="Unused channels above 64. The existing entry keeps its channel; other settings and zone name are copied."
-                    />
-                  )}
-                </Box>
-              ))}
+              {review.recommendations
+                .filter((r) => !r.warning)
+                .map(renderRecommendation)}
               <Typography variant="h6">
                 Warnings — verify manually ({review.warnings.length})
               </Typography>
               {review.warnings.map((warning, i) => (
                 <Alert key={i} severity="warning">
                   {warning}
+                  {review.recommendations
+                    .filter((r) => r.warning === warning)
+                    .map(renderRecommendation)}
                 </Alert>
               ))}
               <Typography variant="h6">Observed zone counts</Typography>

@@ -222,6 +222,8 @@ it('lets the user choose removal instead of addition and stages it without savin
     name: /optionally remove L lane entry/,
   })
   const add = screen.getByRole('checkbox', { name: /use separate L \+ T/ })
+  expect(remove.closest('[role="alert"]')).toHaveTextContent('no L observed')
+  expect(add.closest('[role="alert"]')).toBeNull()
   expect(remove).not.toBeChecked()
   expect(add).not.toBeChecked()
   fireEvent.click(add)

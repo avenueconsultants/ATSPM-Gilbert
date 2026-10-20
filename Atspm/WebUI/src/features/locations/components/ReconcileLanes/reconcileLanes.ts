@@ -23,6 +23,8 @@ export type Recommendation = {
   description: string
   movements?: string[]
   remove?: boolean
+  /** Related verification warning; render this optional change alongside it. */
+  warning?: string
 }
 export type LaneReview = {
   recommendations: Recommendation[]
@@ -138,6 +140,7 @@ export function reconcileLanes(
       )
         recommendations.push({
           id: `remove-${d.id}`,
+          warning: warnings[warnings.length - 1],
           detectorId: d.id,
           remove: true,
           description: `${label}: optionally remove this lane entry (${movementName(d.movementType)}). No bin evidence was returned; verify the lane and camera before choosing removal.`,
@@ -173,6 +176,7 @@ export function reconcileLanes(
       const retained = declared.filter((m) => !absent.includes(m))
       recommendations.push({
         id: `remove-${d.id}`,
+        warning: warnings[warnings.length - 1],
         detectorId: d.id,
         ...(retained.length ? { movements: retained } : { remove: true }),
         description: `${label}: optionally remove ${absent.join(' + ')}${retained.length ? ` and keep ${retained.join(' + ')}` : ' lane entry'}. None observed (T ${counts.T}, L ${counts.L}, R ${counts.R}); choose only after verifying lane use.`,
