@@ -5,6 +5,7 @@ import type {
 import {
   applyLaneRecommendations,
   reconcileLanes,
+  suggestLaneChannels,
   ZoneEvidence,
 } from './reconcileLanes'
 
@@ -240,4 +241,17 @@ it('keeps missing movement assignments manual when physical lanes differ', () =>
   )
   expect(result.recommendations.filter((r) => !r.warning)).toHaveLength(0)
   expect(result.warnings.join(' ')).toContain('verify which lane')
+})
+
+it('suggests one distinct unused channel per added movement across proposals', () => {
+  const current = approach([
+    detector(1, { detectorChannel: 65 }),
+    detector(2, { detectorChannel: 67, dateDisabled: '2026-01-01' }),
+  ])
+  expect(
+    suggestLaneChannels(current, [
+      { id: 'a', detectorId: 1, description: '', movements: ['L', 'T', 'R'] },
+      { id: 'b', detectorId: 2, description: '', movements: ['T', 'R'] },
+    ])
+  ).toEqual({ a: ['66', '68'], b: ['69'] })
 })

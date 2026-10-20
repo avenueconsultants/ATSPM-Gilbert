@@ -31,6 +31,7 @@ import {
   movementLabels,
   Recommendation,
   reconcileLanes,
+  suggestLaneChannels,
   ZoneEvidence,
   zoneEvidenceLabel,
   ZoneInventory,
@@ -65,7 +66,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
   const [evidence, setEvidence] = useState<ZoneEvidence[]>([])
   const [snapshot, setSnapshot] = useState('')
   const [selected, setSelected] = useState<string[]>([])
-  const [channels, setChannels] = useState<Record<string, string>>({})
+  const [channels, setChannels] = useState<Record<string, string[]>>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [applied, setApplied] = useState(false)
@@ -191,6 +192,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
         )
         analysis.recommendations = []
       }
+      setChannels(suggestLaneChannels(approaches, analysis.recommendations))
       setReview(analysis)
       setSnapshot(inputs)
     } catch (e) {
@@ -218,7 +220,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
         Object.fromEntries(
           Object.entries(channels).map(([key, value]) => [
             key,
-            value.split(',').map(Number),
+            value.map(Number),
           ])
         )
       )
@@ -244,9 +246,7 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
     const zone = approaches
       .flatMap((a) => a.detectors)
       .find((d) => d.id === r.detectorId)?.dectectorIdentifier
-    const enteredChannels = (channels[r.id] ?? '')
-      .split(',')
-      .map((c) => c.trim())
+    const enteredChannels = channels[r.id] ?? []
     const label =
       !r.warning && r.movements
         ? r.movements
@@ -280,17 +280,25 @@ function LaneDialog({ onClose }: { onClose: () => void }) {
             )
           }
         />
-        {r.movements && r.movements.length > 1 && (
+        {r.movements?.slice(1).map((movement, i) => (
           <TextField
+            key={`${r.id}-${movement}`}
             fullWidth
-            label={`New channels for ${r.movements.slice(1).join(', ')} (comma separated)`}
-            value={channels[r.id] ?? ''}
+            type="number"
+            inputProps={{ min: 65, step: 1 }}
+            label={`Channel for ${zone} ${movementLabels[movement] ?? movement}`}
+            value={enteredChannels[i] ?? ''}
             onChange={(e) =>
-              setChannels({ ...channels, [r.id]: e.target.value })
+              setChannels((current) => ({
+                ...current,
+                [r.id]: (current[r.id] ?? []).map((value, index) =>
+                  index === i ? e.target.value : value
+                ),
+              }))
             }
-            helperText="Unused channels above 64. The existing entry keeps its channel; other settings and zone name are copied."
+            helperText="Unused channel above 64. The existing entry keeps its channel."
           />
-        )}
+        ))}
       </Box>
     )
   }

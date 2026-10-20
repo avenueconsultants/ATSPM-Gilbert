@@ -307,3 +307,24 @@ export function applyLaneRecommendations(
   }
   return result
 }
+
+/** Reserve distinct defaults across proposals, including channels on disabled entries. */
+export function suggestLaneChannels(
+  approaches: ConfigApproach[],
+  recommendations: Recommendation[]
+): Record<string, string[]> {
+  const used = new Set(
+    flatten(approaches).map(({ d }) => Number(d.detectorChannel))
+  )
+  let next = 65
+  return Object.fromEntries(
+    recommendations.map((r) => [
+      r.id,
+      (r.movements?.slice(1) ?? []).map(() => {
+        while (used.has(next)) next++
+        used.add(next)
+        return String(next++)
+      }),
+    ])
+  )
+}

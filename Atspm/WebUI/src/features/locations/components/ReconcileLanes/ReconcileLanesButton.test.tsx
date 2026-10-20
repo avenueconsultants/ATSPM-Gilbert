@@ -49,7 +49,8 @@ async function openReview(
   warnings: string[] = [],
   aliases = false,
   unnamed = false,
-  leftCount = 20
+  leftCount = 20,
+  rightCount = 0
 ) {
   jest.clearAllMocks()
   ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
@@ -112,7 +113,7 @@ async function openReview(
         zoneName: 'Lane Alpha',
         through: 80,
         left: leftCount,
-        right: 0,
+        right: rightCount,
         bins: 96,
       },
       ...(unnamed
@@ -178,7 +179,10 @@ it('reads independent zones and report evidence, separates warnings, and stages 
       name: /Add Channel .* zone Lane Alpha Through/,
     })
   )
-  fireEvent.change(screen.getByLabelText(/New channels for T/), {
+  expect(screen.getByLabelText('Channel for Lane Alpha Through')).toHaveValue(
+    65
+  )
+  fireEvent.change(screen.getByLabelText('Channel for Lane Alpha Through'), {
     target: { value: '302' },
   })
   expect(
@@ -318,5 +322,21 @@ it('invalidates the memoized review when location configuration changes', async 
   expect(
     screen.getByRole('button', { name: 'Apply selected to editor' })
   ).toBeDisabled()
+  client.clear()
+})
+
+it('provides an editable channel field for every added movement', async () => {
+  const client = await openReview([], false, false, 20, 12)
+  const through = screen.getByLabelText('Channel for Lane Alpha Through')
+  const right = screen.getByLabelText('Channel for Lane Alpha Right')
+  expect(through).toHaveValue(65)
+  expect(right).toHaveValue(66)
+  fireEvent.change(through, { target: { value: '118' } })
+  expect(right).toHaveValue(66)
+  expect(
+    screen.getByRole('button', {
+      name: 'Add Channel 118 zone Lane Alpha Through; Add Channel 66 zone Lane Alpha Right',
+    })
+  ).toBeVisible()
   client.clear()
 })
