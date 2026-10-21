@@ -151,4 +151,20 @@ public class SignalTemplateServiceTests
         var result = SignalTemplateService.ModifyLocationWithEvents(site, new[] { E(1, 2) });
         Assert.IsFalse(result.ReconciliationWarnings.Any(w => w.Contains("one-to-one")));
     }
+
+    [DataTestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    public void NullPedestrianAssignmentOnlyConsumesInheritedRegularPhase(bool oneToOne, bool protectedOverlap)
+    {
+        var site = Site(new Approach { Id = 1, ProtectedPhaseNumber = 2, IsProtectedPhaseOverlap = protectedOverlap });
+        site.PedsAre1to1 = oneToOne;
+        // Pedestrian-only evidence must also retain the approach when inherited.
+        var result = SignalTemplateService.ModifyLocationWithEvents(site, new[] { E(21, 2) });
+        var inherited = oneToOne && !protectedOverlap;
+        Assert.AreEqual(inherited ? 0 : 1, result.LoggedButUnusedPedestrianPhases.Count);
+        Assert.AreEqual(!inherited, result.ReconciliationWarnings.Any(w => w.Contains("without a configured pedestrian")));
+        Assert.AreEqual(inherited ? 0 : 1, result.RemovedApproachIds.Count);
+    }
 }

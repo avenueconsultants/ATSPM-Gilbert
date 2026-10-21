@@ -177,10 +177,10 @@ export function LaneDialog({
         minimum,
         // Detectors have no device owner. An absent zone in this source is not
         // evidence that a detector from another configured source is misassigned.
-        groupTmcSources(devices).every(
-          (s) =>
-            !s.decoder ||
-            s.deviceIds.every((id) => source.deviceIds.includes(id))
+        // Include devices without TmcDecoder: grouping sources omits them, but
+        // they may still own configured zones. Unknown ownership needs review.
+        devices.every(
+          (device) => device.id != null && source.deviceIds.includes(device.id)
         )
       )
       // Partial responses are useful for diagnosis but cannot safely justify automatic edits.

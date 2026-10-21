@@ -453,63 +453,67 @@ it('blocks Escape, backdrop and Close while lane comparison is pending', async (
   client.clear()
 })
 
-it("does not repair another decoder's detector from the selected camera inventory", async () => {
-  const client = await openReview()
-  act(() => {
-    const original = useLocationStore.getState().approaches[0]
-    useLocationStore.setState({
-      approaches: [
+it.each(['VisionBinStatisticsStored', undefined, ''])(
+  'does not repair a detector outside the selected source (TmcDecoder: %s)',
+  async (otherDecoder) => {
+    const client = await openReview()
+    act(() => {
+      const original = useLocationStore.getState().approaches[0]
+      useLocationStore.setState({
+        approaches: [
+          {
+            ...original,
+            detectors: [
+              { ...original.detectors[0], movementType: 'T' } as any,
+              {
+                ...original.detectors[0],
+                id: 101,
+                detectorChannel: 302,
+                movementType: 'R',
+                dectectorIdentifier: 'Other source zone',
+              } as any,
+            ],
+          },
+        ],
+      })
+      client.setQueryData(
+        ['lane-review-devices', 1],
+        [
+          {
+            id: 7,
+            deviceStatus: 'Active',
+            deviceIdentifier: '123',
+            deviceProperties: { TmcDecoder: 'VisionCameraAPI' },
+          },
+          {
+            id: 8,
+            deviceStatus: 'Active',
+            deviceIdentifier: '456',
+            deviceProperties:
+              otherDecoder === undefined ? {} : { TmcDecoder: otherDecoder },
+          },
+        ]
+      )
+    })
+    ;(reportsRequest as jest.Mock).mockResolvedValue({
+      warnings: [],
+      sourceDeviceIds: [7],
+      zoneEvidence: [
         {
-          ...original,
-          detectors: [
-            { ...original.detectors[0], movementType: 'T' } as any,
-            {
-              ...original.detectors[0],
-              id: 101,
-              detectorChannel: 302,
-              movementType: 'R',
-              dectectorIdentifier: 'Other source zone',
-            } as any,
-          ],
+          deviceId: 7,
+          zoneName: 'Lane Alpha',
+          through: 80,
+          left: 0,
+          right: 30,
+          bins: 96,
         },
       ],
     })
-    client.setQueryData(
-      ['lane-review-devices', 1],
-      [
-        {
-          id: 7,
-          deviceStatus: 'Active',
-          deviceIdentifier: '123',
-          deviceProperties: { TmcDecoder: 'VisionCameraAPI' },
-        },
-        {
-          id: 8,
-          deviceStatus: 'Active',
-          deviceIdentifier: '456',
-          deviceProperties: { TmcDecoder: 'VisionBinStatisticsStored' },
-        },
-      ]
-    )
-  })
-  ;(reportsRequest as jest.Mock).mockResolvedValue({
-    warnings: [],
-    sourceDeviceIds: [7],
-    zoneEvidence: [
-      {
-        deviceId: 7,
-        zoneName: 'Lane Alpha',
-        through: 80,
-        left: 0,
-        right: 30,
-        bins: 96,
-      },
-    ],
-  })
-  fireEvent.click(screen.getByRole('button', { name: 'Compare lanes' }))
-  await screen.findByText(/another configured decoder may own/)
-  expect(
-    screen.queryByRole('button', { name: /Change Channel 302/ })
-  ).not.toBeInTheDocument()
-  client.clear()
-})
+    fireEvent.click(screen.getByRole('button', { name: 'Compare lanes' }))
+    await screen.findByText(/another configured decoder may own/)
+    expect(
+      screen.queryByRole('button', { name: /Change Channel 302/ })
+    ).not.toBeInTheDocument()
+    client.clear()
+  }
+)

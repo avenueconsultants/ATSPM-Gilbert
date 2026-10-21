@@ -91,6 +91,12 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
                 warnings.Add($"Flashing yellow arrow (FYA) events were observed for identifiers {string.Join(", ", fyaIdentifiers)}. Review the left-turn configuration manually to ensure the protected/permissive assignments and overlap settings are correct.");
             }
 
+            // A null pedestrian assignment inherits the regular protected phase in
+            // one-to-one mode. Use the same effective value for retention and warnings.
+            int? PedestrianPhase(Approach approach) => approach.PedestrianPhaseNumber ??
+                (sourceLocation.PedsAre1to1 && !approach.IsProtectedPhaseOverlap && !approach.IsPedestrianPhaseOverlap
+                    ? approach.ProtectedPhaseNumber : (int?)null);
+
             bool Observed(int? number, bool overlap, bool pedestrian = false) => number.HasValue &&
                 (pedestrian ? (overlap ? pedestrianOverlapsInUse : pedestrianPhasesInUse)
                     : (overlap ? overlapPhasesInUse : protectedOrPermissivePhasesInUse)).Contains((short)number.Value);
@@ -125,7 +131,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
             bool ApproachObserved(Approach approach) =>
                 Observed(approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap) ||
                 Observed(approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap) ||
-                Observed(approach.PedestrianPhaseNumber, approach.IsPedestrianPhaseOverlap, true) ||
+                Observed(PedestrianPhase(approach), approach.IsPedestrianPhaseOverlap, true) ||
                 // Preserve approaches supported by detector activity even when no phase
                 // transition occurred in the observation window.
                 approach.Detectors.Any(d => detectorChannelsInUse.Contains((short)d.DetectorChannel));
@@ -170,12 +176,12 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
                 }).Where(p => p.HasValue).Select(p => (short)p.Value).ToHashSet();
             var unattachedOverlapPhases = overlapPhasesInUse.Except(usedOverlapPhases).OrderBy(p => p).ToList();
             var usedPedestrianPhases = newVersion.Approaches.Where(a => !a.IsPedestrianPhaseOverlap)
-                .Select(a => a.PedestrianPhaseNumber).Where(p => p.HasValue).Select(p => (short)p.Value);
+                .Select(PedestrianPhase).Where(p => p > 0).Select(p => (short)p.Value);
             var unattachedPedestrianPhases = pedestrianPhasesInUse.Except(usedPedestrianPhases).OrderBy(p => p).ToList();
             foreach (var phase in unattachedPedestrianPhases)
                 warnings.Add($"Pedestrian phase {phase} was observed without a configured pedestrian phase assignment. Review the crosswalk mapping and one-to-one pedestrian setting manually; do not add it as a vehicle phase.");
             var usedPedestrianOverlaps = newVersion.Approaches.Where(a => a.IsPedestrianPhaseOverlap)
-                .Select(a => a.PedestrianPhaseNumber).Where(p => p.HasValue).Select(p => (short)p.Value);
+                .Select(PedestrianPhase).Where(p => p > 0).Select(p => (short)p.Value);
             foreach (var overlap in pedestrianOverlapsInUse.Except(usedPedestrianOverlaps).OrderBy(p => p))
                 warnings.Add($"Pedestrian overlap {overlap} was observed without a configured pedestrian overlap assignment. Review the crosswalk mapping manually; do not add it as a vehicle phase.");
 
