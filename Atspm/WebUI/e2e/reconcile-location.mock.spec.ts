@@ -23,7 +23,7 @@ const metadata = `<Schema>${Object.entries(enums)
   )
   .join('')}</Schema>`
 
-async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number]) {
+async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number], decoder = 'VisionCameraAPI') {
   // Leaflet's pending zoom transition can outlive the General tab on unmount.
   await page.addInitScript('window.L_DISABLE_3D = true')
 
@@ -39,7 +39,7 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
     deviceIdentifier: 'mock-camera',
     ipaddress: '192.0.2.1',
     deviceConfiguration: { port: 80 },
-    deviceProperties: { TmcDecoder: 'VisionCameraAPI' },
+    deviceProperties: { TmcDecoder: decoder },
   }
   const location = {
     id: locationId,
@@ -62,6 +62,7 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
     })),
   }
   const writes: any[] = []
+  const deletions: { kind: string; id: number }[] = []
   const reports: any[] = []
   const unexpected: string[] = []
   page.on('pageerror', (error) => unexpected.push(error.message))
@@ -123,10 +124,15 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
         warnings: [],
       })
     }
+    const deletion = path.match(/\/(Approach|Detector)\/(\d+)$/)
+    if (deletion && request.method() === 'DELETE') {
+      deletions.push({ kind: deletion[1], id: Number(deletion[2]) })
+      return route.fulfill({ status: 204 })
+    }
     if (path.endsWith('/UpsertApproach')) {
       const body = request.postDataJSON()
       writes.push(body)
-      return json(body)
+      return json({ ...body, id: body.id || 10000 + writes.length })
     }
     if (path.startsWith('/mock/') && request.method() === 'GET')
       return json({ value: [] })
@@ -166,14 +172,14 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
     expect(reports).toHaveLength(1)
     expect(reports[0]).toMatchObject({
       locationIdentifier: 'MOCK',
-      decoder: 'VisionCameraAPI',
+      decoder,
       deviceIds: [1],
       reconcileLanes: true,
       start: '2026-10-01T00:00',
       end: '2026-10-02T00:00',
     })
   }
-  return { fixture, writes, reports, unexpected }
+  return { fixture, writes, deletions, reports, unexpected }
 }
 
 const expected = [
@@ -393,29 +399,126 @@ test('closing a selected split without applying preserves the original lane', as
 })
 
 
-for (const scenario of approachScenarios.filter(s => s.name.startsWith('Remove missing'))) {
-  test(`regular page assignment removal: ${scenario.name}`, async ({ page }) => {
+// Use every shared approach fixture on the production location page. Expected
+// responses are also checked against the real backend by ApproachScenarioFixtureTests.
+// These assertions test UI decisions and save payloads, not a mocked save implementation.
+for (const scenario of approachScenarios) {
+  test(`approach scenario: ${scenario.name}`, async ({ page }) => {
     const state = await openScenario(page, 0, false, scenario)
-    await page.getByRole('button', { name: 'Select All', exact: true }).click()
-    await page.getByRole('button', { name: 'Remove selected', exact: true }).click()
-    await page.getByRole('button', { name: 'Confirm removal', exact: true }).click()
-    expect(state.writes).toHaveLength(0)
-    await page.getByRole('button', { name: 'save approach', exact: true }).click()
-    await expect.poll(() => state.writes.length).toBe(1)
-    const saved = state.writes[0]
-    const before = scenario.location.approaches[0]
-    for (const role of ['protected', 'permissive', 'pedestrian'] as const) {
-      const removed = scenario.expected.missingPhaseAssignments.some(a => a.role === role)
-      const numberField = `${role}PhaseNumber`
-      const overlapField = `is${role[0].toUpperCase()}${role.slice(1)}PhaseOverlap`
-      expect(saved[numberField]).toBe(removed ? (role === 'protected' ? 0 : null) : (before as any)[numberField])
-      expect(Boolean(saved[overlapField])).toBe(removed ? false : Boolean((before as any)[overlapField]))
+    const expectedApproaches: any[] = structuredClone(state.fixture.approaches)
+    const expectedDeletes: { kind: string; id: number }[] = []
+    const result = scenario.expected
+    for (const warning of result.reconciliationWarnings)
+      await expect(page.getByText(warning, { exact: true })).toBeVisible()
+    expect(state.writes).toEqual([])
+    expect(state.deletions).toEqual([])
+
+    // Scope identical phase/overlap numbers to their separate Found cards.
+    const foundCard = (title: string) => page.getByText(title, { exact: true })
+      .locator('..').locator('..')
+    for (const [title, numbers, overlap] of [
+      ['Phases', result.loggedButUnusedProtectedOrPermissivePhases, false],
+      ['Overlaps', result.loggedButUnusedOverlapPhases, true],
+    ] as const) {
+      const card = foundCard(title)
+      await expect(card.getByRole('button', { name: /^Add Selected/ })).toBeDisabled()
+      for (const number of numbers)
+        await card.getByRole('button', { name: String(number), exact: true }).click()
+      if (!numbers.length) continue
+      await card.getByRole('button', { name: /^Add Selected/ }).click()
+      const draftDialog = page.getByRole('dialog', { name: 'Configure approaches before adding' })
+      for (const [index, number] of numbers.entries()) {
+        const cell = draftDialog.locator('[data-row="0"][data-col="1"]').nth(index)
+        await cell.click()
+        await cell.press('Enter')
+        await cell.getByRole('textbox').fill(`Added ${title} ${number}`)
+        await cell.getByRole('textbox').press('Enter')
+      }
+      await page.getByRole('button', { name: 'Add approaches', exact: true }).click()
+      expectedApproaches.push(...numbers.map(number => ({
+        description: `Added ${title} ${number}`, protectedPhaseNumber: number,
+        isProtectedPhaseOverlap: overlap, permissivePhaseNumber: null,
+        pedestrianPhaseNumber: null, detectors: [],
+      })))
     }
-    expect(saved.detectors.map((d: any) => d.detectorChannel)).toEqual([118])
+    expect(state.writes).toEqual([]) // additions are staged, never saved implicitly
+
+    for (const channel of result.loggedButUnusedDetectorChannels) {
+      await page.getByRole('button', { name: String(channel), exact: true }).click()
+      await page.getByRole('button', { name: /Add selected to/ }).click()
+      const target = expectedApproaches[0]
+      await page.getByRole('menuitem', { name: target.description, exact: true }).click()
+      await page.getByRole('button', { name: 'Add detectors', exact: true }).click()
+      target.detectors.push({ detectorChannel: channel })
+    }
+    expect(state.writes).toEqual([])
+
+    // Delete only explicitly selected missing detectors. The production store
+    // immediately persists these deletes, unlike assignment edits.
+    for (const channel of result.removedDetectors) {
+      const owner = expectedApproaches.find(a => a.detectors.some((d: any) => String(d.detectorChannel) === channel))
+      const detector = owner.detectors.find((d: any) => String(d.detectorChannel) === channel)
+      await page.getByRole('region', { name: 'Not Found detector channels' })
+        .getByRole('button', { name: channel, exact: true }).click()
+      await page.getByRole('button', { name: 'Remove selected', exact: true }).click()
+      await page.getByRole('button', { name: 'Confirm removal', exact: true }).click()
+      expectedDeletes.push({ kind: 'Detector', id: detector.id })
+      owner.detectors = owner.detectors.filter((d: any) => d.id !== detector.id)
+    }
+
+    for (const before of scenario.location.approaches) {
+      const missing = result.missingPhaseAssignments.filter(a => a.approachId === before.id)
+      if (!missing.length) continue
+      const target = expectedApproaches.find(a => a.id === before.id)
+      const card = page.getByRole('region', { name: `Current configuration: ${before.description}` })
+      const retainedVehicle = ['protected', 'permissive'].some(role =>
+        Number((before as any)[`${role}PhaseNumber`]) > 0 && !missing.some(a => a.role === role))
+      if (!retainedVehicle) {
+        // Clearing the last vehicle assignment is invalid. Explicit whole-approach
+        // deletion is a different action, including its owned detectors.
+        if (missing.filter(a => a.role !== 'pedestrian').length === 1)
+          await expect(card.getByRole('button', { name: /^Remove (protected|permissive)/ })).toHaveCount(0)
+        await card.getByRole('button', { name: /^Delete entire approach:/ }).click()
+        await page.getByRole('button', { name: 'Delete entire approach', exact: true }).click()
+        expectedDeletes.push({ kind: 'Approach', id: before.id })
+        expectedApproaches.splice(expectedApproaches.indexOf(target), 1)
+      } else {
+        for (const assignment of missing) {
+          await card.getByRole('button', { name: `Remove ${assignment.role} ${assignment.isOverlap ? 'overlap' : 'phase'} ${assignment.phaseNumber}`, exact: true }).click()
+          await page.getByRole('button', { name: 'Confirm removal', exact: true }).click()
+          target[`${assignment.role}PhaseNumber`] = assignment.role === 'protected' ? 0 : null
+          target[`is${assignment.role[0].toUpperCase()}${assignment.role.slice(1)}PhaseOverlap`] = false
+        }
+      }
+    }
+    await expect.poll(() => state.deletions).toEqual(expectedDeletes)
+    expect(state.writes).toEqual([])
+    // Saving all retained/new approaches also checks that warnings and inactive
+    // events did not silently change unaffected assignments or detector ownership.
+    const saves = page.getByRole('button', { name: 'save approach', exact: true })
+    await expect(saves).toHaveCount(expectedApproaches.length)
+    for (let index = 0; index < expectedApproaches.length; index++) {
+      await page.getByRole('heading', { name: expectedApproaches[index].description, exact: true, level: 3 })
+        .locator('../../..').getByRole('button', { name: 'save approach', exact: true }).click()
+      await expect.poll(() => state.writes.length).toBe(index + 1)
+      await expect(page.getByText('Approach saved successfully', { exact: true }).first()).toBeVisible()
+    }
+    const configuration = (a: any) => ({
+      description: a.description,
+      protected: a.protectedPhaseNumber == null ? null : Number(a.protectedPhaseNumber),
+      permissive: a.permissivePhaseNumber == null ? null : Number(a.permissivePhaseNumber),
+      pedestrian: a.pedestrianPhaseNumber == null ? null : Number(a.pedestrianPhaseNumber),
+      protectedOverlap: Boolean(a.isProtectedPhaseOverlap),
+      permissiveOverlap: Boolean(a.isPermissivePhaseOverlap),
+      pedestrianOverlap: Boolean(a.isPedestrianPhaseOverlap),
+      channels: a.detectors.map((d: any) => d.detectorChannel).sort((a: number, b: number) => a - b),
+    })
+    const sorted = (rows: any[]) => rows.map(configuration).sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+    expect(sorted(state.writes)).toEqual(sorted(expectedApproaches))
+    expect(state.reports).toEqual([])
     expect(state.unexpected).toEqual([])
   })
 }
-
 
 test('lane selection and edited channel survive switching reconciliation tabs', async ({ page }) => {
   const state = await openScenario(page, 0)
@@ -429,5 +532,16 @@ test('lane selection and edited channel survive switching reconciliation tabs', 
   await expect(channel).toHaveValue('121')
   await expect(addition).toHaveAttribute('aria-pressed', 'true')
   expect(state.reports).toHaveLength(1)
+  expect(state.writes).toHaveLength(0)
+})
+
+
+test('a new decoder can reconcile on the regular location page without a frontend adapter', async ({ page }) => {
+  const state = await openScenario(page, 0, true, undefined, 'FutureRadar')
+  await expect(page.getByLabel('Decoder')).toContainText('Future Radar')
+  await page.getByRole('button', { name: 'Add Channel 65 zone NB-18 Right', exact: true }).click()
+  await page.getByRole('button', { name: 'Apply selected to editor' }).click()
+  await expect(page.getByText(/Changes staged/)).toBeVisible()
+  expect(state.reports[0].decoder).toBe('FutureRadar')
   expect(state.writes).toHaveLength(0)
 })

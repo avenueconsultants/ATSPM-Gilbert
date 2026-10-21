@@ -269,7 +269,7 @@ it('uses the decoder-selected owner for serial/index aliases and retains recomme
   expect(configRequest).toHaveBeenCalledTimes(1)
   expect(configRequest).toHaveBeenCalledWith(
     expect.objectContaining({
-      data: expect.objectContaining({ deviceId: '123' }),
+      data: expect.objectContaining({ configurationDeviceId: 7 }),
     })
   )
   const recommendation = screen.getByRole('button', {
@@ -495,6 +495,10 @@ it.each(['VisionBinStatisticsStored', undefined, ''])(
         ]
       )
     })
+    if (otherDecoder) {
+      fireEvent.mouseDown(screen.getByRole('combobox', { name: 'Decoder' }))
+      fireEvent.click(screen.getByRole('option', { name: /Vision Camera API/ }))
+    }
     ;(reportsRequest as jest.Mock).mockResolvedValue({
       warnings: [],
       sourceDeviceIds: [7],

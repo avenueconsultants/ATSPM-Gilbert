@@ -3,7 +3,6 @@ import {
   groupTmcSources,
   normalizeTmcDevices,
 } from '@/features/charts/turningMovementCounts/useTmcSources'
-import { useGetDeviceConfigurations } from '@/features/devices/api'
 import { reportsRequest } from '@/lib/axios'
 import {
   Alert,
@@ -21,7 +20,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import DiscrepancyButton from '../ApproachesReconcilationReport/DiscrepancyButton'
 import { useLocationStore } from '../editLocation/locationStore'
-import { laneDecoders } from './laneDecoders'
+import { readDeviceZones } from './laneDecoders'
 import {
   applyLaneRecommendations,
   laneChangesConflict,
@@ -61,24 +60,15 @@ export function LaneDialog({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [applied, setApplied] = useState(false)
-  const { data: configurations } = useGetDeviceConfigurations()
   const devicesQuery = useQuery(['lane-review-devices', location.id], () =>
     getDeviceActiveDevicesByLocationFromLocationId(location.id)
   )
   const devices = useMemo(
-    () =>
-      normalizeTmcDevices(devicesQuery.data).map((d) => ({
-        ...d,
-        deviceConfiguration: d.deviceConfiguration ?? {
-          port: configurations?.value?.find(
-            (c) => c.id === d.deviceConfigurationId
-          )?.port,
-        },
-      })),
-    [devicesQuery.data, configurations]
+    () => normalizeTmcDevices(devicesQuery.data),
+    [devicesQuery.data]
   )
   const sources = groupTmcSources(devices).filter(
-    (s) => s.decoder && laneDecoders[s.decoder]
+    (s) => s.decoder
   )
   // Use the same configured decoder groups as TMC. A single supported source needs no choice.
   const decoder =
@@ -125,7 +115,6 @@ export function LaneDialog({
       const source = sources.find((s) => s.decoder === decoder)
       if (!source)
         throw new Error('No configured device supports this decoder.')
-      const adapter = laneDecoders[decoder]
       const chosen = devices
         .filter((d) => source.deviceIds.includes(d.id!))
         .sort((a, b) => a.id! - b.id!)
@@ -163,7 +152,7 @@ export function LaneDialog({
           .filter((d) => result.sourceDeviceIds.includes(d.id!))
           .map(async (d) => {
             try {
-              return { deviceId: d.id!, names: await adapter.readZones(d) }
+              return { deviceId: d.id!, names: await readDeviceZones(d.id!) }
             } catch {
               return { deviceId: d.id!, names: [], error: 'Get Zones failed' }
             }

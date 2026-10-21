@@ -1,36 +1,16 @@
-import type { Device } from '@/api/config'
 import { configRequest } from '@/lib/axios'
 
-type InventoryDevice = Pick<
-  Device,
-  'id' | 'ipaddress' | 'deviceIdentifier' | 'deviceConfiguration'
->
-
-/** Source-specific inventory access stays outside the reconciliation UI and matching rules.
- * Add an adapter here when another report decoder supports independent zone evidence.
- */
-export interface LaneDecoder {
-  readZones(device: InventoryDevice): Promise<string[]>
-}
-const vision: LaneDecoder = {
-  readZones: async (d) => {
-    const names = await configRequest<string[]>({
-      url: '/Detector/retrieveDetectionData',
-      method: 'POST',
-      data: {
-        IpAddress: d.ipaddress,
-        port: String(d.deviceConfiguration?.port ?? ''),
-        detectionType: 'FIRCamera',
-        deviceId: d.deviceIdentifier?.replace(/-bins$/, ''),
-      },
-    })
-    if (!Array.isArray(names) || names.some((name) => typeof name !== 'string'))
-      throw new Error('Invalid zone inventory response')
-    if (new Set(names).size !== names.length)
-      throw new Error('Duplicate zone names on the device')
-    return names
-  },
-}
-export const laneDecoders: Record<string, LaneDecoder> = {
-  VisionCameraAPI: vision,
+// Configuration stays in Config API. Its provider is selected from the saved device,
+// independently of the report decoder that supplies observed movement counts.
+export async function readDeviceZones(configurationDeviceId: number): Promise<string[]> {
+  const names = await configRequest<string[]>({
+    url: '/Detector/retrieveDetectionData',
+    method: 'POST',
+    data: { configurationDeviceId },
+  })
+  if (!Array.isArray(names) || names.some((name) => typeof name !== 'string' || !name.trim()))
+    throw new Error('Invalid zone inventory response')
+  if (new Set(names).size !== names.length)
+    throw new Error('Duplicate zone names on the device')
+  return names
 }

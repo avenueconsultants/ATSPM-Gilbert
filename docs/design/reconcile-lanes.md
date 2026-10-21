@@ -1,62 +1,98 @@
-# Reconcile Lanes
+# Approach and lane reconciliation
 
-Reconcile Lanes is the feature-gated Lanes tab in the location editor�s Reconcile Approaches dialog. The Approaches tab retains the existing controller-event reconciliation. Lane analysis does not import events or save configuration automatically.
+Updated October 21, 2026. This document describes the implemented location-editor workflow. For count collection, report timezone handling, and source limitations, see [TMC source data flows](tmc-source-data-flows.md).
 
-## Enablement
+## Scope and feature flags
 
-Both settings default off:
+The location toolbar has one **Reconcile Approaches** action. Controller-event approach reconciliation and the shared approach/detector editors are available independently of the lane feature flag. This includes phase/overlap matching, FYA warnings, pedestrian checks, assignment removal, and whole-approach deletion.
 
-- WebUI runtime environment: `ENABLE_LANE_RECONCILIATION=true` shows the button through the existing `/api/feature-flags` route.
-- Report API configuration: `Features:LaneReconciliation=true` (`Features__LaneReconciliation=true` in Docker) authorizes zone-evidence requests.
+Camera lane reconciliation requires two independent, default-off settings:
 
-The lane flag gates only camera lane reconciliation. Controller-event approach reconciliation, its shared editors, and its phase/overlap/pedestrian checks remain available independently, including when the lane flag is off. This includes separate phase and overlap namespaces, FYA review warnings, pedestrian checks, per-assignment removal, whole-approach deletion, and reuse of the approach/detector editors. Existing detector deletion is immediate; phase and overlap edits are staged until saved.
+| Setting | Purpose |
+|---|---|
+| WebUI `ENABLE_LANE_RECONCILIATION=true` | `/api/feature-flags` exposes `laneReconciliation`; opens the combined Approaches/Lanes dialog. Only the exact environment value `true` enables it. |
+| Report API `Features:LaneReconciliation=true` | Authorizes device zone-evidence requests. Environment form: `Features__LaneReconciliation=true`. |
 
-This flag is independent of `Features:TmcDeviceSources` and `Features:DeviceTestDownload`. Enabling lane review does not enable device TMC charts or test downloads. Device selection, decoder configuration, and location-version validation still apply.
+These settings are separate from `Features:TmcDeviceSources` and `Features:DeviceTestDownload`. Lane evidence can be enabled independently of camera TMC charts. With the WebUI lane flag absent or false, the approach workflow remains available and the lane component is not mounted.
 
-## Workflow
+The combined dialog starts approach comparison on opening. Lane comparison starts only after selecting **Lanes** and clicking **Compare lanes**. Tabs retain their review results, selections, and edited channels. Closing the dialog discards its lane review; changes already applied to the editor remain. Closing through Escape, the backdrop, or Close is blocked while either comparison is busy. Changed configuration or lane inputs invalidate the previous lane review before it can be applied.
 
-1. Open **Reconcile Approaches**, then select **Lanes**. The current location configuration is the baseline; any template was already applied during creation. Decoder choices come from the active devices’ comma-separated `TmcDecoder` properties, using the same grouping as the TMC chart. Only decoders supporting lane evidence are offered. A single supported decoder is selected automatically; multiple supported decoders require a choice.
-2. Choose the observation period, interpreted in the same location timezone as TMC reports. The end is exclusive. The existing Vision decoder converts to UTC for the camera request. Default: three completed calendar days, 15-minute bins. Minimum count defaults to 25 and controls recommendations for previously unassigned movements.
-3. Fetch independent zone movement evidence through the existing TMC report endpoint with `reconcileLanes: true`. The decoder resolves camera aliases (including index/serial pairs), and the response supplies `sourceDeviceIds`. Read the complete zone inventory through the existing Get Zones endpoint only for those selected devices, including devices with no returned evidence. Successfully resolved aliases do not block recommendations; actual read warnings still do.
-4. Compare active detectors above channel 64 against the inventory by exact configured zone name. A configured physical lane number and vehicle lane type are required before recommending a movement split. There are no Gilbert zone-name expressions or special 100/300-series rules in this comparison.
-5. Review optional lane changes separately from warnings. Select additions or removals explicitly; nothing is preselected. Zero-count movements can be removed, and a known zone without bins offers removal of its configured lane entries for the user to verify. Combined entries can retain only observed movements. Alternative changes for the same entry are mutually exclusive. Provide unused channels above 64 for new movement entries. **Apply selected to editor** stages changes; use the existing location/approach save controls to persist them. Removal changes ATSPM configuration, not the camera zone or historical event data.
+## Approach reconciliation
 
-The inventory is independent of configured ATSPM detectors, so unused zones remain visible even when the Indiana importer cannot import them. Missing or placeholder zone assignments are warnings for manual verification. No replacement name is guessed, and no separate template is loaded or compared.
+`SignalTemplateService` reads Indiana events from yesterday's local midnight through the current server time. It compares the current location configuration; the comparison itself does not save changes. These event sets establish observed assignments:
 
-For example, a configured left entry with substantial through counts can be recommended as separate L and T entries sharing the exact zone name, physical lane number and detector settings. A TL/TR entry can be split into independent movement entries. Splitting preserves configured movements, including unobserved ones. Separately selecting a zero-count removal narrows the existing entry without creating another detector; for example, removing Right from LTR leaves one TL entry. Overlapping assignments, such as TL plus L on the same zone, are warnings because they may double-count.
+| Evidence | Codes | Interpretation |
+|---|---|---|
+| Regular vehicle phase | 1, 8, 11 | Protected/permissive phase-number namespace |
+| Vehicle overlap | 61-64 | Separate overlap-number namespace |
+| Pedestrian phase | 21-23 | Regular pedestrian phase |
+| Pedestrian overlap | 67-69 | Separate pedestrian overlap |
+| Detector activity | 82 | Detector channel |
+| FYA | 32, 33 | Manual left-turn configuration warning, with observed identifiers |
 
-## Evidence and limitations
+Off/Dark events 65, 66, and 70 do not establish an active overlap. Event 90 does not establish a pedestrian phase. Identical phase and overlap numbers do not imply the same output; each configured assignment uses its own overlap flag. FYA evidence never automatically converts a protected assignment into a permissive one or establishes the controller's mapping.
 
-- Channels 1–64 are excluded from matching and movement recommendations. A zone used exclusively on one of these channels is not called unused.
-- Counts cannot prove permitted turns, turn-only restrictions, or protected/permissive signal operation. Review camera geometry and classification before accepting a movement recommendation.
-- Zero counts never automatically remove a movement or lane. Users may explicitly choose removal after reviewing the warnings. Low counts, missing bins, missing configured lane numbers, and conflicting zone assignments require review.
-- The count table reports returned bins, not guaranteed complete coverage. Source read warnings disable recommendations for that run. An unavailable inventory prevents edits because another device could own the same zone name.
-- Duplicate zone names across cameras, or multiple zone IDs with the same name during the selected period, need verification. Indiana matching uses zone names, so blindly combining these would conceal ambiguity.
-- Unnamed zones remain separate by source zone ID. They appear as `Unnamed zone <ID>` in counts and warnings, but that display label is never used to match an ATSPM lane. Negative-count errors identify the camera and configured device ID.
-- Existing location configuration is the intended baseline, not proof of current road geometry. Verify physical geometry before accepting recommendations.
-- Configurations and review inputs must remain unchanged between comparison and application. New channels are validated together before staging, so one invalid channel leaves the editor unchanged.
+Each configured protected, permissive, and pedestrian assignment is checked independently. Another observed assignment or detector may retain an approach while one of its assignments is missing. Missing observations are evidence for review, not proof that a configured movement is absent in the field.
+
+When `PedsAre1to1` is enabled, a null pedestrian phase inherits the protected phase for observation matching and unassigned-pedestrian warnings, provided neither the protected nor pedestrian assignment is flagged as an overlap. An explicitly different pedestrian phase or pedestrian-overlap setting is flagged for manual review against the one-to-one setting on a regular protected phase. The fallback does not write a pedestrian phase into configuration. Unconfigured pedestrian phases/overlaps produce crosswalk-review warnings rather than vehicle-phase additions.
+
+### Review and editing
+
+- **Found** separates Phases, Overlaps, and Detector Channels. New phases/overlaps use the shared approach editor. An overlap can be added to a new approach or an available assignment on an existing approach; existing assignments are not silently overwritten.
+- A new detector must belong to an approach. The shared detector editor exposes its properties before adding the draft.
+- **Not Found** shows the existing approach editor and missing assignments together. Removing an assignment retains the approach and detectors only if a protected or permissive vehicle assignment remains. Removing protected sets its number to `0`; removing permissive or pedestrian sets it to null. The corresponding overlap flag is cleared. Bulk removal enforces the same constraint.
+- **Delete entire approach** is a separately confirmed action and also deletes its detectors. Removing the last vehicle assignment is not offered as a way to leave an invalid approach.
+- Phase/overlap edits and additions are staged in the location editor and require saving. Existing detector and whole-approach deletion use the existing immediate API deletion paths; they are not merely draft removals. The confirmation distinguishes detector deletion from staged assignment changes. In the scenario tool all actions affect mock state only.
+
+## Lane reconciliation
+
+The current location already includes any template applied at creation. No separate template is selected, and no town-specific zone-name convention is used for matching. Decoder choices come from active devices' comma-separated `TmcDecoder` properties, using the chart's existing source grouping. Configured decoder groups are offered; the report backend requires lane-evidence capability. Config API independently selects a zone provider using the saved device hardware. `VisionCameraAPI` supplies evidence, and `VisionDeviceZoneProvider` supplies configuration. `VisionBinStatisticsStored` is a chart source, not a lane-evidence source.
+
+1. Choose a supported decoder and observation range. Defaults are three completed calendar days, 15-minute bins, and a minimum count of **25** for unassigned movements. Report dates use the location timezone; end is exclusive.
+2. Query the existing TMC report endpoint with `source=devices`, selected device IDs, decoder, and `reconcileLanes=true`. The decoder resolves physical-camera aliases; `sourceDeviceIds` identifies the devices whose inventories must be read, including devices returning no bins.
+3. Read complete zone names through the existing **Get Zones** API for those devices. Compare exact zone names with active configured detectors above channel 64. No automatic change is inferred from an unavailable or ambiguous inventory.
+4. Review independent recommendations and verification warnings. Nothing is preselected. Enter a unique unused channel above 64 for each new movement; defaults reserve the next available channels, including channels occupied by disabled entries.
+5. **Apply selected to editor** stages all selected lane changes atomically. Use the existing editor save controls to persist them. This does not change camera zones or historical event data.
+
+### Recommendations and safeguards
+
+| Situation | Behavior |
+|---|---|
+| Through and a turn share a camera zone | Offer separate movement entries sharing the zone, physical lane number, and copied detector settings. Preview the original entry's movement change before applying. |
+| Through exists; Left and Right are both missing | Offer two independent additions, each with its own channel. |
+| Combined TR/TL/LTR entry | Offer an explicit split. Splitting preserves configured movements even if unobserved. |
+| Configured movement has zero counts | Attach an optional removal to its verification warning. Removal narrows the existing entry without adding detectors; removing Right from LTR leaves TL. |
+| Removing Through would leave combined Left/Right | No LR movement type exists. Warn to review/split first rather than create an invalid entry. |
+| Known zone has no bin evidence | Offer optional removal for a named vehicle entry, with a warning. A zero-bin row is treated as missing evidence. |
+| Configured zone is absent from inventory | Warn; absence alone does not offer deletion. |
+| Missing turn has a unique existing entry on the same approach and physical lane, but its zone is absent | Offer a zone change instead of an extra detector, subject to the coverage guard below. Channel and other detector settings remain intact. |
+| Multiple candidate detectors or destination zones | Warn for manual verification; do not guess a reassignment or add a duplicate turn entry. |
+| Repeated movement on distinct camera zones | Keep entries separate; no overlap warning solely because both are Through, Left, or Right. |
+| Overlapping movement assignments on the same zone | Warn about potential double counting and suppress movement recommendations for that zone. |
+
+A zone repair is permitted only when every device returned for the location is covered by the selected decoder's device IDs. This check includes devices with missing or empty `TmcDecoder`. Detectors do not record device ownership, so another uncovered device could own the apparently missing zone. In that case the potential repair/addition becomes a manual ownership warning. This conservative check can also block a legitimate repair until ownership is verified. It does not guess from IP address or zone naming.
+
+Channels 1-64 are excluded from lane matching and recommendations. Zones used only on those channels are not reported as unused. This exclusion belongs to camera lane reconciliation; controller-event approach reconciliation still checks detector activity.
+
+Source-read warnings suppress all lane recommendations for that run. An incomplete inventory blocks matching changes because another device might own the same name. Duplicate names across devices or multiple zone IDs with the same name require verification. Unnamed evidence remains separate by zone ID and is displayed as `Unnamed zone <ID>`; that label is never used as a configured zone name. Negative-count errors identify the camera/device.
+
+Counts do not establish permitted turns, physical lane geometry, protected/permissive operation, or complete collection. Low-volume movements, zero counts, and missing bins require review. A matching total is not proof of correct camera alignment. Multiple physical lanes sharing a zone require additional verification before assigning an unrepresented movement.
 
 ## Decoder contract and reuse
 
-`ITurningMovementCountDecoder.SupportsLaneReconciliation` defaults to false. Supporting decoders return `TmcZoneEvidence` (device ID, exact zone name, optional source zone ID, T/L/R totals and distinct bin count) in `TmcDecodeResult.ZoneEvidence` when requested. DeviceCountSource retains separate evidence per device and returns the selected device IDs after alias resolution; it does not combine zones into approaches. Ordinary TMC chart behavior is unchanged.
+`ITurningMovementCountDecoder.SupportsLaneReconciliation` defaults to false. Supporting decoders return `TmcZoneEvidence` containing device ID, exact zone name, optional source zone ID, T/L/R totals, and distinct bin count. `DeviceCountSource` preserves evidence by device and returns selected device IDs after alias resolution; it does not aggregate lane evidence into chart approaches.
 
-VisionCameraAPI supports this optional mode before its chart-specific name/layer mapping, closest-advance filtering and chart aggregation. It uses the same camera access, cancellation, UTC conversion and bin-statistics parser as reporting. The front-end `laneDecoders` adapter supplies independent inventory access through the existing Get Zones endpoint. A future source supplies its own adapter and optional report-decoder capability; matching and application logic remain source-neutral.
+Vision lane evidence is filtered to the requested time range before grouping, but bypasses chart layer selection, closest-setback filtering, and direction/zone normalization. Get Zones reads configuration through `IDeviceZoneProvider` in Config API; Report API returns only observed count evidence. Providers are discovered at startup and selected using `CanRead(Device)`. A future device family implements this provider and a report decoder with lane-evidence capability; no frontend adapter or vendor allowlist is required. Missing or ambiguous providers block inventory-based recommendations. The legacy Get Zones request remains available for unsaved editor settings. The lane feature reuses report, inventory, and configuration APIs without changing collection/import behavior.
 
-No importer, downloader, archive code, or API controller changes are required.
+## Scenarios, tests, and code references
 
-## Tests
+The standalone [scenario mock tool](../../scenario-mock-tool/README.md) runs at `http://localhost:3081/`. It imports production components and uses in-memory fixtures. The former WebUI `/dev/reconcile-scenarios` route is removed. Approach fixture responses are checked against the real backend; lane scenarios invoke the same matching and application functions as production. Reset restores the scenario configuration. Mocks never validate real camera geometry or traffic.
 
-- Report API HTTP end-to-end tests: independent/default-off feature gate, configured decoder capability, unfiltered advance/RR/arbitrary zone names, UTC query, and ordinary report regressions.
-- Frontend tests: controller-channel exclusion, current-configuration matching and missing zone names, automatic device decoder selection without template requests, split movement recommendations, zero/low counts, duplicate names, offline inventory, overlapping assignments, channel conflicts, atomic staging, stale review protection, warning-only partial responses, and feature-flag behavior.
+Tests cover independent feature flags; phase/overlap namespaces; FYA and pedestrian warnings; inherited pedestrian assignments; assignment and approach deletion; shared editors; movement additions/removals; channel uniqueness; shared-zone repair; uncovered devices; aliases; unnamed zones; stale input; source failures; and preserving review state across tabs. Playwright tests exercise both the tool and the regular location page with mocked HTTP responses. Test commands and fixture regeneration instructions are in the tool README and [WebUI E2E README](../../Atspm/WebUI/e2e/README.md).
 
-## Combined review and mock verification
-
-The location toolbar has one **Reconcile Approaches** action. With the lane feature disabled or missing, the original approach workflow is unchanged and no lane component or camera requests are started. With the flag explicitly true, the action opens a shared dialog with **Approaches** and **Lanes** tabs. Approach reconciliation runs on opening; camera analysis runs only after selecting Lanes and comparing the chosen date range. Each tab keeps its existing API and save semantics. Switching tabs preserves review results, selections, and channel edits until the dialog closes. Configuration or input changes still invalidate stale results.
-
-Mock tests cover through/left/right-only configurations, shared through-left/right movements, both turns missing, existing L/R entries missing through, matching configurations, zero and low counts, ambiguous camera/zone ownership, unnamed zones, unavailable inventory, source warnings, stale results, channel collisions, and explicit staged additions/removals. The combined-dialog integration test runs the real lane panel against mocked API responses and verifies that saved configuration is unchanged. Feature-flag tests cover missing, false, and non-boolean values. These tests make no changes to a real camera or database.
-
-## Interactive mock scenarios
-
-The standalone **scenario mock tool** runs at `http://localhost:3081/`; see `scenario-mock-tool/README.md`. It shares production reconciliation components and uses in-memory fixtures, without camera requests or configuration saves. The former WebUI `/dev/reconcile-scenarios` page has been removed.
-
-Scenarios cover approach phases, overlaps, pedestrian and FYA warnings, detector editing, movement additions/removals, combined-lane splits, shared-zone repairs, ambiguous assignments, and separate Through lanes on distinct camera zones. Reset a scenario to restore its initial configuration. Playwright tests also exercise the regular location page with mocked API responses.
+- [Approach comparison](../../Atspm/ConfigApi/Services/SignalTemplateService.cs)
+- [Combined dialog](../../Atspm/WebUI/src/features/locations/components/ReconcileLanes/ReconcileConfigurationButton.tsx)
+- [Lane request and review panel](../../Atspm/WebUI/src/features/locations/components/ReconcileLanes/LaneDialog.tsx)
+- [Lane matching and staging](../../Atspm/WebUI/src/features/locations/components/ReconcileLanes/reconcileLanes.ts)
+- [Approach review view](../../Atspm/WebUI/src/features/locations/components/ApproachesReconcilationReport/ApproachesReconciliationView.tsx)
+- [Missing-assignment actions](../../Atspm/WebUI/src/features/locations/components/ApproachesReconcilationReport/NotFoundSection.tsx)
