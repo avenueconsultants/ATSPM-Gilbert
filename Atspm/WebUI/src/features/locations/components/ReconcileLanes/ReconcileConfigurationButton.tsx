@@ -28,7 +28,11 @@ export default function ReconcileConfigurationButton({
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState('approaches')
   const [lanesVisited, setLanesVisited] = useState(false)
-  const close = () => setOpen(false)
+  const [lanesBusy, setLanesBusy] = useState(false)
+  const busy = approachesBusy || lanesBusy
+  const close = () => {
+    if (!busy) setOpen(false)
+  }
   return (
     <>
       <LoadingButton
@@ -49,7 +53,13 @@ export default function ReconcileConfigurationButton({
       </LoadingButton>
       {/* Disabled installations retain the original workflow and make no lane requests. */}
       {open && lanesEnabled && (
-        <Dialog open onClose={close} fullWidth maxWidth="xl">
+        <Dialog
+          open
+          disableEscapeKeyDown={busy}
+          onClose={close}
+          fullWidth
+          maxWidth="xl"
+        >
           <DialogTitle>Reconcile Approaches and Lanes</DialogTitle>
           <Tabs
             value={tab}
@@ -81,6 +91,7 @@ export default function ReconcileConfigurationButton({
             <DialogContent>
               <LoadingButton
                 loading={approachesBusy}
+                disabled={busy}
                 onClick={() => void onReconcileApproaches()}
               >
                 Compare approaches
@@ -88,7 +99,9 @@ export default function ReconcileConfigurationButton({
               {approachReport}
             </DialogContent>
             <DialogActions>
-              <Button onClick={close}>Close</Button>
+              <Button disabled={busy} onClick={close}>
+                Close
+              </Button>
             </DialogActions>
           </Box>
           {lanesVisited && (
@@ -98,7 +111,7 @@ export default function ReconcileConfigurationButton({
               id="reconcile-lanes-panel"
               aria-labelledby="reconcile-lanes-tab"
             >
-              <LaneDialog onClose={close} />
+              <LaneDialog onClose={close} onBusyChange={setLanesBusy} />
             </Box>
           )}
         </Dialog>

@@ -67,7 +67,8 @@ export function reconcileLanes(
   approaches: ConfigApproach[],
   inventory: ZoneInventory[],
   evidence: ZoneEvidence[],
-  minimum = 25
+  minimum = 25,
+  allowZoneRepair = true
 ): LaneReview {
   const recommendations: Recommendation[] = []
   const warnings: string[] = []
@@ -274,7 +275,12 @@ export function reconcileLanes(
         !!d.dectectorIdentifier?.trim() &&
         !owners.has(d.dectectorIdentifier)
     )
-    if (candidates.length === 1) repairs.set(proposal, candidates[0])
+    if (candidates.length && !allowZoneRepair) {
+      ambiguous.add(proposal)
+      warnings.push(
+        `Zone ${source.d.dectectorIdentifier}: another configured decoder may own the existing turn detector. Verify device ownership before changing its zone; no additional detector is recommended.`
+      )
+    } else if (candidates.length === 1) repairs.set(proposal, candidates[0])
     else if (candidates.length > 1) {
       ambiguous.add(proposal)
       warnings.push(

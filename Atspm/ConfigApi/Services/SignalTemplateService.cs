@@ -73,11 +73,11 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
             var events = indianaEvents.ToList();
             var protectedOrPermissivePhasesInUse = events.Where(e => e.EventCode is 1 or 8 or 11)
                 .Select(e => e.EventParam).ToHashSet();
-            var overlapPhasesInUse = events.Where(e => e.EventCode >= 61 && e.EventCode <= 66)
+            var overlapPhasesInUse = events.Where(e => e.EventCode >= 61 && e.EventCode <= 64)
                 .Select(e => e.EventParam).ToHashSet();
             var pedestrianPhasesInUse = events.Where(e => e.EventCode is 21 or 22 or 23)
                 .Select(e => e.EventParam).ToHashSet();
-            var pedestrianOverlapsInUse = events.Where(e => e.EventCode >= 67 && e.EventCode <= 70)
+            var pedestrianOverlapsInUse = events.Where(e => e.EventCode >= 67 && e.EventCode <= 69)
                 .Select(e => e.EventParam).ToHashSet();
             var detectorChannelsInUse = events.Where(e => e.EventCode == 82)
                 .Select(e => e.EventParam).ToHashSet();
@@ -114,7 +114,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
                 // One-to-one pedestrian settings must be checked against regular vehicle
                 // phases, never inferred from an overlap with the same numeric identifier.
                 if (sourceLocation.PedsAre1to1 && approach.ProtectedPhaseNumber > 0 && !approach.IsProtectedPhaseOverlap &&
-                    (approach.PedestrianPhaseNumber != approach.ProtectedPhaseNumber || approach.IsPedestrianPhaseOverlap))
+                    ((approach.PedestrianPhaseNumber ?? approach.ProtectedPhaseNumber) != approach.ProtectedPhaseNumber || approach.IsPedestrianPhaseOverlap))
                     warnings.Add($"Approach {approach.Id} ({approach.Description}): pedestrian configuration does not match the one-to-one setting. Verify pedestrian phase {approach.ProtectedPhaseNumber} and its detector mapping.");
                 CheckAssignment("protected", approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap);
                 CheckAssignment("permissive", approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap);

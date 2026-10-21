@@ -36,7 +36,13 @@ import {
   ZoneInventory,
 } from './reconcileLanes'
 
-export function LaneDialog({ onClose }: { onClose: () => void }) {
+export function LaneDialog({
+  onClose,
+  onBusyChange,
+}: {
+  onClose: () => void
+  onBusyChange?: (busy: boolean) => void
+}) {
   const location = useLocationStore((s) => s.location)!
   const approaches = useLocationStore((s) => s.approaches)
   const [selectedDecoder, setDecoder] = useState('')
@@ -97,6 +103,7 @@ export function LaneDialog({ onClose }: { onClose: () => void }) {
   const stale = snapshot !== inputs
   async function run() {
     setBusy(true)
+    onBusyChange?.(true)
     setError('')
     setReview(undefined)
     setEvidence([])
@@ -167,7 +174,14 @@ export function LaneDialog({ onClose }: { onClose: () => void }) {
         approaches,
         inventory,
         result.zoneEvidence,
-        minimum
+        minimum,
+        // Detectors have no device owner. An absent zone in this source is not
+        // evidence that a detector from another configured source is misassigned.
+        groupTmcSources(devices).every(
+          (s) =>
+            !s.decoder ||
+            s.deviceIds.every((id) => source.deviceIds.includes(id))
+        )
       )
       // Partial responses are useful for diagnosis but cannot safely justify automatic edits.
       if (result.warnings?.length) {
@@ -191,6 +205,7 @@ export function LaneDialog({ onClose }: { onClose: () => void }) {
       )
     } finally {
       setBusy(false)
+      onBusyChange?.(false)
     }
   }
   function apply() {

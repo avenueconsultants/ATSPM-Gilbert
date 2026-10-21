@@ -449,3 +449,24 @@ it('does not offer an invalid LR entry when only Through is absent from LTR', ()
     'cannot be represented by one entry'
   )
 })
+
+it('does not retarget an absent turn zone when another decoder may own it', () => {
+  const current = approach([
+    detector(1, { movementType: 'T' }),
+    detector(2, {
+      movementType: 'R',
+      dectectorIdentifier: 'Other decoder zone',
+    }),
+  ])
+  const review = reconcileLanes(
+    current,
+    inventory,
+    [{ ...evidence[0], left: 0, right: 30 }],
+    25,
+    false
+  )
+  expect(review.recommendations).toHaveLength(0)
+  expect(review.warnings.join(' ')).toContain(
+    'another configured decoder may own'
+  )
+})

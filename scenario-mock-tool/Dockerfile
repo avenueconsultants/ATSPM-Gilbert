@@ -1,4 +1,4 @@
-FROM node:current-alpine AS builder
+FROM node:24.10.0-alpine3.22 AS builder
 WORKDIR /app/scenario-mock-tool
 COPY scenario-mock-tool/package*.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
@@ -6,7 +6,7 @@ COPY Atspm/WebUI/src /app/Atspm/WebUI/src
 COPY scenario-mock-tool/ ./
 RUN npm run build
 
-FROM node:current-alpine AS runner
+FROM node:24.10.0-alpine3.22 AS runner
 WORKDIR /app
 ENV NODE_ENV=production PORT=3081 HOSTNAME=0.0.0.0
 COPY --from=builder --chown=node:node /app/scenario-mock-tool/.next/standalone ./

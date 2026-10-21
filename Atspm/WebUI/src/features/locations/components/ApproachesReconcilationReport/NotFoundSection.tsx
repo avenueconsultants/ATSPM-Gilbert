@@ -169,7 +169,9 @@ export default function NotFoundSection({
     clear()
     setConfirmRemoval(false)
     addNotification({
-      title: 'Removed selected assignments and detectors from the draft',
+      title: selectedItems.some((i) => i.kind === 'NOT_FOUND_DET')
+        ? 'Detector deletions requested. Save any phase or overlap changes separately.'
+        : 'Removed selected assignments from the draft. Save to persist changes.',
       type: 'success',
     })
   }
@@ -420,8 +422,9 @@ export default function NotFoundSection({
           <Alert severity="info">
             Phase and overlap removal clears only the selected assignment.
             Approaches and their detectors are retained only when a vehicle
-            phase or overlap remains. Detector channels are removed only when
-            explicitly selected.
+            phase or overlap remains. Existing detector deletions are saved
+            immediately when explicitly selected. Phase and overlap edits remain
+            in the draft until saved.
           </Alert>
           <ul>
             {selectedItems.map((i) => (

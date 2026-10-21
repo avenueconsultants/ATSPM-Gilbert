@@ -22,7 +22,7 @@ public class SignalTemplateServiceTests
     }
     [DataTestMethod]
     [DataRow((short)61)] [DataRow((short)62)] [DataRow((short)63)]
-    [DataRow((short)64)] [DataRow((short)65)] [DataRow((short)66)]
+    [DataRow((short)64)]
     public void VehicleOverlapEventsAreRecognized(short code)
     {
         var r = SignalTemplateService.ModifyLocationWithEvents(Site(), new[] { E(code, 3) });
@@ -52,7 +52,7 @@ public class SignalTemplateServiceTests
         Assert.AreEqual(0, r.ReconciliationWarnings.Count);
     }
     [DataTestMethod]
-    [DataRow((short)67)] [DataRow((short)68)] [DataRow((short)69)] [DataRow((short)70)]
+    [DataRow((short)67)] [DataRow((short)68)] [DataRow((short)69)]
     public void PedestrianOverlapsAreNotOfferedAsVehiclePhases(short code)
     {
         var r = SignalTemplateService.ModifyLocationWithEvents(Site(), new[] { E(code, 4) });
@@ -129,5 +129,26 @@ public class SignalTemplateServiceTests
         var result = SignalTemplateService.ModifyLocationWithEvents(Site(new Approach { Id = 1, ProtectedPhaseNumber = 2, PedestrianPhaseNumber = 4 }), new[] { E(90, 4), E(1, 2) });
         Assert.IsTrue(result.MissingPhaseAssignments.Any(a => a.Role == "pedestrian"));
         Assert.AreEqual(0, result.LoggedButUnusedPedestrianPhases.Count);
+    }
+
+    [DataTestMethod]
+    [DataRow((short)65)] [DataRow((short)66)] [DataRow((short)70)]
+    public void OffAndDarkEventsDoNotEstablishActiveOverlaps(short code)
+    {
+        var result = SignalTemplateService.ModifyLocationWithEvents(Site(), new[] { E(code, 3) });
+        Assert.AreEqual(0, result.LoggedButUnusedOverlapPhases.Count);
+        Assert.AreEqual(0, result.ReconciliationWarnings.Count);
+        var configured = Site(new Approach { Id = 1, ProtectedPhaseNumber = 3, IsProtectedPhaseOverlap = true,
+            PedestrianPhaseNumber = 3, IsPedestrianPhaseOverlap = true });
+        result = SignalTemplateService.ModifyLocationWithEvents(configured, new[] { E(code, 3) });
+        Assert.AreEqual(2, result.MissingPhaseAssignments.Count);
+    }
+    [TestMethod]
+    public void OneToOneNullPedestrianPhaseUsesProtectedFallback()
+    {
+        var site = Site(new Approach { Id = 1, ProtectedPhaseNumber = 2 });
+        site.PedsAre1to1 = true;
+        var result = SignalTemplateService.ModifyLocationWithEvents(site, new[] { E(1, 2) });
+        Assert.IsFalse(result.ReconciliationWarnings.Any(w => w.Contains("one-to-one")));
     }
 }

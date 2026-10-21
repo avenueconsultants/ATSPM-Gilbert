@@ -9,6 +9,8 @@ Both settings default off:
 - WebUI runtime environment: `ENABLE_LANE_RECONCILIATION=true` shows the button through the existing `/api/feature-flags` route.
 - Report API configuration: `Features:LaneReconciliation=true` (`Features__LaneReconciliation=true` in Docker) authorizes zone-evidence requests.
 
+The lane flag gates only camera lane reconciliation. Controller-event approach reconciliation, its shared editors, and its phase/overlap/pedestrian checks remain available independently, including when the lane flag is off.
+
 This flag is independent of `Features:TmcDeviceSources` and `Features:DeviceTestDownload`. Enabling lane review does not enable device TMC charts or test downloads. Device selection, decoder configuration, and location-version validation still apply.
 
 ## Workflow

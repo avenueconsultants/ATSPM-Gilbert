@@ -805,8 +805,8 @@
     }
   },
   {
-    "name": "Unconfigured vehicle overlap \u2014 event 65",
-    "explanation": "Offer a separate overlap addition with its overlap flag enabled.",
+    "name": "Inactive overlap - Off event 65",
+    "explanation": "Off/Dark observations do not establish an active overlap and must not offer an addition.",
     "location": {
       "id": 990001,
       "locationIdentifier": "MOCK",
@@ -838,9 +838,7 @@
       "id": "990001",
       "locationId": 990001,
       "loggedButUnusedProtectedOrPermissivePhases": [],
-      "loggedButUnusedOverlapPhases": [
-        3
-      ],
+      "loggedButUnusedOverlapPhases": [],
       "loggedButUnusedPedestrianPhases": [],
       "loggedButUnusedDetectorChannels": [],
       "removedDetectors": [],
@@ -850,8 +848,8 @@
     }
   },
   {
-    "name": "Unconfigured vehicle overlap \u2014 event 66",
-    "explanation": "Offer a separate overlap addition with its overlap flag enabled.",
+    "name": "Inactive overlap - Dark event 66",
+    "explanation": "Off/Dark observations do not establish an active overlap and must not offer an addition.",
     "location": {
       "id": 990001,
       "locationIdentifier": "MOCK",
@@ -883,9 +881,7 @@
       "id": "990001",
       "locationId": 990001,
       "loggedButUnusedProtectedOrPermissivePhases": [],
-      "loggedButUnusedOverlapPhases": [
-        3
-      ],
+      "loggedButUnusedOverlapPhases": [],
       "loggedButUnusedPedestrianPhases": [],
       "loggedButUnusedDetectorChannels": [],
       "removedDetectors": [],
@@ -1516,8 +1512,8 @@
     }
   },
   {
-    "name": "Unconfigured pedestrian overlap \u2014 event 70",
-    "explanation": "Warn about crosswalk mapping; do not offer a vehicle-phase addition.",
+    "name": "Inactive pedestrian overlap - Dark event 70",
+    "explanation": "Off/Dark observations do not establish an active overlap and must not offer an addition.",
     "location": {
       "id": 990001,
       "locationIdentifier": "MOCK",
@@ -1554,9 +1550,7 @@
       "loggedButUnusedDetectorChannels": [],
       "removedDetectors": [],
       "missingPhaseAssignments": [],
-      "reconciliationWarnings": [
-        "Pedestrian overlap 4 was observed without a configured pedestrian overlap assignment. Review the crosswalk mapping manually; do not add it as a vehicle phase."
-      ],
+      "reconciliationWarnings": [],
       "removedApproachIds": []
     }
   },
