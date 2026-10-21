@@ -413,3 +413,39 @@ it('does not reassign Right from another physical lane or a valid camera zone', 
     expect(review.recommendations.some((r) => r.zoneChange)).toBe(false)
   }
 })
+
+it.each([
+  ['right', { through: 80, left: 30, right: 0 }, 'TL'],
+  ['left', { through: 80, left: 0, right: 30 }, 'TR'],
+])(
+  'removes only %s from LTR without creating another detector',
+  (_, counts, remaining) => {
+    const current = approach([detector(1, { movementType: 'LTR' })])
+    const review = reconcileLanes(current, inventory, [
+      { ...evidence[0], ...counts },
+    ])
+    const removal = review.recommendations.find((r) => r.id === 'remove-1')!
+    expect(suggestLaneChannels(current, [removal])).toEqual({ 'remove-1': [] })
+    const next = applyLaneRecommendations(current, [removal], {})
+    expect(next[0].detectors).toEqual([
+      { ...current[0].detectors[0], movementType: remaining },
+    ])
+  }
+)
+
+it('treats a zero-bin row like missing evidence', () => {
+  expect(
+    reconcileLanes(approach(), inventory, [{ ...evidence[0], bins: 0 }])
+  ).toEqual(reconcileLanes(approach(), inventory, []))
+})
+
+it('does not offer an invalid LR entry when only Through is absent from LTR', () => {
+  const current = approach([detector(1, { movementType: 'LTR' })])
+  const review = reconcileLanes(current, inventory, [
+    { ...evidence[0], through: 0, right: 30 },
+  ])
+  expect(review.recommendations.some((r) => r.id === 'remove-1')).toBe(false)
+  expect(review.warnings.join(' ')).toContain(
+    'cannot be represented by one entry'
+  )
+})

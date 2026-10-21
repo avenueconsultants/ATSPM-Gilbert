@@ -1,5 +1,4 @@
 import { getDeviceActiveDevicesByLocationFromLocationId } from '@/api/config/device/device'
-import { useFlags } from '@/feature-flags/FeatureFlagContext'
 import {
   groupTmcSources,
   normalizeTmcDevices,
@@ -10,10 +9,8 @@ import {
   Alert,
   Box,
   Button,
-  Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   MenuItem,
   Stack,
   TextField,
@@ -39,27 +36,7 @@ import {
   ZoneInventory,
 } from './reconcileLanes'
 
-export default function ReconcileLanesButton() {
-  const flags = useFlags()
-  const [open, setOpen] = useState(false)
-  if (flags.laneReconciliation !== true) return null
-  return (
-    <>
-      <Button variant="outlined" onClick={() => setOpen(true)}>
-        Reconcile Lanes
-      </Button>
-      {open && <LaneDialog onClose={() => setOpen(false)} />}
-    </>
-  )
-}
-
-export function LaneDialog({
-  onClose,
-  embedded = false,
-}: {
-  onClose: () => void
-  embedded?: boolean
-}) {
+export function LaneDialog({ onClose }: { onClose: () => void }) {
   const location = useLocationStore((s) => s.location)!
   const approaches = useLocationStore((s) => s.approaches)
   const [selectedDecoder, setDecoder] = useState('')
@@ -506,12 +483,5 @@ export function LaneDialog({
       </DialogActions>
     </>
   )
-  return embedded ? (
-    content
-  ) : (
-    <Dialog open onClose={busy ? undefined : onClose} fullWidth maxWidth="md">
-      <DialogTitle>Reconcile Lanes</DialogTitle>
-      {content}
-    </Dialog>
-  )
+  return content
 }

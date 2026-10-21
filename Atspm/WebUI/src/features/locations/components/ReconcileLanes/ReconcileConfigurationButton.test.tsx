@@ -11,7 +11,6 @@ import {
   useLocationStore,
 } from '../editLocation/locationStore'
 import ReconcileConfigurationButton from './ReconcileConfigurationButton'
-import ReconcileLanesButton from './ReconcileLanesButton'
 
 jest.mock('@/feature-flags/FeatureFlagContext', () => ({ useFlags: jest.fn() }))
 jest.mock('@/features/devices/api', () => ({
@@ -29,30 +28,12 @@ beforeAll(() => {
   global.structuredClone = (value) => JSON.parse(JSON.stringify(value))
 })
 
-it.each([{}, { laneReconciliation: false }, { laneReconciliation: 'true' }])(
-  'hides the button unless explicitly enabled: %p',
-  (flags) => {
-    ;(useFlags as jest.Mock).mockReturnValue(flags)
-    render(<ReconcileLanesButton />)
-    expect(
-      screen.queryByRole('button', { name: 'Reconcile Lanes' })
-    ).not.toBeInTheDocument()
-  }
-)
-
-it('shows the separate button when enabled', () => {
-  ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
-  render(<ReconcileLanesButton />)
-  expect(screen.getByRole('button', { name: 'Reconcile Lanes' })).toBeEnabled()
-})
-
 async function openReview(
   warnings: string[] = [],
   aliases = false,
   unnamed = false,
   leftCount = 20,
-  rightCount = 0,
-  combined = false
+  rightCount = 0
 ) {
   jest.clearAllMocks()
   ;(useFlags as jest.Mock).mockReturnValue({ laneReconciliation: true })
@@ -136,29 +117,21 @@ async function openReview(
   })
   render(
     <QueryClientProvider client={client}>
-      {combined ? (
-        <ReconcileConfigurationButton
-          onReconcileApproaches={async () => {}}
-          approachesBusy={false}
-          approachReport={<div>Mock approach results</div>}
-        />
-      ) : (
-        <ReconcileLanesButton />
-      )}
+      <ReconcileConfigurationButton
+        onReconcileApproaches={() => Promise.resolve()}
+        approachesBusy={false}
+        approachReport={<div>Mock approach results</div>}
+      />
     </QueryClientProvider>
   )
   fireEvent.click(
     screen.getByRole('button', {
-      name: combined ? 'Reconcile Approaches' : 'Reconcile Lanes',
+      name: 'Reconcile Approaches',
     })
   )
-  if (combined) {
-    expect(screen.getByText('Mock approach results')).toBeVisible()
-    expect(
-      getDeviceActiveDevicesByLocationFromLocationId
-    ).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole('tab', { name: 'Lanes' }))
-  }
+  expect(screen.getByText('Mock approach results')).toBeVisible()
+  expect(getDeviceActiveDevicesByLocationFromLocationId).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('tab', { name: 'Lanes' }))
   await waitFor(() =>
     expect(getDeviceActiveDevicesByLocationFromLocationId).toHaveBeenCalled()
   )
@@ -347,7 +320,7 @@ it('invalidates the memoized review when location configuration changes', async 
 })
 
 it('provides an editable channel field for every added movement', async () => {
-  const client = await openReview([], false, false, 20, 12)
+  const client = await openReview([], false, false, 20, 30)
   const through = screen.getByLabelText('Channel for Lane Alpha Through')
   const right = screen.getByLabelText('Channel for Lane Alpha Right')
   expect(through).toHaveValue(65)
@@ -363,7 +336,7 @@ it('provides an editable channel field for every added movement', async () => {
 })
 
 it('runs the real lane panel inside combined reconciliation and stages mock additions', async () => {
-  const client = await openReview([], false, false, 20, 12, true)
+  const client = await openReview([], false, false, 20, 30)
   fireEvent.click(
     screen.getByRole('button', {
       name: /Add Channel 65 zone Lane Alpha Through/,
@@ -418,3 +391,28 @@ it.each([undefined, false, 'true'])(
     expect(reportsRequest).not.toHaveBeenCalled()
   }
 )
+
+it('keeps lane review selections and edited channels across tab switches', async () => {
+  const client = await openReview()
+  const input = screen.getByLabelText('Channel for Lane Alpha Through')
+  fireEvent.change(input, { target: { value: '118' } })
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: 'Add Channel 118 zone Lane Alpha Through',
+    })
+  )
+  const calls = (reportsRequest as jest.Mock).mock.calls.length
+  fireEvent.click(screen.getByRole('tab', { name: 'Approaches' }))
+  expect(screen.getByText('Mock approach results')).toBeVisible()
+  fireEvent.click(screen.getByRole('tab', { name: 'Lanes' }))
+  expect(screen.getByLabelText('Channel for Lane Alpha Through')).toHaveValue(
+    118
+  )
+  expect(
+    screen.getByRole('button', {
+      name: 'Add Channel 118 zone Lane Alpha Through',
+    })
+  ).toHaveAttribute('aria-pressed', 'true')
+  expect(reportsRequest).toHaveBeenCalledTimes(calls)
+  client.clear()
+})

@@ -102,6 +102,7 @@ export function reconcileLanes(
       )
       continue
     }
+    if (row.bins === 0) continue // No observations: use the missing-evidence review.
     const zones =
       evidenceByDevice.get(row.deviceId) ?? new Map<string, ZoneEvidence[]>()
     const rows = zones.get(row.zoneName) ?? []
@@ -138,14 +139,14 @@ export function reconcileLanes(
     }
     if (!completeInventory) continue // Another unreachable device could own the same zone name.
     const rows = evidenceByDevice.get(devices[0])?.get(name) ?? []
-    if (rows.length !== 1 || rows[0].bins === 0) {
+    if (rows.length !== 1) {
       warnings.push(
         `${label}: no unambiguous bin evidence in the selected period.`
       )
       if (
         name.trim() &&
         ['V', '1'].includes(String(d.laneType)) &&
-        (rows.length === 0 || (rows.length === 1 && rows[0].bins === 0))
+        rows.length === 0
       )
         recommendations.push({
           id: `remove-${d.id}`,
@@ -188,13 +189,25 @@ export function reconcileLanes(
         `${label}: no ${absent.join('/')} observed. Zero counts do not establish a turn-only lane; verify permitted movements before choosing removal.`
       )
       const retained = declared.filter((m) => !absent.includes(m))
-      recommendations.push({
-        id: `remove-${d.id}`,
-        warning: warnings[warnings.length - 1],
-        detectorId: d.id,
-        ...(retained.length ? { movements: retained } : { remove: true }),
-        description: removalLabel(d, absent),
-      })
+      const retainedType = Object.keys(movements).find(
+        (key) =>
+          movements[key].length === retained.length &&
+          retained.every((movement) => movements[key].includes(movement))
+      )
+      // Removal narrows this entry; splitting is a separate, explicit choice.
+      // ATSPM has no combined LR type, so that case needs a manual review.
+      if (!retained.length || retainedType)
+        recommendations.push({
+          id: `remove-${d.id}`,
+          warning: warnings[warnings.length - 1],
+          detectorId: d.id,
+          ...(retainedType ? { movements: [retainedType] } : { remove: true }),
+          description: removalLabel(d, absent),
+        })
+      else
+        warnings.push(
+          `${label}: the remaining Left/Right movements cannot be represented by one entry. Review and split the lane before removing Through.`
+        )
     }
     const unassigned = Object.keys(counts).filter(
       (m) => counts[m] > 0 && !assigned.has(m)
@@ -420,7 +433,10 @@ export function originalLaneChange(
   const beforeLabel = (movements[before] ?? [before])
     .map((m) => movementLabels[m] ?? m)
     .join('/')
-  return `When applied, Channel ${detector.detectorChannel} zone ${detector.dectectorIdentifier} will change from ${beforeLabel} to ${movementLabels[after] ?? after}.`
+  const afterLabel = (movements[after] ?? [after])
+    .map((m) => movementLabels[m] ?? m)
+    .join('/')
+  return `When applied, Channel ${detector.detectorChannel} zone ${detector.dectectorIdentifier} will change from ${beforeLabel} to ${afterLabel}.`
 }
 
 /** Separate additions can coexist; removals and rewrites remain exclusive. */

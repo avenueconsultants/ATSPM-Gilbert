@@ -415,3 +415,19 @@ for (const scenario of approachScenarios.filter(s => s.name.startsWith('Remove m
     expect(state.unexpected).toEqual([])
   })
 }
+
+
+test('lane selection and edited channel survive switching reconciliation tabs', async ({ page }) => {
+  const state = await openScenario(page, 0)
+  const channel = page.getByLabel('Channel for NB-18 Right')
+  await channel.fill('121')
+  const addition = page.getByRole('button', { name: 'Add Channel 121 zone NB-18 Right', exact: true })
+  await addition.click()
+  await expect(addition).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('tab', { name: 'Approaches', exact: true }).click()
+  await page.getByRole('tab', { name: 'Lanes', exact: true }).click()
+  await expect(channel).toHaveValue('121')
+  await expect(addition).toHaveAttribute('aria-pressed', 'true')
+  expect(state.reports).toHaveLength(1)
+  expect(state.writes).toHaveLength(0)
+})

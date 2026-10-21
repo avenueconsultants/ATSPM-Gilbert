@@ -12,7 +12,7 @@ import {
   Tabs,
 } from '@mui/material'
 import { ReactNode, useState } from 'react'
-import { LaneDialog } from './ReconcileLanesButton'
+import { LaneDialog } from './LaneDialog'
 
 export default function ReconcileConfigurationButton({
   onReconcileApproaches,
@@ -27,6 +27,7 @@ export default function ReconcileConfigurationButton({
   const lanesEnabled = flags.laneReconciliation === true
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState('approaches')
+  const [lanesVisited, setLanesVisited] = useState(false)
   const close = () => setOpen(false)
   return (
     <>
@@ -38,6 +39,7 @@ export default function ReconcileConfigurationButton({
         onClick={() => {
           if (lanesEnabled) {
             setTab('approaches')
+            setLanesVisited(false)
             setOpen(true)
           }
           void onReconcileApproaches()
@@ -51,7 +53,10 @@ export default function ReconcileConfigurationButton({
           <DialogTitle>Reconcile Approaches and Lanes</DialogTitle>
           <Tabs
             value={tab}
-            onChange={(_, value) => setTab(value)}
+            onChange={(_, value) => {
+              setTab(value)
+              if (value === 'lanes') setLanesVisited(true)
+            }}
             aria-label="Reconciliation"
           >
             <Tab
@@ -67,32 +72,33 @@ export default function ReconcileConfigurationButton({
               aria-controls="reconcile-lanes-panel"
             />
           </Tabs>
-          {tab === 'approaches' ? (
+          <Box
+            role="tabpanel"
+            hidden={tab !== 'approaches'}
+            id="reconcile-approaches-panel"
+            aria-labelledby="reconcile-approaches-tab"
+          >
+            <DialogContent>
+              <LoadingButton
+                loading={approachesBusy}
+                onClick={() => void onReconcileApproaches()}
+              >
+                Compare approaches
+              </LoadingButton>
+              {approachReport}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={close}>Close</Button>
+            </DialogActions>
+          </Box>
+          {lanesVisited && (
             <Box
               role="tabpanel"
-              id="reconcile-approaches-panel"
-              aria-labelledby="reconcile-approaches-tab"
-            >
-              <DialogContent>
-                <LoadingButton
-                  loading={approachesBusy}
-                  onClick={() => void onReconcileApproaches()}
-                >
-                  Compare approaches
-                </LoadingButton>
-                {approachReport}
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={close}>Close</Button>
-              </DialogActions>
-            </Box>
-          ) : (
-            <Box
-              role="tabpanel"
+              hidden={tab !== 'lanes'}
               id="reconcile-lanes-panel"
               aria-labelledby="reconcile-lanes-tab"
             >
-              <LaneDialog embedded onClose={close} />
+              <LaneDialog onClose={close} />
             </Box>
           )}
         </Dialog>

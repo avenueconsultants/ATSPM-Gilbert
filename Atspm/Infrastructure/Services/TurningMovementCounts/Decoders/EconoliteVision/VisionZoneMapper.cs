@@ -47,7 +47,7 @@ public static class VisionZoneMapper
         int interval, TimeZoneInfo zone, bool stored)
     {
         var warnings = new List<string>();
-        var rows = InRequestedRange(events, request, zone, stored)
+        var rows = events
             .GroupBy(e => (e.ZoneName, e.Timestamp)).Select(g => g.Last()).ToList();
         var layer = Setting(request.Settings, "TmcLayer", "StopBar");
         if (!new[] { "StopBar", "Advance", "RedLightRunning" }.Contains(layer))
@@ -85,6 +85,9 @@ public static class VisionZoneMapper
                 continue;
             }
             var timestamp = LocalTimestamp(item.Row.Timestamp, zone, stored);
+            // Choose the layer and closest setback from the returned inventory before
+            // filtering time; sparse nearby bins must not promote a farther detector.
+            if (timestamp < request.Options.Start || timestamp >= request.Options.End) continue;
             var movements = item.Lane == LaneTypes.Ped
                 ? new[] { (MovementTypes.T, item.Row.LeftToRightCount + item.Row.RightToLeftCount) }
                 : new[] { (MovementTypes.T, item.Row.ThroughCount), (MovementTypes.L, item.Row.LeftTurnCount), (MovementTypes.R, item.Row.RightTurnCount) };
