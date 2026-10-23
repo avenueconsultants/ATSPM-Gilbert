@@ -93,45 +93,58 @@ namespace Utah.Udot.Atspm.ConfigApi.Services
 
             // A null pedestrian assignment inherits the regular protected phase in
             // one-to-one mode. Use the same effective value for retention and warnings.
-            int? PedestrianPhase(Approach approach) => approach.PedestrianPhaseNumber ??
-                (sourceLocation.PedsAre1to1 && !approach.IsProtectedPhaseOverlap && !approach.IsPedestrianPhaseOverlap
-                    ? approach.ProtectedPhaseNumber : (int?)null);
+            int? PedestrianPhase(Approach approach)
+            {
+                if (approach.PedestrianPhaseNumber.HasValue)
+                    return approach.PedestrianPhaseNumber;
+                if (sourceLocation.PedsAre1to1 && !approach.IsProtectedPhaseOverlap && !approach.IsPedestrianPhaseOverlap)
+                    return approach.ProtectedPhaseNumber;
+                return null;
+            }
 
-            bool Observed(int? number, bool overlap, bool pedestrian = false) => number.HasValue &&
-                (pedestrian ? (overlap ? pedestrianOverlapsInUse : pedestrianPhasesInUse)
-                    : (overlap ? overlapPhasesInUse : protectedOrPermissivePhasesInUse)).Contains((short)number.Value);
+            bool Observed(int? number, bool overlap, bool pedestrian = false)
+            {
+                if (!number.HasValue) return false;
+                if (pedestrian)
+                    return overlap
+                        ? pedestrianOverlapsInUse.Contains((short)number.Value)
+                        : pedestrianPhasesInUse.Contains((short)number.Value);
+                return overlap
+                    ? overlapPhasesInUse.Contains((short)number.Value)
+                    : protectedOrPermissivePhasesInUse.Contains((short)number.Value);
+            }
+
+            void CheckAssignment(int approachId, string role, int? number, bool overlap,
+                ICollection<MissingPhaseAssignmentDto> missingAssignments, bool pedestrian = false)
+            {
+                // Report each field independently even when another phase or detector
+                // keeps the approach active. Zero means unassigned, not a missing phase.
+                if (number > 0 && !Observed(number, overlap, pedestrian))
+                    missingAssignments.Add(new MissingPhaseAssignmentDto
+                    {
+                        ApproachId = approachId, Role = role,
+                        PhaseNumber = number.Value, IsOverlap = overlap
+                    });
+            }
 
             var missingAssignments = new List<MissingPhaseAssignmentDto>();
             foreach (var approach in sourceLocation.Approaches)
             {
-                void CheckAssignment(string role, int? number, bool overlap, bool pedestrian = false)
-                {
-                    // Report each field independently even when another phase or detector
-                    // keeps this approach active. Zero represents an unassigned protected phase.
-                    if (number > 0 && !Observed(number, overlap, pedestrian))
-                        missingAssignments.Add(new MissingPhaseAssignmentDto
-                        {
-                            ApproachId = approach.Id, Role = role,
-                            PhaseNumber = number.Value, IsOverlap = overlap
-                        });
-                    // Identical numeric IDs in phase and overlap events are unrelated.
-                    // Report missing assignments and unconfigured observations independently.
-                }
                 // One-to-one pedestrian settings must be checked against regular vehicle
                 // phases, never inferred from an overlap with the same numeric identifier.
                 if (sourceLocation.PedsAre1to1 && approach.ProtectedPhaseNumber > 0 && !approach.IsProtectedPhaseOverlap &&
                     ((approach.PedestrianPhaseNumber ?? approach.ProtectedPhaseNumber) != approach.ProtectedPhaseNumber || approach.IsPedestrianPhaseOverlap))
                     warnings.Add($"Approach {approach.Id} ({approach.Description}): pedestrian configuration does not match the one-to-one setting. Verify pedestrian phase {approach.ProtectedPhaseNumber} and its detector mapping.");
-                CheckAssignment("protected", approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap);
-                CheckAssignment("permissive", approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap);
-                CheckAssignment("pedestrian", approach.PedestrianPhaseNumber, approach.IsPedestrianPhaseOverlap, true);
+                CheckAssignment(approach.Id, "protected", approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap, missingAssignments);
+                CheckAssignment(approach.Id, "permissive", approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap, missingAssignments);
+                CheckAssignment(approach.Id, "pedestrian", approach.PedestrianPhaseNumber, approach.IsPedestrianPhaseOverlap, missingAssignments, pedestrian: true);
             }
 
             var newVersion = (Location)sourceLocation.Clone();
             bool ApproachObserved(Approach approach) =>
                 Observed(approach.ProtectedPhaseNumber, approach.IsProtectedPhaseOverlap) ||
                 Observed(approach.PermissivePhaseNumber, approach.IsPermissivePhaseOverlap) ||
-                Observed(PedestrianPhase(approach), approach.IsPedestrianPhaseOverlap, true) ||
+                Observed(PedestrianPhase(approach), approach.IsPedestrianPhaseOverlap, pedestrian: true) ||
                 // Preserve approaches supported by detector activity even when no phase
                 // transition occurred in the observation window.
                 approach.Detectors.Any(d => detectorChannelsInUse.Contains((short)d.DetectorChannel));

@@ -192,7 +192,15 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
 
     resetApproaches: () => {
       const { savedApproaches } = get()
-      set({ approaches: JSON.parse(JSON.stringify(savedApproaches)) })
+      set({
+        approaches: JSON.parse(JSON.stringify(savedApproaches)),
+        // Discard draft channel additions/edits along with the detector drafts.
+        channelMap: new Map(
+          savedApproaches.flatMap((a) =>
+            a.detectors.map((d) => [d.id, d.detectorChannel || 0] as const)
+          )
+        ),
+      })
     },
 
     addApproach: (protectedPhaseNumber, isOverlap = false, properties) => {
@@ -327,6 +335,14 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
         newDetector.detectorChannel = detectorChannel
       }
 
+      // Reconciliation supplies the channel before the detector reaches the editor.
+      // Include it in the same map used by edits and the regular save validation.
+      set({
+        channelMap: new Map(get().channelMap).set(
+          newDetector.id,
+          newDetector.detectorChannel || 0
+        ),
+      })
       updateApproach({
         ...approach,
         detectors: [newDetector, ...approach.detectors],
@@ -384,7 +400,6 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
       if (shouldCallApi) {
         try {
           deleteDetectorFromKey(detectorId)
-          channelMap.delete(detectorId)
         } catch (err) {
           console.error(err)
         }
@@ -392,8 +407,13 @@ export const useLocationStore = createWithEqualityFn<LocationStore>()(
 
       set({
         approaches: updatedApproaches,
-        savedApproaches: toBaseline(updatedApproaches),
-        channelMap: new Map(channelMap),
+        // Only the deletion is persisted. Assignment edits and other drafts still
+        // await Save and must not be copied into the reset/unsaved-change baseline.
+        savedApproaches: get().savedApproaches.map((approach) => ({
+          ...approach,
+          detectors: approach.detectors.filter((d) => d.id !== detectorId),
+        })),
+        channelMap: new Map([...channelMap].filter(([id]) => id !== detectorId)),
       })
     },
 

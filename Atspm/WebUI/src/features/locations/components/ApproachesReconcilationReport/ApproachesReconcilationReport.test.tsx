@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import {
+  act,
   fireEvent,
   render,
   renderHook,
@@ -9,6 +10,8 @@ import {
 import { useLocationStore } from '../editLocation/locationStore'
 import ApproachesReconcilationReport from './ApproachesReconcilationReport'
 import useDiscrepancyStatuses from './useDiscrepancyStatuses'
+import { configRequest } from '@/lib/axios'
+import { hasUniqueDetectorChannels } from '../editApproach/utils/checkDetectors'
 
 jest.mock('@/api/config', () => ({
   ...jest.requireActual('@/api/config'),
@@ -29,6 +32,7 @@ const categories = {
   notFoundDetectorChannels: [],
 }
 beforeEach(() => {
+  jest.clearAllMocks()
   useLocationStore.getState().resetStore()
   useLocationStore.setState({ location: { id: 1 } as any })
 })
@@ -353,4 +357,68 @@ it('removes overlap 3 without removing regular phase 3 on the same approach', ()
     permissivePhaseNumber: null,
     detectors: approach.detectors,
   })
+})
+
+
+it('mixed removal preserves unsaved assignments and resets only unpersisted edits', async () => {
+  ;(configRequest as jest.Mock).mockResolvedValue(undefined)
+  const first = mixedApproach()
+  const other = { ...mixedApproach(), id: 12, description: 'Other', detectors: [] }
+  useLocationStore.getState().setLocation({ id: 1, approaches: [first, other] } as any)
+  useLocationStore.getState().updateApproach({ ...other, description: 'Unsaved other' } as any)
+  render(<ApproachesReconcilationReport categories={{
+    ...categories, foundPhaseNumbers: [], foundOverlapNumbers: [],
+    missingPhaseAssignments: [{ approachId: first.id, role: 'protected', phaseNumber: 3, isOverlap: false }],
+    notFoundDetectorChannels: ['118'],
+  }} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Select All' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Remove selected' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm removal' }))
+  await act(async () => {})
+  expect(configRequest).toHaveBeenCalledWith(expect.objectContaining({ url: '/Detector/99', method: 'DELETE' }))
+  expect(useLocationStore.getState().approaches[0]).toMatchObject({ protectedPhaseNumber: 0, detectors: [] })
+  expect(useLocationStore.getState().hasUnsavedChanges()).toBe(true)
+  act(() => useLocationStore.getState().resetApproaches())
+  expect(useLocationStore.getState().approaches[0]).toMatchObject({ protectedPhaseNumber: 3, detectors: [] })
+  expect(useLocationStore.getState().approaches[1].description).toBe('Other')
+  expect(useLocationStore.getState().hasUnsavedChanges()).toBe(false)
+})
+
+it('reconciliation draft channels participate in subsequent duplicate checks', () => {
+  const approach = mixedApproach()
+  useLocationStore.getState().setLocation({ id: 1, approaches: [approach] } as any)
+  render(<ApproachesReconcilationReport categories={{
+    ...categories, foundPhaseNumbers: [], foundOverlapNumbers: [], foundDetectorChannels: [119],
+  }} />)
+  fireEvent.click(screen.getByRole('button', { name: '119', exact: true }))
+  fireEvent.click(screen.getByRole('button', { name: /Add selected to/ }))
+  fireEvent.click(screen.getByRole('menuitem', { name: approach.description, exact: true }))
+  fireEvent.click(screen.getByRole('button', { name: 'Add detectors', exact: true }))
+  const added = useLocationStore.getState().approaches[0].detectors.find(d => d.detectorChannel === 119)!
+  expect(added.approachId).toBe(approach.id)
+  expect(hasUniqueDetectorChannels(useLocationStore.getState().channelMap).isValid).toBe(true)
+  act(() => useLocationStore.getState().updateDetector(99, 'detectorChannel', 119))
+  const duplicate = hasUniqueDetectorChannels(useLocationStore.getState().channelMap)
+  expect(duplicate.isValid).toBe(false)
+  expect(Object.keys(duplicate.errors).sort()).toEqual(['99', String(added.id)].sort())
+  act(() => useLocationStore.getState().updateDetector(99, 'detectorChannel', 118))
+  act(() => useLocationStore.getState().updateDetector(added.id, 'detectorChannel', 118))
+  expect(hasUniqueDetectorChannels(useLocationStore.getState().channelMap).isValid).toBe(false)
+  act(() => useLocationStore.getState().resetApproaches())
+  expect([...useLocationStore.getState().channelMap.entries()]).toEqual([[99, 118]])
+})
+
+
+it('discarding an added detector removes its validation entry without saving other drafts', () => {
+  const approach = mixedApproach()
+  useLocationStore.getState().setLocation({ id: 1, approaches: [approach] } as any)
+  useLocationStore.getState().updateApproach({ ...approach, protectedPhaseNumber: 0 } as any)
+  useLocationStore.getState().addDetector(approach.id, 119, { dectectorIdentifier: 'NB-19', laneNumber: 2 })
+  const added = useLocationStore.getState().approaches[0].detectors[0]
+  useLocationStore.getState().deleteDetector(added.id)
+  expect(configRequest).not.toHaveBeenCalled()
+  expect(useLocationStore.getState().channelMap.has(added.id)).toBe(false)
+  expect(useLocationStore.getState().hasUnsavedChanges()).toBe(true)
+  useLocationStore.getState().resetApproaches()
+  expect(useLocationStore.getState().approaches[0]).toEqual(approach)
 })
