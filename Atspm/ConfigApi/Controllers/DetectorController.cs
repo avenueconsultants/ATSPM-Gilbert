@@ -16,6 +16,8 @@
 #endregion
 
 using Asp.Versioning;
+using Utah.Udot.Atspm.Common;
+using Utah.Udot.Atspm.Infrastructure.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Utah.Udot.Atspm.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -68,6 +70,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
             return GetNavigationProperty<IEnumerable<DetectionType>>(key);
         }
 
+        [AuthorizePermission(AtspmAuthorization.Permissions.LocationConfigurationsEdit)]
         [HttpPost("api/v1/Detector/retrieveDetectionData")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +95,7 @@ namespace Utah.Udot.Atspm.ConfigApi.Controllers
                     if (device == null) return NotFound("Device not found.");
                     var providers = zoneProviders.Where(p => p.CanRead(device)).ToArray();
                     if (providers.Length != 1)
-                        return BadRequest("Configure exactly one compatible zone provider for this device.");
+                        return BadRequest("No unique zone provider is available for this device. The built-in provider supports Econolite Vision FIR/AI cameras; other products require a compatible zone provider.");
                     return Ok(await providers[0].ReadZonesAsync(device, HttpContext.RequestAborted));
                 }
 

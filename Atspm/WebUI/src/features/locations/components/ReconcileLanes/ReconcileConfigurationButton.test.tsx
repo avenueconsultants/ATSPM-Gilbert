@@ -150,6 +150,15 @@ async function openReview(
   return client
 }
 
+it('shows the Config API provider limitation instead of a generic zone failure', async () => {
+  await openReview()
+  ;(configRequest as jest.Mock).mockRejectedValueOnce({ response: { data: { error: {
+    message: 'The built-in provider supports Econolite Vision FIR/AI cameras; other products require a compatible zone provider.',
+  } } } })
+  fireEvent.click(screen.getByRole('button', { name: 'Compare lanes' }))
+  expect(await screen.findByText(/Get Zones failed: The built-in provider supports Econolite Vision/)).toBeVisible()
+})
+
 it('reads independent zones and report evidence, separates warnings, and stages selected changes without saving', async () => {
   const client = await openReview()
   expect(configRequest).toHaveBeenCalledWith(

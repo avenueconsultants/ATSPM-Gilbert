@@ -1174,6 +1174,68 @@ namespace Utah.Udot.ATSPM.SqlDatabaseProvider.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Utah.Udot.Atspm.Data.Models.MapLayer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("CreatedBy")
+                        .ValueGeneratedOnAdd()
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("MapLayerUrl")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(900)");
+
+                    b.Property<int?>("RefreshIntervalSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ResourceId")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.Property<bool>("ShowByDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Style")
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("MapLayer", t =>
+                        {
+                            t.HasComment("Map Layer");
+                        });
+                });
+
             modelBuilder.Entity("Utah.Udot.Atspm.Data.Models.MeasureComment", b =>
                 {
                     b.Property<int>("Id")

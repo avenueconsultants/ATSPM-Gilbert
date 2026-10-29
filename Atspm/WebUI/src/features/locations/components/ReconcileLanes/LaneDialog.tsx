@@ -153,8 +153,10 @@ export function LaneDialog({
           .map(async (d) => {
             try {
               return { deviceId: d.id!, names: await readDeviceZones(d.id!) }
-            } catch {
-              return { deviceId: d.id!, names: [], error: 'Get Zones failed' }
+            } catch (error) {
+              const data = (error as { response?: { data?: string | { error?: { message?: string } } } }).response?.data
+              const detail = typeof data === 'string' ? data : data?.error?.message
+              return { deviceId: d.id!, names: [], error: detail ? `Get Zones failed: ${detail}` : 'Get Zones failed; verify the device connection and compatible zone provider.' }
             }
           })
       )

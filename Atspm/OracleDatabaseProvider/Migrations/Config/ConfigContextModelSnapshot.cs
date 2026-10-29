@@ -1174,6 +1174,68 @@ namespace Utah.Udot.ATSPM.OracleDatabaseProvider.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Utah.Udot.Atspm.Data.Models.MapLayer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("NUMBER(10)");
+
+                    OraclePropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
+
+                    b.Property<string>("CreatedBy")
+                        .ValueGeneratedOnAdd()
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<string>("MapLayerUrl")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<DateTimeOffset?>("Modified")
+                        .HasColumnType("TIMESTAMP(7) WITH TIME ZONE");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<int?>("RefreshIntervalSeconds")
+                        .HasColumnType("NUMBER(10)");
+
+                    b.Property<string>("ResourceId")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<string>("ServiceType")
+                        .IsRequired()
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.Property<bool>("ShowByDefault")
+                        .HasColumnType("BOOLEAN");
+
+                    b.Property<string>("Style")
+                        .IsUnicode(false)
+                        .HasColumnType("VARCHAR2(4000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("MapLayer", t =>
+                        {
+                            t.HasComment("Map Layer");
+                        });
+                });
+
             modelBuilder.Entity("Utah.Udot.Atspm.Data.Models.MeasureComment", b =>
                 {
                     b.Property<int>("Id")

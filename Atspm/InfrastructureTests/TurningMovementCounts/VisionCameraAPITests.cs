@@ -52,6 +52,17 @@ public class VisionCameraAPITests : ApplicationTests.Business.TurningMovementCou
         return new(services.BuildServiceProvider().GetRequiredService<IServiceScopeFactory>());
     }
     protected override (VisionCameraAPI, TmcDecodeRequest) Create() => (Decoder(new()), Request());
+    [Fact]
+    public async Task RejectedLoginStopsRemainingDaysForThisCamera()
+    {
+        var request = Request();
+        request.Options.End = request.Options.Start.AddDays(31);
+        var handler = new CameraHandler { Response = _ => new(HttpStatusCode.Unauthorized) { Content = new StringContent("") } };
+        var result = await Decoder(handler).DecodeAsync(request, default);
+        Assert.Single(handler.Requests);
+        Assert.Single(result.Warnings.Where(w => w.Contains("no data for") && w.Contains("login rejected")));
+        Assert.Contains(result.Warnings, w => w.Contains("skipped"));
+    }
     [Theory]
     [InlineData("/custom/v2/cameras")]
     [InlineData("/custom/v2/cameras/")]

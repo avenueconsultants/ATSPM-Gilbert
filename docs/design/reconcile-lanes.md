@@ -1,6 +1,6 @@
 # Approach and lane reconciliation
 
-Updated October 21, 2026. This document describes the implemented location-editor workflow. For count collection, report timezone handling, and source limitations, see [TMC source data flows](tmc-source-data-flows.md).
+Updated October 28, 2026. This document describes the implemented location-editor workflow. For count collection, report timezone handling, and source limitations, see [TMC source data flows](tmc-source-data-flows.md).
 
 ## Scope and feature flags
 
@@ -18,6 +18,8 @@ These settings are separate from `Features:TmcDeviceSources` and `Features:Devic
 The combined dialog starts approach comparison on opening. Lane comparison starts only after selecting **Lanes** and clicking **Compare lanes**. Tabs retain their review results, selections, and edited channels. Closing the dialog discards its lane review; changes already applied to the editor remain. Closing through Escape, the backdrop, or Close is blocked while either comparison is busy. Changed configuration or lane inputs invalidate the previous lane review before it can be applied.
 
 ## Approach reconciliation
+
+Config API zone retrieval requires location-configuration edit permission, device discovery requires device-edit permission, and Sync Location requires location-configuration edit permission. Editors can still retrieve zones using unsaved connection settings. Saved-device zone inventory uses the provider interface; the built-in provider supports Econolite Vision FIR/AI cameras with numeric identifiers. Other products need a compatible provider, and provider/connection failures are shown in the lane review.
 
 `SignalTemplateService` reads Indiana events from yesterday's local midnight through the current server time. It compares the current location configuration; the comparison itself does not save changes. These event sets establish observed assignments:
 

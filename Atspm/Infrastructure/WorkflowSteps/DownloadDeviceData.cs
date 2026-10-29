@@ -17,6 +17,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks.Dataflow;
+using System.Runtime.CompilerServices;
 using Utah.Udot.NetStandardToolkit.Workflows;
 
 namespace Utah.Udot.ATSPM.Infrastructure.WorkflowSteps
@@ -39,13 +40,15 @@ namespace Utah.Udot.ATSPM.Infrastructure.WorkflowSteps
         }
 
         /// <inheritdoc/>
-        protected override IAsyncEnumerable<Tuple<Device, FileInfo>> Process(Device input, CancellationToken cancelToken = default)
+        protected override async IAsyncEnumerable<Tuple<Device, FileInfo>> Process(Device input, [EnumeratorCancellation] CancellationToken cancelToken = default)
         {
             using (var scope = _services.CreateAsyncScope())
             {
                 var downloader = scope.ServiceProvider.GetServices<IDeviceDownloader>().First(c => c.CanExecute(input));
 
-                return downloader.Execute(input, cancelToken);
+                // Keep scoped repositories alive until the asynchronous download is consumed.
+                await foreach (var result in downloader.Execute(input, cancelToken))
+                    yield return result;
             }
         }
     }

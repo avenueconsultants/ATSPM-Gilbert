@@ -116,11 +116,13 @@ public sealed class VisionCameraAPI(IHttpClientFactory clientFactory, TmcCameraC
                     warnings.Add($"Camera {device.DeviceIdentifier}: no data for {day:yyyy-MM-dd} ({reason}).");
                     // An unreachable camera would make every remaining day wait out the same failure.
                     if (stop < end && (ex is TaskCanceledException
+                        || ex is HttpRequestException { StatusCode: HttpStatusCode.Unauthorized }
                         || ex is HttpRequestException { HttpRequestError: HttpRequestError.ConnectionError or HttpRequestError.NameResolutionError }))
                     {
                         var last = stop;
                         while (last.AddDays(1) < end) last = last.AddDays(1);
-                        warnings.Add($"Camera {device.DeviceIdentifier}: unreachable; skipped {stop:yyyy-MM-dd}{(last > stop ? $" to {last:yyyy-MM-dd}" : "")}.");
+                        var failure = ex is HttpRequestException { StatusCode: HttpStatusCode.Unauthorized } ? "login rejected" : "unreachable";
+                        warnings.Add($"Camera {device.DeviceIdentifier}: {failure}; skipped {stop:yyyy-MM-dd}{(last > stop ? $" to {last:yyyy-MM-dd}" : "")}.");
                         break;
                     }
                 }
