@@ -21,13 +21,17 @@ import {
 } from '../editLocation/locationStore'
 import { useLocationEditorOptions } from '../editLocation/useLocationEditorOptions'
 
-/** Manual configuration from inventory does not require movement-count evidence. */
-export function UnusedZoneDetector({
+/** Shared detector editor for explicit manual review actions; changes remain drafts. */
+export function DetectorReviewEditor({
   zone,
   disabled,
   onAdded,
+  detectorId,
+  allowRemove = false,
 }: {
   zone: string
+  detectorId?: number
+  allowRemove?: boolean
   disabled: boolean
   onAdded: () => void
 }) {
@@ -37,17 +41,30 @@ export function UnusedZoneDetector({
   const [errors, setErrors] = useState<LocationStore['errors']>(null)
   const approach = approaches.find((a) => a.id === approachId)
   const existing = approaches.flatMap((a) => a.detectors)
+  const original = existing.find((d) => d.id === detectorId)
+  const editing = detectorId != null
   const channel = Number(draft?.detectorChannel)
   const invalid =
     !Number.isInteger(channel) ||
     channel < 65 ||
-    existing.some((d) => Number(d.detectorChannel) === channel)
+    existing.some(
+      (d) => d.id !== detectorId && Number(d.detectorChannel) === channel
+    )
   function open() {
     let next = 65
     while (existing.some((d) => Number(d.detectorChannel) === next)) next++
     let id = -1
     while (existing.some((d) => d.id === id)) id--
     setErrors(null)
+    if (editing) {
+      const owner = approaches.find((a) =>
+        a.detectors.some((d) => d.id === detectorId)
+      )
+      if (!owner || !original) return
+      setApproachId(owner.id)
+      setDraft(structuredClone(original))
+      return
+    }
     setApproachId('')
     setDraft({
       id,
@@ -71,7 +88,7 @@ export function UnusedZoneDetector({
   return (
     <>
       <Button size="small" onClick={open} disabled={disabled}>
-        Add Detector
+        {editing ? `Edit Channel ${original?.detectorChannel}` : 'Add Detector'}
       </Button>
       <Dialog
         open={Boolean(draft)}
@@ -79,16 +96,22 @@ export function UnusedZoneDetector({
         maxWidth="xl"
         fullWidth
       >
-        <DialogTitle>Add detector for zone {zone}</DialogTitle>
+        <DialogTitle>
+          {editing
+            ? `Edit detector Channel ${original?.detectorChannel}`
+            : `Add detector for zone ${zone}`}
+        </DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
             Verify the zone purpose, choose an approach and configure the
-            detector. Adding stages a draft; save the approach to persist it.
+            detector. Changes and removals are staged; save the approach to
+            persist them.
           </Typography>
           <TextField
             select
             fullWidth
             label="Approach"
+            disabled={editing}
             value={approachId}
             onChange={(e) => setApproachId(Number(e.target.value))}
             sx={{ mb: 2 }}
@@ -145,6 +168,34 @@ export function UnusedZoneDetector({
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDraft(null)}>Cancel</Button>
+          {editing && allowRemove && (
+            <Button
+              color="error"
+              disabled={disabled || !original}
+              onClick={() => {
+                // Stage removal like lane recommendations; Save persists it and Reset restores it.
+                const next = approaches.map((a) => ({
+                  ...a,
+                  detectors: a.detectors.filter((d) => d.id !== detectorId),
+                }))
+                useLocationStore.setState({
+                  approaches: next,
+                  channelMap: new Map(
+                    next.flatMap((a) =>
+                      a.detectors.map(
+                        (d) =>
+                          [d.id, Number(d.detectorChannel)] as [number, number]
+                      )
+                    )
+                  ),
+                })
+                setDraft(null)
+                onAdded()
+              }}
+            >
+              Remove Channel {original?.detectorChannel} from draft
+            </Button>
+          )}
           <Button
             variant="contained"
             disabled={
@@ -155,12 +206,32 @@ export function UnusedZoneDetector({
             }
             onClick={() => {
               if (!draft || !approach || invalid) return
-              addDetector(approach.id, channel, draft)
+              if (editing) {
+                const next = approaches.map((a) => ({
+                  ...a,
+                  detectors: a.detectors.map((d) =>
+                    d.id === detectorId
+                      ? { ...draft, approachId: a.id, detectorChannel: channel }
+                      : d
+                  ),
+                }))
+                useLocationStore.setState({
+                  approaches: next,
+                  channelMap: new Map(
+                    next.flatMap((a) =>
+                      a.detectors.map(
+                        (d) =>
+                          [d.id, Number(d.detectorChannel)] as [number, number]
+                      )
+                    )
+                  ),
+                })
+              } else addDetector(approach.id, channel, draft)
               setDraft(null)
               onAdded()
             }}
           >
-            Add detector to editor
+            {editing ? 'Apply detector changes' : 'Add detector to editor'}
           </Button>
         </DialogActions>
       </Dialog>

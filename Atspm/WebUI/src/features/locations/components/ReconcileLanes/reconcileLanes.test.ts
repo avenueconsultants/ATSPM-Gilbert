@@ -90,6 +90,7 @@ it('excludes controller channels including 64 and does not call their zones unus
     recommendations: [],
     warnings: [],
     unusedZones: [],
+    manualActions: [],
   })
 })
 
@@ -481,4 +482,29 @@ it('exposes unused inventory zones for manual configuration without sufficient c
 it('does not offer an already assigned controller zone as unused', () => {
   const review = reconcileLanes(approach([detector(1, { detectorChannel: 1 })]), inventory, [], 25)
   expect(review.unusedZones).toEqual([])
+})
+
+
+it('offers explicit edit/removal for overlaps and missing configured zones', () => {
+  const overlapping = reconcileLanes(approach([detector(1), detector(2)]), inventory, evidence)
+  expect(overlapping.manualActions[0]).toMatchObject({ detectorIds: [1, 2], remove: true })
+  const missing = reconcileLanes(approach(), [{ deviceId: 7, names: ['Other'] }], [])
+  expect(missing.manualActions[0]).toMatchObject({ detectorIds: [1], remove: true })
+})
+
+it('offers manual addition below threshold and for ambiguous physical lanes', () => {
+  const low = reconcileLanes(approach(), inventory, [{ ...evidence[0], through: 1 }])
+  expect(low.manualActions).toContainEqual(expect.objectContaining({ add: true, zone: 'Arbitrary zone', detectorIds: [] }))
+  const multiple = reconcileLanes(approach([detector(1), detector(2, { movementType: 'R', laneNumber: 2 })]), inventory, evidence)
+  expect(multiple.manualActions).toContainEqual(expect.objectContaining({ add: true, detectorIds: [] }))
+})
+
+it.each([{ laneNumber: null }, { movementType: 'NA' }, { laneType: 'NA' }])('offers editing for incomplete lane configuration %j', (fields) => {
+  const review = reconcileLanes(approach([detector(1, fields)]), inventory, evidence)
+  expect(review.manualActions).toContainEqual(expect.objectContaining({ detectorIds: [1] }))
+})
+
+it('does not introduce a manual action for removing Through from LTR', () => {
+  const review = reconcileLanes(approach([detector(1, { movementType: 'LTR' })]), inventory, [{ ...evidence[0], through: 0, right: 30 }])
+  expect(review.manualActions).toEqual([])
 })

@@ -23,7 +23,7 @@ const metadata = `<Schema>${Object.entries(enums)
   )
   .join('')}</Schema>`
 
-async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number], decoder = 'VisionCameraAPI', unusedZone = false) {
+async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number], decoder = 'VisionCameraAPI', unusedZone = false, configure?: (fixture: ReturnType<typeof loadMockScenario>) => void) {
   // Leaflet's pending zoom transition can outlive the General tab on unmount.
   await page.addInitScript('window.L_DISABLE_3D = true')
 
@@ -36,6 +36,7 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
     fixture.inventory[0].names.push('SB-36')
     fixture.evidence.push({ deviceId: 1, zoneName: 'SB-36', through: 1, left: 0, right: 0, bins: 1 })
   }
+  configure?.(fixture)
   const device = {
     id: 1,
     deviceStatus: 'Active',
@@ -588,4 +589,77 @@ test('cancel unused-zone detector leaves configuration unchanged', async ({ page
   await expect(page.getByRole('alert').filter({ hasText: 'Unused zone SB-36' })).toBeVisible()
   expect(state.writes).toHaveLength(0)
   expect(state.unexpected).toEqual([])
+})
+
+
+for (const kind of ['overlap', 'missing zone', 'missing lane number', 'unknown movement', 'unknown lane type'] as const) {
+  test(`manual detector edit: ${kind}`, async ({ page }) => {
+    const state = await openScenario(page, kind === 'overlap' ? 7 : 0, true, undefined, 'VisionCameraAPI', false, (fixture) => {
+      const detector = fixture.approaches[0].detectors[0]
+      if (kind === 'missing zone') detector.dectectorIdentifier = 'Old zone'
+      if (kind === 'missing lane number') { detector.laneNumber = null as any; detector.movementType = 'T' as any }
+      if (kind === 'unknown movement') detector.movementType = 'NA' as any
+      if (kind === 'unknown lane type') detector.laneType = 'NA' as any
+    })
+    await page.getByRole('button', { name: 'Edit Channel 118', exact: true }).click()
+    const editor = page.getByRole('dialog', { name: 'Edit detector Channel 118' })
+    const row = editor.getByRole('table', { name: 'detector table' }).getByRole('row').last()
+    await row.locator('td').nth(0).dblclick()
+    await row.getByRole('textbox').first().fill('Corrected zone')
+    await row.getByRole('textbox').first().press('Enter')
+    await editor.getByRole('button', { name: 'Apply detector changes' }).click()
+    expect(state.writes).toHaveLength(0)
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
+    await page.getByRole('button', { name: 'save approach', exact: true }).click()
+    await expect.poll(() => state.writes.length).toBe(1)
+    expect(state.writes[0].detectors.find((d: any) => d.detectorChannel === 118).dectectorIdentifier).toBe('Corrected zone')
+    expect(state.deletions).toEqual([])
+    expect(state.unexpected).toEqual([])
+  })
+}
+
+for (const kind of ['overlap', 'missing zone'] as const) {
+  test(`manual detector removal: ${kind}`, async ({ page }) => {
+    const state = await openScenario(page, kind === 'overlap' ? 7 : 0, true, undefined, 'VisionCameraAPI', false, (fixture) => {
+      if (kind === 'missing zone') fixture.approaches[0].detectors[0].dectectorIdentifier = 'Old zone'
+    })
+    await page.getByRole('button', { name: 'Edit Channel 118', exact: true }).click()
+    await page.getByRole('button', { name: 'Remove Channel 118 from draft' }).click()
+    expect(state.deletions).toEqual([])
+    expect(state.writes).toEqual([])
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
+    await page.getByRole('button', { name: 'save approach', exact: true }).click()
+    await expect.poll(() => state.writes.length).toBe(1)
+    expect(state.writes[0].detectors.some((d: any) => d.detectorChannel === 118)).toBe(false)
+    expect(state.unexpected).toEqual([])
+  })
+}
+
+for (const kind of ['low volume', 'multiple lanes'] as const) {
+  test(`manual movement addition: ${kind}`, async ({ page }) => {
+    const state = await openScenario(page, 0, true, undefined, 'VisionCameraAPI', false, (fixture) => {
+      fixture.approaches[0].detectors[0].movementType = 'T' as any
+      if (kind === 'low volume') fixture.evidence[0].right = 1
+      else fixture.approaches[0].detectors.push({ ...fixture.approaches[0].detectors[0], id: 999, detectorChannel: 119, laneNumber: 2, movementType: 'L' as any })
+    })
+    await page.getByRole('button', { name: 'Add Detector', exact: true }).click()
+    const editor = page.getByRole('dialog', { name: 'Add detector for zone NB-18' })
+    await editor.getByLabel('Approach', { exact: true }).click()
+    await page.getByRole('option').first().click()
+    await editor.getByRole('button', { name: 'Add detector to editor' }).click()
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
+    await page.getByRole('button', { name: 'save approach', exact: true }).click()
+    await expect.poll(() => state.writes.length).toBe(1)
+    expect(state.writes[0].detectors.find((d: any) => d.detectorChannel === 65).dectectorIdentifier).toBe('NB-18')
+    expect(state.unexpected).toEqual([])
+  })
+}
+
+test('cancel manual detector edit preserves existing configuration', async ({ page }) => {
+  const state = await openScenario(page, 7)
+  await page.getByRole('button', { name: 'Edit Channel 118', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Edit detector Channel 118' }).getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByText(/overlapping movement assignments/)).toBeVisible()
+  expect(state.writes).toEqual([])
+  expect(state.deletions).toEqual([])
 })

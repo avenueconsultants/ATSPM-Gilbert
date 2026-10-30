@@ -100,3 +100,5 @@ Tests cover independent feature flags; phase/overlap namespaces; FYA and pedestr
 - [Lane matching and staging](../../Atspm/WebUI/src/features/locations/components/ReconcileLanes/reconcileLanes.ts)
 - [Approach review view](../../Atspm/WebUI/src/features/locations/components/ApproachesReconcilationReport/ApproachesReconciliationView.tsx)
 - [Missing-assignment actions](../../Atspm/WebUI/src/features/locations/components/ApproachesReconcilationReport/NotFoundSection.tsx)
+
+Manual warning actions also allow editing or removing existing detectors for overlapping movement assignments and missing configured zones. Missing lane numbers or unknown movement/lane types open the shared editor. Low-count unassigned movements and ambiguous physical-lane assignments allow an explicit addition with approach/lane selection. These are user-directed draft changes, not automatic recommendations; each action invalidates the old comparison. Removal preserves the saved baseline until Save, and Reset restores it. The LTR-without-Through case remains unchanged.

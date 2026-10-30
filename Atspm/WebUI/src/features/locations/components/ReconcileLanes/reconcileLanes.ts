@@ -31,6 +31,7 @@ export type Recommendation = {
 export type LaneReview = {
   recommendations: Recommendation[]
   warnings: string[]
+  manualActions: { warning: string; zone: string; detectorIds: number[]; add?: boolean; remove?: boolean }[]
   unusedZones: { name: string; deviceIds: number[]; warning: string }[]
 }
 const movements: Record<string, string[]> = {
@@ -74,6 +75,7 @@ export function reconcileLanes(
   const recommendations: Recommendation[] = []
   const warnings: string[] = []
   const unusedZones: LaneReview['unusedZones'] = []
+  const manualActions: LaneReview['manualActions'] = []
   const configured = flatten(approaches).filter(({ d }) => eligible(d))
   // Build indexes once rather than rescanning every detector and bin row per lane.
   const groups = new Map<string, typeof configured>()
@@ -134,10 +136,12 @@ export function reconcileLanes(
         warnings.push(
           `${label}: zone name occurs on multiple devices. The importer matches names; verify uniqueness before applying changes.`
         )
-      else if (completeInventory)
+      else if (completeInventory) {
         warnings.push(
           `${label}: not returned by the devices. Verify the assignment or camera configuration; do not delete the lane automatically.`
         )
+        manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: [d.id], remove: true })
+      }
       continue
     }
     if (!completeInventory) continue // Another unreachable device could own the same zone name.
@@ -173,10 +177,12 @@ export function reconcileLanes(
     const group = groups.get(name)!
     const { assigned, overlap } = assignments.get(name)!
     if (overlap) {
-      if (group[0].d.id === d.id)
+      if (group[0].d.id === d.id) {
         warnings.push(
           `Zone ${name}: overlapping movement assignments can double-count vehicles. Review channels ${group.map((r) => r.d.detectorChannel).join(', ')}.`
         )
+        manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: group.map(({ d }) => d.id), remove: true })
+      }
       continue
     }
     const declared = movements[movementName(d.movementType)]
@@ -184,6 +190,7 @@ export function reconcileLanes(
       warnings.push(
         `${label}: verify movement/lane type manually (T ${counts.T}, L ${counts.L}, R ${counts.R}).`
       )
+      manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: [d.id] })
       continue
     }
     const absent = declared.filter((m) => counts[m] === 0)
@@ -227,6 +234,7 @@ export function reconcileLanes(
       warnings.push(
         `Zone ${name}: unassigned ${unassigned.join('/')} observed across multiple configured lanes; verify which lane serves it.`
       )
+      if (group[0].d.id === d.id) manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: [], add: true })
       continue
     }
     // Shared movement entries need only one proposal for the missing movement.
@@ -234,10 +242,12 @@ export function reconcileLanes(
       group[0].d.id === d.id
         ? unassigned.filter((m) => counts[m] >= minimum)
         : []
-    if (unassigned.some((m) => counts[m] < minimum))
+    if (unassigned.some((m) => counts[m] < minimum)) {
       warnings.push(
         `${label}: low-volume unassigned movements; review T ${counts.T}, L ${counts.L}, R ${counts.R} before adding a lane.`
       )
+      if (group[0].d.id === d.id) manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: [], add: true })
+    }
     if (Number(d.laneNumber) > 0 && (declared.length > 1 || enough.length)) {
       const next = [...new Set([...declared, ...enough])]
       const proposals =
@@ -253,10 +263,12 @@ export function reconcileLanes(
           description: `${label}: use separate ${proposal.join(' + ')} entries sharing this zone and physical lane (T ${counts.T}, L ${counts.L}, R ${counts.R}). Verify camera classification and allowed turns before applying.`,
         })
       )
-    } else if (enough.length)
+    } else if (enough.length) {
       warnings.push(
         `${label}: unassigned ${enough.join('/')} observed; configured lane number needs verification before recommending a split.`
       )
+      manualActions.push({ warning: warnings[warnings.length - 1], zone: name, detectorIds: [d.id] })
+    }
   }
   // Prefer repairing an existing single-movement entry on the same physical
   // lane over creating a duplicate. An absent zone is evidence to review, not
@@ -336,7 +348,7 @@ export function reconcileLanes(
       warnings.push(
         `Bin zone ${row.zoneName} on device ${row.deviceId} is absent from the current inventory; configuration may have changed.`
       )
-  return { recommendations, warnings: [...new Set(warnings)], unusedZones }
+  return { recommendations, warnings: [...new Set(warnings)], unusedZones, manualActions }
 }
 
 /** Stages changes only. Existing IDs/settings remain intact; new entries require explicit unique channels. */

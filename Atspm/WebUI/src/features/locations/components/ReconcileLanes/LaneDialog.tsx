@@ -20,7 +20,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import DiscrepancyButton from '../ApproachesReconcilationReport/DiscrepancyButton'
 import { useLocationStore } from '../editLocation/locationStore'
-import { UnusedZoneDetector } from './UnusedZoneDetector'
+import { DetectorReviewEditor } from './DetectorReviewEditor'
 import { readDeviceZones } from './laneDecoders'
 import {
   applyLaneRecommendations,
@@ -430,8 +430,16 @@ export function LaneDialog({
               {review.warnings.map((warning, i) => (
                 <Alert key={i} severity="warning">
                   {warning}
+                  {review.manualActions.filter((action) => action.warning === warning).map((action, index) => (
+                    <Box key={index}>
+                      {action.detectorIds.map((id) => <DetectorReviewEditor key={id} zone={action.zone} detectorId={id} allowRemove={action.remove} disabled={busy || stale}
+                        onAdded={() => { setReview(undefined); setSelected([]); setApplied(true) }} />)}
+                      {action.add && <DetectorReviewEditor zone={action.zone} disabled={busy || stale}
+                        onAdded={() => { setReview(undefined); setSelected([]); setApplied(true) }} />}
+                    </Box>
+                  ))}
                   {review.unusedZones.filter((zone) => zone.warning === warning).map((zone) => (
-                    <UnusedZoneDetector key={zone.name} zone={zone.name} disabled={busy || stale}
+                    <DetectorReviewEditor key={zone.name} zone={zone.name} disabled={busy || stale}
                       onAdded={() => { setReview(undefined); setSelected([]); setApplied(true) }} />
                   ))}
                   {review.recommendations
