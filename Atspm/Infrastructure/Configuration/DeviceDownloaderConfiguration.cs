@@ -37,12 +37,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Configuration
         /// </summary>
         public bool Ping { get; set; }
 
-        /// <summary>
-        /// Maximum history requested by StartTime/EndTime downloads when recovering
-        /// from missing or stale stored data. Older gaps require an explicit backfill.
-        /// </summary>
-        public int MaximumLookbackMinutes { get; set; } = 1440;
-
         /// <inheritdoc/>
         public override string ToString()
         {

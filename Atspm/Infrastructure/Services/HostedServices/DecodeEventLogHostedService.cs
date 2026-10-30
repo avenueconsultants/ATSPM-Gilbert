@@ -36,8 +36,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.HostedServices
 
             var workflow = new DecodeEventLogWorkflow(scope.ServiceProvider.GetService<IServiceScopeFactory>(), 50000, cancellationToken);
 
-            await workflow.Initialize();
-
             Console.WriteLine($"path: {_options.Value.Path}");
 
             var dir = new DirectoryInfo(_options.Value.Path);

@@ -258,10 +258,4 @@ The diagrams document the implemented shared pipeline. All sources use the same 
 
 Source discovery reuses device properties already loaded by the frontend, or the existing Config API active-devices-by-location endpoint. The frontend enables camera-only TMC from that data. No TMC-specific Config API endpoints, search modifications, or device-editor changes are needed.
 
-## Scheduled download recovery
-
-Requests containing `[StartTime]` resume from the latest persisted event for that device. If several event types are stored, the least advanced observed type supplies the boundary. Indiana wall-clock timestamps are interpreted in the location timezone; camera statistics use UTC. Archive lookup keys remain unspecified wall-clock values. Path and query tokens share one captured end time, adjusted by `LoggingOffset`.
-
-`DeviceDownloader.MaximumLookbackMinutes` defaults to 1,440 (24 hours), with a minimum of 15 minutes. Missing or older history starts at that limit. Longer outages require explicit backfill. Empty intervals may be requested again because this uses stored-event evidence rather than a separate successful-empty-download checkpoint. The boundary record is deliberately replayed through existing archive Upsert deduplication. Downloading a file alone never advances the boundary. This does not certify completeness of older, partially populated archives.
-
-Invalid addresses and failed pings stop that device's download; deployments that block ICMP can disable `Ping`. Missing device identifiers are logged and skipped. Manual test downloads retain their explicitly rendered window. A camera API login rejection stops the remaining daily requests for that camera while allowing other cameras to continue.
+A camera API login rejection stops the remaining daily requests for that camera while allowing other cameras to continue.

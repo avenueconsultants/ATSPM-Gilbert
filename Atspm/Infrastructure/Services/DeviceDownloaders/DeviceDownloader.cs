@@ -22,9 +22,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Utah.Udot.Atspm.Common;
 using Utah.Udot.Atspm.Data.Enums;
-using Utah.Udot.Atspm.Data.Models.EventLogModels;
-using Utah.Udot.Atspm.Repositories.EventLogRepositories;
-using Utah.Udot.Atspm.Infrastructure.Extensions;
 
 namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 {
@@ -36,20 +33,15 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
         private readonly IEnumerable<IDownloaderClient> _clients;
         protected readonly ILogger _log;
         protected readonly DeviceDownloaderConfiguration _options;
-        private readonly IEventLogRepository _events;
 
         #endregion
 
         ///<inheritdoc/>
-        public DeviceDownloader(IEnumerable<IDownloaderClient> clients, ILogger<IDeviceDownloader> log, IOptionsSnapshot<DeviceDownloaderConfiguration> options)
-            : this(clients, log, options, null) { }
-
-        public DeviceDownloader(IEnumerable<IDownloaderClient> clients, ILogger<IDeviceDownloader> log, IOptionsSnapshot<DeviceDownloaderConfiguration> options, IEventLogRepository events) : base(true)
+        public DeviceDownloader(IEnumerable<IDownloaderClient> clients, ILogger<IDeviceDownloader> log, IOptionsSnapshot<DeviceDownloaderConfiguration> options) : base(true)
         {
             _clients = clients;
             _log = log;
             _options = options?.Get(GetType().Name) ?? options?.Value;
-            _events = events;
         }
 
         #region Methods
@@ -67,9 +59,7 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
         public virtual Uri GenerateLocalFilePath(Device device, Uri resource)
         {
             var fileExtension = Path.HasExtension(resource.Segments.LastOrDefault()) ? Path.GetExtension(resource.Segments.LastOrDefault()) : ".txt";
-            var deviceIdentifier = device.DeviceIdentifier;
-            if (string.IsNullOrWhiteSpace(deviceIdentifier))
-                throw new ArgumentException("A device identifier is required to create a download path.", nameof(device));
+            var deviceIdentifier = device.DeviceIdentifier ?? "999999";
 
             var fileName = $"{deviceIdentifier}-{DateTime.Now.Ticks}{fileExtension}";
             var path = Path.Combine
@@ -113,32 +103,20 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
                 {
                     logMessages.InvalidDeviceIpAddressException(ipaddress, new InvalidDeviceIpAddressException(parameter));
 
-                    throw new InvalidDeviceIpAddressException(parameter);
+                    //throw new InvalidDeviceIpAddressException(parameter);
                 }
                 else if (_options.Ping && !await ipaddress.PingIpAddressAsync())
                 {
                     logMessages.InvalidDeviceIpAddressException(ipaddress, new InvalidDeviceIpAddressException(parameter));
 
-                    throw new InvalidDeviceIpAddressException(parameter);
+                    //throw new InvalidDeviceIpAddressException(parameter);
                 }
 
-                if (string.IsNullOrWhiteSpace(parameter.DeviceIdentifier))
-                {
-                    _log.LogWarning("Device {DeviceId}: download skipped because its identifier is missing", parameter.Id);
-                    yield break;
-                }
-
-                var deviceIdentifier = parameter.DeviceIdentifier;
+                var deviceIdentifier = parameter?.DeviceIdentifier ?? "999999";
                 var user = parameter?.DeviceConfiguration?.UserName;
                 var password = parameter?.DeviceConfiguration?.Password;
-                var configuration = parameter.DeviceConfiguration;
-                var windowed = (configuration.Path?.Contains("[StartTime") ?? false) ||
-                    (configuration.Query?.Any(q => q.Contains("[StartTime")) ?? false);
-                var end = DateTime.Now;
-                end = end.AddTicks(-(end.Ticks % TimeSpan.TicksPerMinute)).AddMinutes(-configuration.LoggingOffset);
-                var start = windowed ? await GetStoredWindowStart(parameter, end, cancelToken) : end.AddMinutes(-15);
-                var path = new ObjectPropertyParser(parameter, configuration.Path, start, end).ToString();
-                var query = configuration.Query?.Select(s => new ObjectPropertyParser(parameter, s, start, end).ToString()).ToArray();
+                var path = new ObjectPropertyParser(parameter, parameter?.DeviceConfiguration?.Path).ToString();
+                var query = parameter?.DeviceConfiguration?.Query.Select(s => new ObjectPropertyParser(parameter, s).ToString()).ToArray();
                 var connectionTimeout = parameter?.DeviceConfiguration?.ConnectionTimeout ?? 2000;
                 var operationTimeout = parameter?.DeviceConfiguration?.OperationTimeout ?? 2000;
                 var props = parameter?.DeviceConfiguration?.ConnectionProperties?.ToDictionary(k => k.Key, k => k.Value.ToString());
@@ -281,42 +259,6 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 
         #endregion
 
-        // Resume from persisted records, never from a download attempt that may fail
-        // during decoding or storage. Replay the boundary record through archive Upsert.
-        public async Task<DateTime> GetStoredWindowStart(Device device, DateTime end, CancellationToken token)
-        {
-            if (_events == null)
-                throw new InvalidOperationException("Windowed downloads require an event log repository.");
-            var oldest = end.AddMinutes(-Math.Max(15, _options.MaximumLookbackMinutes));
-            var zone = device.GetTimeZoneFromLocation() ?? TimeZoneInfo.Local;
-            var localStart = TimeZoneInfo.ConvertTime(oldest, zone);
-            var localEnd = TimeZoneInfo.ConvertTime(end, zone);
-            // Archive keys are wall-clock (timestamp without timezone), even when
-            // their payload is UTC. Query both possible clocks without tagged keys.
-            var queryStart = DateTime.SpecifyKind(new[] { oldest.ToUniversalTime(), localStart }.Min(), DateTimeKind.Unspecified);
-            var queryEnd = DateTime.SpecifyKind(new[] { end.ToUniversalTime(), localEnd }.Max(), DateTimeKind.Unspecified);
-            var latestByType = new Dictionary<Type, DateTime>();
-            await foreach (var archive in _events.GetData(device.Location.LocationIdentifier, queryStart, queryEnd, device.Id).WithCancellation(token))
-            {
-                foreach (EventLogModelBase record in archive.Data)
-                {
-                    var timestamp = record.Timestamp;
-                    var storedZone = record is IndianaEvent ? zone
-                        : record is VisionCameraStatisticsEvent ? TimeZoneInfo.Utc : TimeZoneInfo.Local;
-                    var utc = timestamp.Kind == DateTimeKind.Unspecified
-                        ? TimeZoneInfo.ConvertTimeToUtc(timestamp, storedZone)
-                        : timestamp.ToUniversalTime();
-                    var time = utc.ToLocalTime();
-                    if (time < oldest || time > end) continue;
-                    var type = record.GetType();
-                    if (!latestByType.TryGetValue(type, out var latest) || time > latest)
-                        latestByType[type] = time;
-                }
-            }
-            // Use the least advanced stream when a device imports several event types.
-            return latestByType.Count == 0 ? oldest : latestByType.Values.Min();
-        }
-
         ///<inheritdoc/>
         protected override void DisposeManagedCode()
         {
@@ -336,20 +278,16 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 
         private readonly object _obj;
         private readonly string _value;
-        private readonly DateTime? _start;
-        private readonly DateTime? _end;
 
         /// <summary>
         /// Takes <paramref name="value"/> and parses against the properties of the provided <paramref name="obj"/>
         /// </summary>
         /// <param name="obj"></param>
         /// <param name="value"></param>
-        public ObjectPropertyParser(object obj, string value, DateTime? start = null, DateTime? end = null)
+        public ObjectPropertyParser(object obj, string value)
         {
             _obj = obj;
             _value = value;
-            _start = start;
-            _end = end;
         }
 
         /// <inheritdoc/>
@@ -405,12 +343,11 @@ namespace Utah.Udot.Atspm.Infrastructure.Services.DeviceDownloaders
 
         private DateTime GetStartTime()
         {
-            return _start ?? GetEndTime().AddMinutes(-15);
+            return GetEndTime().AddMinutes(-15);
         }
 
         private DateTime GetEndTime()
         {
-            if (_end.HasValue) return _end.Value;
             if (_obj is Device d)
             {
                 return RoundToMinute(DateTime.Now).AddMinutes(-(d.DeviceConfiguration?.LoggingOffset ?? 0));
