@@ -31,6 +31,7 @@ export type Recommendation = {
 export type LaneReview = {
   recommendations: Recommendation[]
   warnings: string[]
+  unusedZones: { name: string; deviceIds: number[]; warning: string }[]
 }
 const movements: Record<string, string[]> = {
   T: ['T'],
@@ -72,6 +73,7 @@ export function reconcileLanes(
 ): LaneReview {
   const recommendations: Recommendation[] = []
   const warnings: string[] = []
+  const unusedZones: LaneReview['unusedZones'] = []
   const configured = flatten(approaches).filter(({ d }) => eligible(d))
   // Build indexes once rather than rescanning every detector and bin row per lane.
   const groups = new Map<string, typeof configured>()
@@ -320,10 +322,11 @@ export function reconcileLanes(
   )
   for (const [name, devices] of owners) {
     // Zones used exclusively on channels 1–64 are deliberately outside this review.
-    if (!allAssigned.has(name))
-      warnings.push(
-        `Unused zone ${name} (device ${devices.join(', ')}): no configured detector uses it. Assign only after verifying its purpose.`
-      )
+    if (!allAssigned.has(name)) {
+      const warning = `Unused zone ${name} (device ${devices.join(', ')}): no configured detector uses it. Assign only after verifying its purpose.`
+      warnings.push(warning)
+      if (name.trim()) unusedZones.push({ name, deviceIds: devices, warning })
+    }
   }
   for (const row of evidence)
     if (
@@ -333,7 +336,7 @@ export function reconcileLanes(
       warnings.push(
         `Bin zone ${row.zoneName} on device ${row.deviceId} is absent from the current inventory; configuration may have changed.`
       )
-  return { recommendations, warnings: [...new Set(warnings)] }
+  return { recommendations, warnings: [...new Set(warnings)], unusedZones }
 }
 
 /** Stages changes only. Existing IDs/settings remain intact; new entries require explicit unique channels. */

@@ -23,7 +23,7 @@ const metadata = `<Schema>${Object.entries(enums)
   )
   .join('')}</Schema>`
 
-async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number], decoder = 'VisionCameraAPI') {
+async function openScenario(page: Page, index: number, lanes = true, approachScenario?: typeof approachScenarios[number], decoder = 'VisionCameraAPI', unusedZone = false) {
   // Leaflet's pending zoom transition can outlive the General tab on unmount.
   await page.addInitScript('window.L_DISABLE_3D = true')
 
@@ -32,6 +32,10 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
     ...a, directionTypeId: 'NA',
     detectors: a.detectors.map(d => ({ ...d, detectionTypes: [], movementType: 'T', laneType: 'V', detectionHardware: 'Video' })),
   })) as any
+  if (unusedZone) {
+    fixture.inventory[0].names.push('SB-36')
+    fixture.evidence.push({ deviceId: 1, zoneName: 'SB-36', through: 1, left: 0, right: 0, bins: 1 })
+  }
   const device = {
     id: 1,
     deviceStatus: 'Active',
@@ -121,7 +125,7 @@ async function openScenario(page: Page, index: number, lanes = true, approachSce
       return json({
         zoneEvidence: fixture.evidence,
         sourceDeviceIds: [1],
-        warnings: [],
+        warnings: unusedZone ? ['Another camera returned incomplete data'] : [],
       })
     }
     const deletion = path.match(/\/(Approach|Detector)\/(\d+)$/)
@@ -544,4 +548,44 @@ test('a new decoder can reconcile on the regular location page without a fronten
   await expect(page.getByText(/Changes staged/)).toBeVisible()
   expect(state.reports[0].decoder).toBe('FutureRadar')
   expect(state.writes).toHaveLength(0)
+})
+
+
+test('unused zone permits manual detector addition despite low counts and source warnings', async ({ page }) => {
+  const state = await openScenario(page, 7, true, undefined, 'VisionCameraAPI', true)
+  await expect(page.getByText(/overlapping movement assignments/)).toBeVisible()
+  const warning = page.getByRole('alert').filter({ hasText: 'Unused zone SB-36' })
+  await warning.getByRole('button', { name: 'Add Detector', exact: true }).click()
+  const editor = page.getByRole('dialog', { name: 'Add detector for zone SB-36' })
+  await expect(editor.getByRole('button', { name: 'Add detector to editor' })).toBeDisabled()
+  await editor.getByLabel('Approach', { exact: true }).click()
+  await page.getByRole('option').first().click()
+  const row = editor.getByRole('table', { name: 'detector table' }).getByRole('row').last()
+  await expect(row.locator('td').nth(0)).toHaveText('SB-36')
+  await expect(row.locator('td').nth(1)).toHaveText('65')
+  await row.locator('td').nth(1).dblclick()
+  await row.getByRole('textbox').first().fill('118')
+  await row.getByRole('textbox').first().press('Enter')
+  await expect(editor.getByRole('button', { name: 'Add detector to editor' })).toBeDisabled()
+  await row.locator('td').nth(1).dblclick()
+  await row.getByRole('textbox').first().fill('65')
+  await row.getByRole('textbox').first().press('Enter')
+  await row.locator('td').nth(6).click()
+  await page.getByRole('option', { name: 'Thru', exact: true }).click()
+  await editor.getByRole('button', { name: 'Add detector to editor' }).click()
+  expect(state.writes).toHaveLength(0)
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
+  await page.getByRole('button', { name: 'save approach', exact: true }).click()
+  await expect.poll(() => state.writes.length).toBe(1)
+  expect(state.writes[0].detectors.find((d: any) => d.detectorChannel === 65)).toMatchObject({ dectectorIdentifier: 'SB-36', movementType: 1 })
+  expect(state.unexpected).toEqual([])
+})
+
+test('cancel unused-zone detector leaves configuration unchanged', async ({ page }) => {
+  const state = await openScenario(page, 0, true, undefined, 'VisionCameraAPI', true)
+  await page.getByRole('alert').filter({ hasText: 'Unused zone SB-36' }).getByRole('button', { name: 'Add Detector', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Add detector for zone SB-36' }).getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByRole('alert').filter({ hasText: 'Unused zone SB-36' })).toBeVisible()
+  expect(state.writes).toHaveLength(0)
+  expect(state.unexpected).toEqual([])
 })

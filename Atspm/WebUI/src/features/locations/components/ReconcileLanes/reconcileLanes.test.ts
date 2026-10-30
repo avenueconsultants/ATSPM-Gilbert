@@ -89,6 +89,7 @@ it('excludes controller channels including 64 and does not call their zones unus
   expect(reconcileLanes(current, inventory, evidence)).toEqual({
     recommendations: [],
     warnings: [],
+    unusedZones: [],
   })
 })
 
@@ -469,4 +470,15 @@ it('does not retarget an absent turn zone when another decoder may own it', () =
   expect(review.warnings.join(' ')).toContain(
     'another configured decoder may own'
   )
+})
+
+it('exposes unused inventory zones for manual configuration without sufficient counts', () => {
+  const review = reconcileLanes(approach(), [{ deviceId: 7, names: ['Arbitrary zone', 'Unused', '  '] }], [], 25)
+  expect(review.unusedZones).toEqual([{ name: 'Unused', deviceIds: [7], warning: expect.stringContaining('Unused zone Unused') }])
+  expect(review.warnings).toContain(review.unusedZones[0].warning)
+})
+
+it('does not offer an already assigned controller zone as unused', () => {
+  const review = reconcileLanes(approach([detector(1, { detectorChannel: 1 })]), inventory, [], 25)
+  expect(review.unusedZones).toEqual([])
 })

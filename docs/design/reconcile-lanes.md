@@ -76,6 +76,8 @@ A zone repair is permitted only when every device returned for the location is c
 
 Channels 1-64 are excluded from lane matching and recommendations. Zones used only on those channels are not reported as unused. This exclusion belongs to camera lane reconciliation; controller-event approach reconciliation still checks detector activity.
 
+Unused named inventory zones offer **Add Detector**, independently of count thresholds and warnings on other zones or source reads. The shared detector editor prefills the zone and next available channel above 64, requires an existing approach, and validates channel uniqueness. This manual action stages a detector; the user must save the approach. Cancel leaves configuration unchanged. After staging, compare again to refresh the review.
+
 Source-read warnings suppress all lane recommendations for that run. An incomplete inventory blocks matching changes because another device might own the same name. Duplicate names across devices or multiple zone IDs with the same name require verification. Unnamed evidence remains separate by zone ID and is displayed as `Unnamed zone <ID>`; that label is never used as a configured zone name. Negative-count errors identify the camera/device.
 
 Counts do not establish permitted turns, physical lane geometry, protected/permissive operation, or complete collection. Low-volume movements, zero counts, and missing bins require review. A matching total is not proof of correct camera alignment. Multiple physical lanes sharing a zone require additional verification before assigning an unrepresented movement.
