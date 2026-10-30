@@ -8,7 +8,7 @@ namespace ConfigApiTests.Services;
 [TestClass]
 public class ApproachScenarioFixtureTests
 {
-    private static string FixturePath([CallerFilePath] string source = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(source)!, "../../scenario-mock-tool/src/components/approachMockScenarios.json"));
+    private static string FixturePath([CallerFilePath] string source = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(source)!, "../WebUI/e2e/fixtures/approachMockScenarios.json"));
 
     [TestMethod]
     public void BrowserScenarioResponsesMatchRealReconciliation()

@@ -1,9 +1,9 @@
-import approachScenarios from '../../../scenario-mock-tool/src/components/approachMockScenarios.json'
+import approachScenarios from './fixtures/approachMockScenarios.json'
 import { expect, test, type Page } from '@playwright/test'
 import {
   loadMockScenario,
   mockScenarios,
-} from '../../../scenario-mock-tool/src/components/mockScenarios'
+} from './fixtures/mockScenarios'
 
 // Exercise the production location editor. Only its HTTP boundary is replaced;
 // reconciliation, selection, staging and save serialization all run normally.

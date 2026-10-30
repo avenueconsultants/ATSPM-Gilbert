@@ -1,9 +1,0 @@
-name: scenario-mock-tool
-services:
-  scenario-mock-tool:
-    build:
-      context: ..
-      dockerfile: scenario-mock-tool/Dockerfile
-    ports:
-      - "127.0.0.1:3081:3081"
-    restart: unless-stopped

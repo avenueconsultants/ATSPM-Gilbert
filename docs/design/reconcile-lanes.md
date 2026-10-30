@@ -88,9 +88,9 @@ Vision lane evidence is filtered to the requested time range before grouping, bu
 
 ## Scenarios, tests, and code references
 
-The standalone [scenario mock tool](../../scenario-mock-tool/README.md) runs at `http://localhost:3081/`. It imports production components and uses in-memory fixtures. The former WebUI `/dev/reconcile-scenarios` route is removed. Approach fixture responses are checked against the real backend; lane scenarios invoke the same matching and application functions as production. Reset restores the scenario configuration. Mocks never validate real camera geometry or traffic.
+The standalone scenario mock tool is preserved on branch `feature/scenario-mock-tool`. This branch retains automated mocks in `Atspm/WebUI/e2e/fixtures` for testing the regular location page. Approach fixture responses are checked against the real backend. Mocks do not validate real camera geometry or traffic.
 
-Tests cover independent feature flags; phase/overlap namespaces; FYA and pedestrian warnings; inherited pedestrian assignments; assignment and approach deletion; shared editors; movement additions/removals; channel uniqueness; shared-zone repair; uncovered devices; aliases; unnamed zones; stale input; source failures; and preserving review state across tabs. Playwright tests exercise both the tool and the regular location page with mocked HTTP responses. Test commands and fixture regeneration instructions are in the tool README and [WebUI E2E README](../../Atspm/WebUI/e2e/README.md).
+Tests cover independent feature flags; phase/overlap namespaces; FYA and pedestrian warnings; inherited pedestrian assignments; assignment and approach deletion; shared editors; movement additions/removals; channel uniqueness; shared-zone repair; uncovered devices; aliases; unnamed zones; stale input; source failures; and preserving review state across tabs. Playwright tests exercise the regular location page with mocked HTTP responses. Test commands and fixture regeneration instructions are in [WebUI E2E README](../../Atspm/WebUI/e2e/README.md).
 
 - [Approach comparison](../../Atspm/ConfigApi/Services/SignalTemplateService.cs)
 - [Combined dialog](../../Atspm/WebUI/src/features/locations/components/ReconcileLanes/ReconcileConfigurationButton.tsx)
